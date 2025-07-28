@@ -27,7 +27,7 @@ find_package(rclcpp REQUIRED)
 
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
-find_package(pogox_communication REQUIRED)
+# find_package(pogox_communication REQUIRED)
 
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 set(CMAKE_INSTALL_RPATH "${CMAKE_CURRENT_SOURCE_DIR}/lib;${CMAKE_CURRENT_SOURCE_DIR}/lib/mujoco_plugin")
