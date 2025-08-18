@@ -1,1 +1,1 @@
-bool contact_state
+bool contact
