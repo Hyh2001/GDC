@@ -12,26 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "mujoco_sim.h"
+// #include "mujoco_sim.h"
 
-using namespace mujoco_sim;
+// using namespace mujoco_sim;
 
-int main(int argc, char** argv) {
+// int main(int argc, char** argv) {
 
-  std::string mjcf_path = "";
-  if (argc >  1) {
-    mjcf_path = std::string(argv[1]);
-  }
+//   std::string mjcf_path = "";
+//   if (argc >  1) {
+//     mjcf_path = std::string(argv[1]);
+//   }
 
-  MujocoSim mujoco_sim(mjcf_path);
+//   MujocoSim mujoco_sim(mjcf_path);
   
-  // thread starting sequence: physics -> render
-  std::thread physicsthreadhandle(&MujocoSim::PhysicsThread, &mujoco_sim);
-  mj::Simulate* sim_ptr = mujoco_sim.getSimPtr();
-  sim_ptr->RenderLoop();
+//   // thread starting sequence: physics -> render
+//   std::thread physicsthreadhandle(&MujocoSim::PhysicsThread, &mujoco_sim);
+//   mj::Simulate* sim_ptr = mujoco_sim.getSimPtr();
+//   sim_ptr->RenderLoop();
 
-  // thread ending sequence: render -> physics
-  physicsthreadhandle.join();
+//   // thread ending sequence: render -> physics
+//   physicsthreadhandle.join();
   
-  return 0;
-}
+//   return 0;
+// }

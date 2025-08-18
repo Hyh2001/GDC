@@ -27,7 +27,7 @@ find_package(rclcpp REQUIRED)
 
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
-# find_package(pogox_communication REQUIRED)
+find_package(quadruped_msgs REQUIRED)
 
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 set(CMAKE_INSTALL_RPATH "${CMAKE_CURRENT_SOURCE_DIR}/lib;${CMAKE_CURRENT_SOURCE_DIR}/lib/mujoco_plugin")
@@ -41,14 +41,25 @@ if(NOT TARGET mujoco_sim)
 endif()
 
 # plugins 
-# add_library(elasticity_lib SHARED IMPORTED)
+# add_library(elasticity_lib  SHARED IMPORTED)
 # set_target_properties(elasticity_lib PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/lib/mujoco_plugin/libelasticity.so)
+file(GLOB SO_FILES "${CMAKE_CURRENT_SOURCE_DIR}/lib/mujoco_plugin/*.so")
+set (PLUGIN_LIBS "")
+foreach(SO_FILE ${SO_FILES})
+    get_filename_component(LIB_NAME ${SO_FILE} NAME_WE)
+    add_library(${LIB_NAME} SHARED IMPORTED)
+    set_target_properties(${LIB_NAME} PROPERTIES
+        IMPORTED_LOCATION "${SO_FILE}"
+    )
+    list(APPEND PLUGIN_LIBS ${LIB_NAME})  # Save the target name
+endforeach()
+
 
 
 file(GLOB_RECURSE source ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cc)
 add_executable(simulation ${source})
-target_link_libraries(simulation mujoco_sim glfw pthread rt ${CMAKE_DL_LIBS} elasticity_lib)
-ament_target_dependencies(simulation sensor_msgs rclcpp pogox_communication)
+target_link_libraries(simulation mujoco_sim glfw pthread rt ${CMAKE_DL_LIBS} ${PLUGIN_LIBS})
+ament_target_dependencies(simulation sensor_msgs rclcpp common_msgs quadruped_msgs)
 target_include_directories(simulation PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>)
