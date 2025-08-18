@@ -1,4 +1,0 @@
-<mujoco model="go2 flat terrain">
-    <include file="go2.xml"/>
-    <include file="../../terrain_description/mjcf/flat_ground.xml"/>
-</mujoco>

@@ -42,22 +42,22 @@
     <material name="white" rgba="1 1 1 1" />
     <material name="gray" rgba="0.671705 0.692426 0.774270 1" />
 
-    <mesh file="base_0.obj" />
-    <mesh file="base_1.obj" />
-    <mesh file="base_2.obj" />
-    <mesh file="base_3.obj" />
-    <mesh file="base_4.obj" />
-    <mesh file="hip_0.obj" />
-    <mesh file="hip_1.obj" />
-    <mesh file="thigh_0.obj" />
-    <mesh file="thigh_1.obj" />
-    <mesh file="thigh_mirror_0.obj" />
-    <mesh file="thigh_mirror_1.obj" />
-    <mesh file="calf_0.obj" />
-    <mesh file="calf_1.obj" />
-    <mesh file="calf_mirror_0.obj" />
-    <mesh file="calf_mirror_1.obj" />
-    <mesh file="foot.obj" />
+    <mesh file="assets/base_0.obj" />
+    <mesh file="assets/base_1.obj" />
+    <mesh file="assets/base_2.obj" />
+    <mesh file="assets/base_3.obj" />
+    <mesh file="assets/base_4.obj" />
+    <mesh file="assets/hip_0.obj" />
+    <mesh file="assets/hip_1.obj" />
+    <mesh file="assets/thigh_0.obj" />
+    <mesh file="assets/thigh_1.obj" />
+    <mesh file="assets/thigh_mirror_0.obj" />
+    <mesh file="assets/thigh_mirror_1.obj" />
+    <mesh file="assets/calf_0.obj" />
+    <mesh file="assets/calf_1.obj" />
+    <mesh file="assets/calf_mirror_0.obj" />
+    <mesh file="assets/calf_mirror_1.obj" />
+    <mesh file="assets/foot.obj" />
   </asset>
 
   <worldbody>
@@ -104,14 +104,11 @@
             <geom size="0.011 0.0325" pos="0.02 0 -0.148" quat="0.999688 0 0.0249974 0"
               type="cylinder" class="collision" />
             <geom pos="0 0 -0.213" mesh="foot" class="visual" material="black" />
-            <geom name="FL" class="foot" />
             <body name="FL_foot" pos="0 0 -0.213">
-              <!-- <inertial diaginertia="9.600000000000001e-06 9.600000000000001e-06 9.600000000000001e-06" mass="0.06" pos="0 0 0"/> -->
-              <body name="FL_foot_for_collision" pos="0 0 0">
-                <inertial diaginertia="1e-14 1e-14 1e-14" mass="1e-6" pos="0 0 0"/>
-                <geom class="collision" euler="0 0 0" pos="0 0 0" size="0.02" type="sphere"/>
-                <site name="FL_grf_sensor" pos="0 0 0" size="0.017" type="sphere"/>
-              </body>
+              <geom size="0.022" pos="-0.002 0 0" priority="1" condim="6"
+                friction="0.4 0.02 0.01"/> 
+              <inertial diaginertia="1e-14 1e-14 1e-14" mass="1e-6" pos="0 0 0"/>
+              <site name="FL_grf_sensor" pos="0 0 0" size="0.025" type="sphere"/>
             </body>
           </body>
         </body>
@@ -148,12 +145,10 @@
             <geom pos="0 0 -0.213" mesh="foot" class="visual" material="black" />
             <geom name="FR" class="foot" />
             <body name="FR_foot" pos="0 0 -0.213">
-              <!-- <inertial diaginertia="9.600000000000001e-06 9.600000000000001e-06 9.600000000000001e-06" mass="0.06" pos="0 0 0"/> -->
-              <body name="FR_foot_for_collision" pos="0 0 0">
-                <inertial diaginertia="1e-14 1e-14 1e-14" mass="1e-6" pos="0 0 0"/>
-                <geom class="collision" euler="0 0 0" pos="0 0 0" size="0.02" type="sphere"/>
-                <site name="FR_grf_sensor" pos="0 0 0" size="0.017" type="sphere"/>
-              </body>
+              <geom size="0.022" pos="-0.002 0 0" priority="1" condim="6"
+                friction="0.4 0.02 0.01"/> 
+              <inertial diaginertia="1e-14 1e-14 1e-14" mass="1e-6" pos="0 0 0"/>
+              <site name="FR_grf_sensor" pos="0 0 0" size="0.025" type="sphere"/>
             </body>
           </body>
         </body>
@@ -190,12 +185,10 @@
             <geom pos="0 0 -0.213" mesh="foot" class="visual" material="black" />
             <geom name="RL" class="foot" />
             <body name="RL_foot" pos="0 0 -0.213">
-              <!-- <inertial diaginertia="9.600000000000001e-06 9.600000000000001e-06 9.600000000000001e-06" mass="0.06" pos="0 0 0"/> -->
-              <body name="RL_foot_for_collision" pos="0 0 0">
-                <inertial diaginertia="1e-14 1e-14 1e-14" mass="1e-6" pos="0 0 0"/>
-                <geom class="collision" euler="0 0 0" pos="0 0 0" size="0.02" type="sphere"/>
-                <site name="RL_grf_sensor" pos="0 0 0" size="0.017" type="sphere"/>
-              </body>
+              <geom size="0.022" pos="-0.002 0 0" priority="1" condim="6"
+                friction="0.4 0.02 0.01"/> 
+              <inertial diaginertia="1e-14 1e-14 1e-14" mass="1e-6" pos="0 0 0"/>
+              <site name="RL_grf_sensor" pos="0 0 0" size="0.025" type="sphere"/>
             </body>
           </body>
         </body>
@@ -233,13 +226,11 @@
               type="cylinder" class="collision" />
             <geom pos="0 0 -0.213" mesh="foot" class="visual" material="black" />
             <geom name="RR" class="foot" />
-            <body name="RR_foot" pos="0 0 -0.213">
-              <!-- <inertial diaginertia="9.600000000000001e-06 9.600000000000001e-06 9.600000000000001e-06" mass="0.06" pos="0 0 0"/> -->
-              <body name="RR_foot_for_collision" pos="0 0 0">
-                <inertial diaginertia="1e-14 1e-14 1e-14" mass="1e-6" pos="0 0 0"/>
-                <geom class="collision" euler="0 0 0" pos="0 0 0" size="0.02" type="sphere"/>
-                <site name="RR_grf_sensor" pos="0 0 0" size="0.017" type="sphere"/>
-              </body>
+            <body name="RR_foot" pos="-0.002 0 -0.213"> <!-- 0-->
+              <geom size="0.022" pos="-0.002 0 0" priority="1" condim="6"
+                friction="0.4 0.02 0.01"/> 
+              <inertial diaginertia="1e-14 1e-14 1e-14" mass="1e-6" pos="0 0 0"/>
+              <site name="RR_grf_sensor" pos="0 0 0" size="0.025" type="sphere"/>
             </body>
           </body>
         </body>
@@ -263,6 +254,8 @@
   </actuator>
 
   <sensor>
+    <!--keep the order of the sensors for reading
+      FR -> FL -> RR -> RL-->
     <jointpos name="FR_hip_pos" joint="FR_hip_joint" />
     <jointpos name="FR_thigh_pos" joint="FR_thigh_joint" />
     <jointpos name="FR_calf_pos" joint="FR_calf_joint" />
@@ -305,10 +298,16 @@
     <framequat name="imu_quat" objtype="site" objname="imu" />
     <gyro name="imu_gyro" site="imu" />
     <accelerometer name="imu_acc" site="imu" />
+    <!--keep the relative order between these four sensors-->
+    <touch name="FR_contact_sensor" site="FR_grf_sensor"/>
+    <touch name="FL_contact_sensor" site="FL_grf_sensor"/>
+    <touch name="RR_contact_sensor" site="RR_grf_sensor"/>
+    <touch name="RL_contact_sensor" site="RL_grf_sensor"/>
     
     <!-- Ground Truth -->
     <framepos name="frame_pos" objtype="site" objname="imu" />
     <velocimeter name="frame_vel" site="imu"/>
+    <!--keep the relative order between these four sensors-->
     <force name="FR_grf" site="FR_grf_sensor"/>
     <force name="FL_grf" site="FL_grf_sensor"/>
     <force name="RR_grf" site="RR_grf_sensor"/>
