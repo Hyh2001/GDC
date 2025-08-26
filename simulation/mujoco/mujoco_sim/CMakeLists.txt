@@ -57,11 +57,6 @@ endforeach()
 
 
 file(GLOB_RECURSE source ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cc)
-# Remove missing files from source list
-list(REMOVE_ITEM source
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/robot_specific/pogox/pogox_sim.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/robot_specific/go2/go2_sim.cc
-)
 add_executable(simulation ${source})
 target_link_libraries(simulation mujoco_sim glfw pthread rt ${CMAKE_DL_LIBS} ${PLUGIN_LIBS})
 ament_target_dependencies(simulation sensor_msgs rclcpp common_msgs quadruped_msgs)
