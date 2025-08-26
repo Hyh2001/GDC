@@ -14,6 +14,8 @@
 
   <depend>quadruped_msgs</depend>
   <depend>humanoid_msgs</depend>
+  <depend>go2_description</depend>
+  <depend>terrain_description</depend>
 
   <export>
     <build_type>ament_cmake</build_type>

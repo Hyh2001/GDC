@@ -38,16 +38,32 @@ def delete_temp_mjcf(context, *args, **kwargs):
 
 def generate_launch_description():
 
+    # Declare launch arguments for robot_type and ground_truth
+    robot_type_arg = DeclareLaunchArgument(
+        'robot_type',
+        default_value='go2',
+        description='Type of robot to simulate'
+    )
+    ground_truth_arg = DeclareLaunchArgument(
+        'ground_truth',
+        default_value='false',
+        description='Include ground truth data (true/false)'
+    )
+
     create_temp_mjcf_action = OpaqueFunction(function=create_temp_mjcf)
 
     simulation_node = Node(
-            package='mujoco_sim',
-            executable='simulation',
-            arguments=[LaunchConfiguration('temp_mjcf_path')],  # if no mjcf file provided, GUI will prompt user to select one
-            name='simulation',
-            output='screen'
+        package='mujoco_sim',
+        executable='simulation',
+        arguments=[
+            LaunchConfiguration('temp_mjcf_path'),
+            LaunchConfiguration('robot_type'),
+            LaunchConfiguration('ground_truth')
+        ],
+        name='simulation',
+        output='screen'
     )
-    
+
     delete_file_handler = RegisterEventHandler(
         OnProcessExit(
             target_action=simulation_node,
@@ -58,7 +74,9 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
-        create_temp_mjcf_action, # Execute this first to create the file
+        robot_type_arg,
+        ground_truth_arg,
+        create_temp_mjcf_action,
         simulation_node,
         delete_file_handler
     ])
