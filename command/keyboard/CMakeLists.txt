@@ -7,9 +7,25 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(SDL REQUIRED)
+
+include_directories(include)
+include_directories(${SDL2_INCLUDE_DIRS})
+add_executable(keyboard src/keyboard.cpp)
+ament_target_dependencies(keyboard
+  rclcpp
+  std_msgs
+  sensor_msgs
+  SDL
+  )
+install(TARGETS
+  keyboard
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
