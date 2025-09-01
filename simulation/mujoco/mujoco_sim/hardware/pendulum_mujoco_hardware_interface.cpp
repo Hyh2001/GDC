@@ -1,4 +1,4 @@
-#include "robot_specific/pendulum/pendulum_hardware_interface.hpp"
+#include "include/pendulum_mujoco_hardware_interface.hpp"
 
 namespace mujoco_hardware_interface
 {
@@ -7,7 +7,7 @@ namespace mujoco_hardware_interface
     {
     }
 
-    hardware_interface::CallbackReturn PendulumMujocoHardwareInterface::on_configure(const hardware_interface::HardwareInfo & info)
+    hardware_interface::CallbackReturn PendulumMujocoHardwareInterface::on_configure(const rclcpp_lifecycle::State & previous_state)
     {
         // build threads for physics and rendering
         if(sim_ptr_){
@@ -33,7 +33,7 @@ namespace mujoco_hardware_interface
         
         return hardware_interface::CallbackReturn::SUCCESS;
     }            
-    hardware_interface::CallbackReturn PendulumMujocoHardwareInterface::on_shutdown(const hardware_interface::HardwareInfo & info)
+    hardware_interface::CallbackReturn PendulumMujocoHardwareInterface::on_shutdown(const rclcpp_lifecycle::State & previous_state)
     {
         stop_flag_ = true;
         if (renderthreadhandle_.joinable()) {
@@ -45,7 +45,7 @@ namespace mujoco_hardware_interface
         return hardware_interface::CallbackReturn::SUCCESS;
     }
 
-    hardware_interface::CallbackReturn PendulumMujocoHardwareInterface::on_cleanup(const hardware_interface::HardwareInfo & info)
+    hardware_interface::CallbackReturn PendulumMujocoHardwareInterface::on_cleanup(const rclcpp_lifecycle::State & previous_state)
     {
         stop_flag_ = true;
         if (renderthreadhandle_.joinable()) {
@@ -58,7 +58,7 @@ namespace mujoco_hardware_interface
     }
 
 
-    hardware_interface::CallbackReturn PendulumMujocoHardwareInterface::on_activate(const hardware_interface::HardwareInfo & info)
+    hardware_interface::CallbackReturn PendulumMujocoHardwareInterface::on_activate(const rclcpp_lifecycle::State & previous_state)
     {
         // resume physics thread
         stop_flag_ = false;
@@ -66,7 +66,7 @@ namespace mujoco_hardware_interface
         return hardware_interface::CallbackReturn::SUCCESS;
     }
 
-    hardware_interface::CallbackReturn PendulumMujocoHardwareInterface::on_deactivate(const hardware_interface::HardwareInfo & info)
+    hardware_interface::CallbackReturn PendulumMujocoHardwareInterface::on_deactivate(const rclcpp_lifecycle::State & previous_state)
     {
         // pause physics thread
         stop_flag_ = true;
@@ -139,3 +139,7 @@ namespace mujoco_hardware_interface
     }
 
 };
+
+#include "pluginlib/class_list_macros.hpp"
+PLUGINLIB_EXPORT_CLASS(mujoco_hardware_interface::PendulumMujocoHardwareInterface, 
+            hardware_interface::SystemInterface)

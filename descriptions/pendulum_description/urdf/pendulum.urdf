@@ -1,6 +1,26 @@
 <?xml version="1.0"?>
 <robot name="inverted_pendulum">
 
+  <ros2_control name="PendulumInterface" type="system">
+    <hardware>
+      <plugin>mujoco_sim/PendulumMujocoHardwareInterface</plugin>
+    </hardware>
+
+    <joint name="pivot">
+      <command_interface name="effort"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+      <state_interface name="effort"/>
+    </joint>
+
+    <sensor name="tip_sensor">
+      <state_interface name="y"/>
+      <state_interface name="z"/>
+      <state_interface name="vy"/>
+      <state_interface name="vz"/>
+    </sensor>
+
+  </ros2_control> 
   <!-- Base Link (Fixed to world) -->
   <link name="base_link">
     <inertial>

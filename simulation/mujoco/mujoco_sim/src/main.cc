@@ -4,7 +4,7 @@
 #include <stdexcept>
 
 #include "robot_specific/go2/go2_sim_node.hpp"
-#include "robot_specific/pogox/pogox_sim_node.hpp"
+// #include "robot_specific/pogox/pogox_sim_node.hpp"
 
 using namespace std::chrono_literals;
 using namespace mujoco_sim;

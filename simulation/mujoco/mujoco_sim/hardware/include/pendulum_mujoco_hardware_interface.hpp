@@ -14,11 +14,11 @@ namespace mujoco_hardware_interface
     public: 
         PendulumMujocoHardwareInterface();
 
-        hardware_interface::CallbackReturn on_configure(const hardware_interface::HardwareInfo & info) override;
-        hardware_interface::CallbackReturn on_cleanup(const hardware_interface::HardwareInfo & info) override;
-        hardware_interface::CallbackReturn on_shutdown(const hardware_interface::HardwareInfo & info) override;
-        hardware_interface::CallbackReturn on_activate(const hardware_interface::HardwareInfo & info) override;
-        hardware_interface::CallbackReturn on_deactivate(const hardware_interface::HardwareInfo & info) override;
+        hardware_interface::CallbackReturn on_configure(const rclcpp_lifecycle::State & previous_state) override;
+        hardware_interface::CallbackReturn on_cleanup(const rclcpp_lifecycle::State & previous_state) override;
+        hardware_interface::CallbackReturn on_shutdown(const rclcpp_lifecycle::State & previous_state) override;
+        hardware_interface::CallbackReturn on_activate(const rclcpp_lifecycle::State & previous_state) override;
+        hardware_interface::CallbackReturn on_deactivate(const rclcpp_lifecycle::State & previous_state) override;
         // hardware_interface::CallbackReturn on_error(const hardware_interface::HardwareInfo & info) override;
         hardware_interface::CallbackReturn on_init(const hardware_interface::HardwareInfo & info) override;
         std::vector<hardware_interface::StateInterface> export_state_interfaces() override;
