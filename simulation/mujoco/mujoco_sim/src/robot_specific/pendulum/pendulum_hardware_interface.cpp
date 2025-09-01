@@ -1,4 +1,4 @@
-#include "robot_specific/pendulum/pendulum_mujoco_hardware_interface.hpp"
+#include "robot_specific/pendulum/pendulum_hardware_interface.hpp"
 
 namespace mujoco_hardware_interface
 {
