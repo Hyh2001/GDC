@@ -41,7 +41,7 @@ namespace hardware_interfaces
         rclcpp::Node::SharedPtr node_ptr_ = nullptr;
         rclcpp::Subscription<pendulum_msgs::msg::LowState>::SharedPtr LowState_subscriber_ = nullptr;
         rclcpp::Publisher<pendulum_msgs::msg::LowCmd>::SharedPtr LowCmd_publisher_ = nullptr;
-        rclcpp::Subscription<pendulum_msgs::msg::PendulumEst>::SharedPtr estimation_subscriber_ = nullptr;
+        rclcpp::Subscription<pendulum_msgs::msg::PendulumEst>::SharedPtr PendulumEst_subscriber_ = nullptr;
     }; 
 
 }; 

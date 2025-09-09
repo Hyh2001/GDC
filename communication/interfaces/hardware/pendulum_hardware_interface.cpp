@@ -14,12 +14,24 @@ namespace hardware_interfaces
         // create the node
         node_ptr_ = rclcpp::Node::make_shared("pendulum_hardware_interface");
         LowState_subscriber_ = node_ptr_->create_subscription<pendulum_msgs::msg::LowState>(
-            "/pendulum/sensor_state", 10,
+            "/pendulum/low_state", 10,
             [this](const pendulum_msgs::msg::LowState::SharedPtr msg) {
                     pivot_position_ = msg->motor_state.q;
                     pivot_velocity_ = msg->motor_state.dq;
                     pivot_effort_ = msg->motor_state.tau;
             });
+        PendulumEst_subscriber_ = node_ptr_->create_subscription<pendulum_msgs::msg::PendulumEst>(
+            "/pendulum/pendulum_est", 10,
+            [this](const pendulum_msgs::msg::PendulumEst::SharedPtr msg) {
+                    pivot_position_ = msg->motor_state.q;
+                    pivot_velocity_ = msg->motor_state.dq;
+                    pivot_effort_ = msg->motor_state.tau;
+                    tip_sensor_y_ = msg->tip_state[0];
+                    tip_sensor_z_ = msg->tip_state[1];
+                    tip_sensor_vy_ = msg->tip_state[2];
+                    tip_sensor_vz_ = msg->tip_state[3];
+            });
+        LowCmd_publisher_ = node_ptr_->create_publisher<pendulum_msgs::msg::LowCmd>("/pendulum/low_cmd", 10);
         return hardware_interface::CallbackReturn::SUCCESS;
     }        
 
