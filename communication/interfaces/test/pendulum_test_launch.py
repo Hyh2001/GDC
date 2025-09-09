@@ -17,8 +17,8 @@ def generate_launch_description():
 
     # Load ros2_control config YAML
     config_file = os.path.join(
-        get_package_share_directory("mujoco_sim"),
-        "config",
+        get_package_share_directory("interfaces"),
+        "test",
         "pendulum_config.yaml"
     )
     
@@ -40,12 +40,7 @@ def generate_launch_description():
         parameters=[config_file],
         output="screen"
     )
-    
-    # joint_state_broadcaster_spawner = Node(
-    #     package="controller_manager",
-    #     executable="spawner",
-    #     arguments=["joint_state_broadcaster"],
-    # )
+
 
     return LaunchDescription([
         ros2_control_node,

@@ -3,9 +3,8 @@
 
   <ros2_control name="PendulumInterface" type="system">
     <hardware>
-      <plugin>mujoco_hardware_interface/PendulumMujocoHardwareInterface</plugin>
-      <param name="mjcf_path">pendulum_description/mjcf/pendulum.xml</param> 
-      <!-- <param name="mjcf_path">go2_description/mjcf/go2.xml</param>  -->
+      <plugin>hardware_interfaces/PendulumHardwareInterface</plugin>
+        <param name="if_ground_truth">1</param>
     </hardware>
 
     <joint name="pivot">

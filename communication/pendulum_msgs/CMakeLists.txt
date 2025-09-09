@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(humanoid_msgs)
+project(pendulum_msgs)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -16,6 +16,7 @@ find_package(rosidl_default_generators REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}  
   msg/LowCmd.msg
   msg/LowState.msg
+  msg/PendulumEst.msg
 DEPENDENCIES std_msgs sensor_msgs geometry_msgs common_msgs)
 ament_export_dependencies(rosidl_default_runtime)
 

@@ -1,0 +1,7 @@
+<library path="hardware_interfaces">
+  <class 
+        name="hardware_interfaces/PendulumHardwareInterface"
+        type="hardware_interfaces::PendulumHardwareInterface"
+        base_class_type="hardware_interface::SystemInterface">
+  </class>
+</library>

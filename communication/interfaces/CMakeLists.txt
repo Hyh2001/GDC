@@ -16,32 +16,33 @@ find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(quadruped_msgs REQUIRED)
 find_package(common_msgs REQUIRED)
+find_package(pendulum_msgs REQUIRED)
 # hardware interfaces
-add_library(pendulum_mujoco_hardware_interface SHARED
-        hardware/pendulum_mujoco_hardware_interface.cpp
+add_library(hardware_interfaces SHARED
+        hardware/pendulum_hardware_interface.cpp
         ${source})
-target_include_directories(pendulum_mujoco_hardware_interface PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+target_include_directories(hardware_interfaces PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/hardware/include>
         $<INSTALL_INTERFACE:include>)
-ament_target_dependencies(pendulum_mujoco_hardware_interface PUBLIC 
+ament_target_dependencies(hardware_interfaces PUBLIC 
         hardware_interface
         pluginlib
         rclcpp
         rclcpp_lifecycle
         sensor_msgs 
         common_msgs 
-        quadruped_msgs)
-target_link_libraries(pendulum_mujoco_hardware_interface PUBLIC mujoco_sim glfw pthread rt ${CMAKE_DL_LIBS} ${PLUGIN_LIBS})
+        quadruped_msgs
+        pendulum_msgs
+)
 pluginlib_export_plugin_description_file(hardware_interface
-        ros2_control_mujoco_sim.xml)
-install(TARGETS pendulum_mujoco_hardware_interface
+        hardware_config.xml)
+install(TARGETS hardware_interfaces
   EXPORT export_${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
 )
-ament_export_libraries(pendulum_mujoco_hardware_interface)
+ament_export_libraries(hardware_interfaces)
 ament_export_targets(
   export_${PROJECT_NAME}
 )
