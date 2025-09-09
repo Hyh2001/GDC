@@ -1,9 +1,0 @@
-<library path="mujoco_sim">
-  <!--pendulum-->
-  <class name="mujoco_sim/PendulumMujocoHardwareInterface"
-         type="mujoco_hardware_interface::PendulumMujocoHardwareInterface"
-         base_class_type="hardware_interface::SystemInterface">
-  </class>
-
-
-</library>

@@ -43,9 +43,6 @@ int main(int argc, char** argv) {
         }
         else if(ground_truth){
             // auto mujoco_ros2_node_ptr = std::make_shared<Go2SimGroundTruth>(sim_ptr);
-            // auto spin_func = [](std::shared_ptr<Go2SimGroundTruth> node_ptr){
-            //     rclcpp::spin(node_ptr); // spin constantly, the message frequencey is set based on timmer;
-            // };
             throw std::logic_error("Ground truth simulation not implemented for " + robot_type);
         }
         else{

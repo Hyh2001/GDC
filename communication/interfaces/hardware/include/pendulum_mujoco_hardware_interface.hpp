@@ -2,6 +2,7 @@
 #define PENDULUM_HARDWARE_INTERFACE_HPP
 
 #include <thread>
+#include "rclcpp/rclcpp.hpp"
 
 #include "hardware_interface/system_interface.hpp"
 #include "mujoco_sim.h"
@@ -33,12 +34,20 @@ namespace mujoco_hardware_interface
     protected:
         // simulation related
         std::string mjcf_path_;
-        MujocoSim sim_;
+        std::unique_ptr<MujocoSim> sim_;
         mj::Simulate* sim_ptr_;
         std::thread physicsthreadhandle_;
         std::thread renderthreadhandle_;
         std::atomic<bool> stop_flag_{false};
-    
+
+        double pivot_position_ = 0.0;
+        double pivot_velocity_ = 0.0;
+        double pivot_effort_ = 0.0;
+        double tip_sensor_y_ = 0.0;
+        double tip_sensor_z_ = 0.0;
+        double tip_sensor_vy_ = 0.0;
+        double tip_sensor_vz_ = 0.0;
+        double pivot_effort_command_ = 0.0;
     }; 
 
 }; 

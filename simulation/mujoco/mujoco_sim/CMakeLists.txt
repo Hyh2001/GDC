@@ -18,9 +18,6 @@ list(APPEND ${PROJECT_NAME}_CONFIG_EXTRAS
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(hardware_interface REQUIRED)
-find_package(pluginlib REQUIRED)
-find_package(rclcpp_lifecycle REQUIRED)
 
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
@@ -51,27 +48,6 @@ foreach(SO_FILE ${SO_FILES})
     list(APPEND PLUGIN_LIBS ${LIB_NAME})  # Save the target name
 endforeach()
 
-# hardware interfaces
-add_library(pendulum_mujoco_hardware_interface SHARED
-        hardware/pendulum_mujoco_hardware_interface.cpp)
-target_include_directories(pendulum_mujoco_hardware_interface PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/hardware/include>
-        $<INSTALL_INTERFACE:include>)
-ament_target_dependencies(pendulum_mujoco_hardware_interface PUBLIC 
-        hardware_interface
-        pluginlib
-        rclcpp
-        rclcpp_lifecycle)
-pluginlib_export_plugin_description_file(hardware_interface
-        ros2_control_mujoco_sim.xml)
-install(
-        DIRECTORY hardware/include/
-        DESTINATION include/
-)
-ament_export_libraries(pendulum_mujoco_hardware_interface)
-
-
 file(GLOB_RECURSE source ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cc)
 add_executable(simulation ${source})
 target_link_libraries(simulation mujoco_sim glfw pthread rt ${CMAKE_DL_LIBS} ${PLUGIN_LIBS})
@@ -101,6 +77,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 install(DIRECTORY 
         launch 
+        config
         DESTINATION share/${PROJECT_NAME}/
 )
 

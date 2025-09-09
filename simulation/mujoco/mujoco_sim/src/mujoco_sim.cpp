@@ -384,6 +384,7 @@ void MujocoSim::PhysicsLoop(mj::Simulate& sim) {
         }
       }
     }  // release std::lock_guard<std::mutex>
+    // mju_warning("physics loop"); 
   }
 }
 

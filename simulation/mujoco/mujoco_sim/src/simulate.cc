@@ -2668,6 +2668,7 @@ void Simulate::RenderLoop() {
   frames_ = 0;
   last_fps_update_ = mj::Simulate::Clock::now();
 
+
   // run event loop
   while (!this->platform_ui->ShouldCloseWindow() && !this->exitrequest.load()) {
     {
@@ -2725,6 +2726,7 @@ void Simulate::RenderLoop() {
       fps_ = frames_ / interval;
       frames_ = 0;
     }
+    // mju_warning("render loop"); 
   }
 
   const MutexLock lock(this->mtx);
