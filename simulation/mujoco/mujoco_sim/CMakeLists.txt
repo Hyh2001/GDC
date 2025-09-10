@@ -18,6 +18,7 @@ list(APPEND ${PROJECT_NAME}_CONFIG_EXTRAS
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(pluginlib REQUIRED)
 
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
@@ -34,9 +35,40 @@ if(NOT TARGET mujoco_sim)
   set_target_properties(mujoco_sim PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/lib/libmujoco.so)
 endif()
 
-# plugins 
-# add_library(elasticity_lib  SHARED IMPORTED)
-# set_target_properties(elasticity_lib PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/lib/mujoco_plugin/libelasticity.so)
+# ros2 node plugins
+file(GLOB_RECURSE plugin_source 
+        ${CMAKE_CURRENT_SOURCE_DIR}/plugins/*.cpp 
+        ${CMAKE_CURRENT_SOURCE_DIR}/plugins/*.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/plugins/*.hpp
+)
+add_library(mujoco_sim_node_plugins SHARED ${plugin_source})
+ament_target_dependencies(mujoco_sim_node_plugins 
+        rclcpp 
+        pluginlib
+        sensor_msgs
+        common_msgs 
+        quadruped_msgs)
+target_include_directories(mujoco_sim_node_plugins PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/plugins/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
+pluginlib_export_plugin_description_file(mujoco_sim mujoco_sim_plugins.xml)
+install(TARGETS mujoco_sim_node_plugins
+    EXPORT export_mujoco_sim_node_plugins
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION bin
+)
+ament_export_libraries(mujoco_sim_node_plugins)
+ament_export_targets(
+  export_mujoco_sim_node_plugins
+)
+# install (FILES mujoco_sim_plugins.xml
+#     DESTINATION share/${PROJECT_NAME}
+# )
+
+# mujoco plugins 
 file(GLOB SO_FILES "${CMAKE_CURRENT_SOURCE_DIR}/lib/mujoco_plugin/*.so")
 set (PLUGIN_LIBS "")
 foreach(SO_FILE ${SO_FILES})
@@ -50,11 +82,12 @@ endforeach()
 
 file(GLOB_RECURSE source ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cc)
 add_executable(simulation ${source})
-target_link_libraries(simulation mujoco_sim glfw pthread rt ${CMAKE_DL_LIBS} ${PLUGIN_LIBS})
-ament_target_dependencies(simulation sensor_msgs rclcpp common_msgs quadruped_msgs)
+target_link_libraries(simulation mujoco_sim_node_plugins mujoco_sim glfw pthread rt ${CMAKE_DL_LIBS} ${PLUGIN_LIBS})
+ament_target_dependencies(simulation pluginlib rclcpp)
 target_include_directories(simulation PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>)
+
 
 
 list(APPEND MUJOCO_CXX_FLAGS
@@ -79,6 +112,10 @@ install(DIRECTORY
         launch 
         config
         DESTINATION share/${PROJECT_NAME}/
+)
+
+install(DIRECTORY plugins/include/
+        DESTINATION include/
 )
 
 install(TARGETS simulation

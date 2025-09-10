@@ -1,8 +1,8 @@
-#include "robot_specific/go2/go2_sim_node.hpp"
+#include "include/go2_sim_node.hpp"
 
 namespace mujoco_sim{ 
 
-Go2SimNode::Go2SimNode(mj::Simulate *sim) : Node("go2_sim"), sim_(sim) {
+Go2SimNode::Go2SimNode() : MujocoSimNodeBase("go2_sim"){
     auto qos = rclcpp::QoS(rclcpp::KeepLast(2), rmw_qos_profile_sensor_data);
 
     cmd_sub_ptr_ = this->create_subscription<quadruped_msgs::msg::LowCmd>(
@@ -101,10 +101,8 @@ void Go2SimNode::callback_low_cmd(const quadruped_msgs::msg::LowCmd::SharedPtr m
     }
 }
 
-
-
-
-
-
-
 }
+
+#include "pluginlib/class_list_macros.hpp"
+PLUGINLIB_EXPORT_CLASS(mujoco_sim::Go2SimNode, mujoco_sim::MujocoSimNodeBase)
+// PLUGINLIB_EXPORT_CLASS(mujoco_sim::Go2SimGroundTruth, mujoco_sim::MujocoSimNodeBase)

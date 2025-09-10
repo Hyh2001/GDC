@@ -1,0 +1,5 @@
+<library path="mujoco_sim_node_plugins">
+  <class name="mujoco_sim::Go2SimNode"
+         type="mujoco_sim::Go2SimNode"
+         base_class_type="mujoco_sim::MujocoSimNodeBase"/>
+</library>

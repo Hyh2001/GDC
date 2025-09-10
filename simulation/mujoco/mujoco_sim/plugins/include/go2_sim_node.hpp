@@ -7,8 +7,9 @@
 #include "quadruped_msgs/msg/low_cmd.hpp"
 #include "quadruped_msgs/msg/quad_est.hpp"
 
-#include "../../array_safety.h"
-#include "../../simulate.h"
+#include "array_safety.h"
+#include "simulate.h"
+#include "mujoco_sim_node_base.hpp"
 
 using namespace std::chrono_literals; 
 
@@ -16,18 +17,16 @@ namespace mujoco_sim{
 
 namespace mj = mujoco;
 
-class Go2SimNode : public rclcpp::Node{
+class Go2SimNode : public MujocoSimNodeBase{
 public:
     // constructor of the node
-    Go2SimNode(mj::Simulate *sim);
+    Go2SimNode();
 
     void reset_params();
 
 protected: 
     void callback_low_state();
     void callback_low_cmd(const quadruped_msgs::msg::LowCmd::SharedPtr msg);
-
-    mj::Simulate *sim_;
 
     std::vector<rclcpp::TimerBase::SharedPtr> timers_;
     rclcpp::Subscription<quadruped_msgs::msg::LowCmd>::SharedPtr cmd_sub_ptr_;
@@ -51,7 +50,8 @@ protected:
 
 class Go2SimGroundTruth : public Go2SimNode{
 public:
-    Go2SimGroundTruth(mj::Simulate *sim);
+
+    Go2SimGroundTruth();
 
     void reset_params();
 
@@ -62,4 +62,5 @@ protected:
 
 
 } // namespace mujoco_sim
+
 #endif 
