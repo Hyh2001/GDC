@@ -5,6 +5,7 @@
 #include "rclcpp/rclcpp.hpp"
 
 #include "hardware_interface/system_interface.hpp"
+#include "realtime_tools/realtime_publisher.hpp"
 
 #include "pendulum_msgs/msg/low_state.hpp"
 #include "pendulum_msgs/msg/low_cmd.hpp"
@@ -39,9 +40,11 @@ namespace hardware_interfaces
         double pivot_effort_command_ = 0.0;
     
         rclcpp::Node::SharedPtr node_ptr_ = nullptr;
+        rclcpp::executors::SingleThreadedExecutor executor_;
         rclcpp::Subscription<pendulum_msgs::msg::LowState>::SharedPtr LowState_subscriber_ = nullptr;
         rclcpp::Publisher<pendulum_msgs::msg::LowCmd>::SharedPtr LowCmd_publisher_ = nullptr;
-        rclcpp::Subscription<pendulum_msgs::msg::PendulumEst>::SharedPtr PendulumEst_subscriber_ = nullptr;
+        realtime_tools::RealtimePublisher<pendulum_msgs::msg::LowCmd>::SharedPtr realtime_LowCmd_publisher_ = nullptr;
+        // rclcpp::Subscription<pendulum_msgs::msg::PendulumEst>::SharedPtr PendulumEst_subscriber_ = nullptr;
     }; 
 
 }; 

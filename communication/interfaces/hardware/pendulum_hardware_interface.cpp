@@ -20,18 +20,20 @@ namespace hardware_interfaces
                     pivot_velocity_ = msg->motor_state.dq;
                     pivot_effort_ = msg->motor_state.tau;
             });
-        PendulumEst_subscriber_ = node_ptr_->create_subscription<pendulum_msgs::msg::PendulumEst>(
-            "/pendulum/pendulum_est", 10,
-            [this](const pendulum_msgs::msg::PendulumEst::SharedPtr msg) {
-                    pivot_position_ = msg->motor_state.q;
-                    pivot_velocity_ = msg->motor_state.dq;
-                    pivot_effort_ = msg->motor_state.tau;
-                    tip_sensor_y_ = msg->tip_state[0];
-                    tip_sensor_z_ = msg->tip_state[1];
-                    tip_sensor_vy_ = msg->tip_state[2];
-                    tip_sensor_vz_ = msg->tip_state[3];
-            });
+        // PendulumEst_subscriber_ = node_ptr_->create_subscription<pendulum_msgs::msg::PendulumEst>(
+        //     "/pendulum/pendulum_est", 10,
+        //     [this](const pendulum_msgs::msg::PendulumEst::SharedPtr msg) {
+        //             pivot_position_ = msg->motor_state.q;
+        //             pivot_velocity_ = msg->motor_state.dq;
+        //             pivot_effort_ = msg->motor_state.tau;
+        //             tip_sensor_y_ = msg->tip_state[0];
+        //             tip_sensor_z_ = msg->tip_state[1];
+        //             tip_sensor_vy_ = msg->tip_state[2];
+        //             tip_sensor_vz_ = msg->tip_state[3];
+        //     });
         LowCmd_publisher_ = node_ptr_->create_publisher<pendulum_msgs::msg::LowCmd>("/pendulum/low_cmd", 10);
+        realtime_LowCmd_publisher_ = std::make_unique<realtime_tools::RealtimePublisher<pendulum_msgs::msg::LowCmd>>(LowCmd_publisher_);
+        executor_.add_node(node_ptr_);
         return hardware_interface::CallbackReturn::SUCCESS;
     }        
 
@@ -82,13 +84,21 @@ namespace hardware_interfaces
 
     hardware_interface::return_type PendulumHardwareInterface::read(const rclcpp::Time & time, const rclcpp::Duration & period)
     {
-        // TODO: implement reading from hardware
+        executor_.spin_some(std::chrono::milliseconds(1));
         return hardware_interface::return_type::OK;
     }
 
     hardware_interface::return_type PendulumHardwareInterface::write(const rclcpp::Time & time, const rclcpp::Duration & period)
     {
-        // TODO: implement writing to hardware
+        auto msg = pendulum_msgs::msg::LowCmd();
+        msg.header.stamp = node_ptr_->now();
+        msg.motor_cmd.kp = 0.0;
+        msg.motor_cmd.kd = 0.0;
+        msg.motor_cmd.tau = pivot_effort_command_;
+        realtime_LowCmd_publisher_->lock();
+        realtime_LowCmd_publisher_->msg_ = msg;
+        realtime_LowCmd_publisher_->unlockAndPublish();
+        // LowCmd_publisher_->publish(msg);
         return hardware_interface::return_type::OK;
     }
 
