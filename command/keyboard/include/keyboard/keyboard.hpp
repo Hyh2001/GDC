@@ -2,14 +2,23 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <vector>
+#include <algorithm>
 #include <linux/input.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <sys/ioctl.h>
+#include <dirent.h>
+#include <cstring>
 
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/joy.hpp"
 
 using namespace std::chrono_literals;
+
+// Helper macros for bit testing
+#define test_bit(bit, array) (array[bit / (8*sizeof(unsigned long))] & (1UL << (bit % (8*sizeof(unsigned long)))))
+#define NLONGS(x) (((x) + 8*sizeof(unsigned long) - 1) / (8*sizeof(unsigned long)))
 
 class KeyboardNode : public rclcpp::Node
 {
@@ -19,14 +28,15 @@ public:
     pub_ = this->create_publisher<sensor_msgs::msg::Joy>("joy", 10);
     timer = this->create_wall_timer(20ms, std::bind(&KeyboardNode::timer_callback, this));
 
-    // Open keyboard input device
-    keyboard_fd_ = open("/dev/input/by-path/platform-i8042-serio-0-event-kbd", O_RDONLY | O_NONBLOCK);
-    if (keyboard_fd_ == -1) {
-      // Try alternative path
-      keyboard_fd_ = open("/dev/input/event0", O_RDONLY | O_NONBLOCK);
+    // Auto-detect keyboard device
+    std::string keyboard_path = findKeyboardDevice();
+    if (!keyboard_path.empty()) {
+      keyboard_fd_ = open(keyboard_path.c_str(), O_RDONLY | O_NONBLOCK);
       if (keyboard_fd_ == -1) {
-        RCLCPP_ERROR(this->get_logger(), "Cannot open keyboard device. Run with sudo or add user to input group.");
+        RCLCPP_ERROR(this->get_logger(), "Cannot open keyboard device %s. Run with sudo or add user to input group.", keyboard_path.c_str());
       }
+    } else {
+      RCLCPP_ERROR(this->get_logger(), "No keyboard device found!");
     }
 
     // states
@@ -57,6 +67,93 @@ public:
     if (keyboard_fd_ != -1) {
       close(keyboard_fd_);
     }
+  }
+
+private:
+  // Function to automatically find keyboard device
+  std::string findKeyboardDevice() {
+    DIR *dir = opendir("/dev/input");
+    if (!dir) {
+      RCLCPP_ERROR(this->get_logger(), "Cannot open /dev/input directory");
+      return "";
+    }
+
+    struct dirent *entry;
+    std::vector<std::pair<std::string, int>> candidates; // device_path, capability_score
+    
+    while ((entry = readdir(dir)) != nullptr) {
+      if (strncmp(entry->d_name, "event", 5) == 0) {
+        std::string device_path = "/dev/input/" + std::string(entry->d_name);
+        
+        int fd = open(device_path.c_str(), O_RDONLY);
+        if (fd < 0) continue;
+
+        char name[256] = "Unknown";
+        ioctl(fd, EVIOCGNAME(sizeof(name)), name);
+        
+        // Check if this device has keyboard capabilities
+        unsigned long evbit[NLONGS(EV_MAX)] = {0};
+        unsigned long keybit[NLONGS(KEY_MAX)] = {0};
+        
+        if (ioctl(fd, EVIOCGBIT(0, EV_MAX), evbit) >= 0 &&
+            ioctl(fd, EVIOCGBIT(EV_KEY, KEY_MAX), keybit) >= 0) {
+          
+          // Check if device supports key events
+          if (test_bit(EV_KEY, evbit)) {
+            // Check if it has full keyboard layout (not just media keys or mouse buttons)
+            bool has_letters = test_bit(KEY_A, keybit) && test_bit(KEY_S, keybit) && 
+                              test_bit(KEY_D, keybit) && test_bit(KEY_F, keybit);
+            bool has_numbers = test_bit(KEY_1, keybit) && test_bit(KEY_2, keybit);
+            bool has_space = test_bit(KEY_SPACE, keybit);
+            bool has_arrows = test_bit(KEY_LEFT, keybit) && test_bit(KEY_RIGHT, keybit) &&
+                             test_bit(KEY_UP, keybit) && test_bit(KEY_DOWN, keybit);
+            
+            // Avoid mouse devices and touchpads
+            bool has_mouse_buttons = test_bit(BTN_LEFT, keybit) || test_bit(BTN_RIGHT, keybit);
+            
+            if (has_letters && has_numbers && has_space && has_arrows && !has_mouse_buttons) {
+              // Calculate capability score to prefer more complete keyboards
+              int score = 0;
+              
+              // Check for more keyboard keys to determine the "main" keyboard
+              if (test_bit(KEY_ESC, keybit)) score += 10;
+              if (test_bit(KEY_TAB, keybit)) score += 10;
+              if (test_bit(KEY_ENTER, keybit)) score += 10;
+              if (test_bit(KEY_LEFTSHIFT, keybit)) score += 10;
+              if (test_bit(KEY_LEFTCTRL, keybit)) score += 10;
+              if (test_bit(KEY_LEFTALT, keybit)) score += 10;
+              
+              // Check for function keys (main keyboards have these)
+              if (test_bit(KEY_F1, keybit) && test_bit(KEY_F12, keybit)) score += 20;
+              
+              // Check for numeric keypad (main keyboards often have these)
+              if (test_bit(KEY_KP0, keybit) && test_bit(KEY_KP9, keybit)) score += 15;
+              
+              RCLCPP_INFO(this->get_logger(), "Found keyboard candidate: %s - %s (score: %d)", 
+                         device_path.c_str(), name, score);
+              candidates.push_back({device_path, score});
+            } else {
+              RCLCPP_DEBUG(this->get_logger(), "Skipping device: %s - %s (not a full keyboard)", 
+                          device_path.c_str(), name);
+            }
+          }
+        }
+        close(fd);
+      }
+    }
+    closedir(dir);
+    
+    // Sort candidates by score (highest first) and return the best one
+    if (!candidates.empty()) {
+      std::sort(candidates.begin(), candidates.end(), 
+                [](const auto& a, const auto& b) { return a.second > b.second; });
+      
+      RCLCPP_INFO(this->get_logger(), "Selected keyboard device: %s (best score: %d)", 
+                  candidates[0].first.c_str(), candidates[0].second);
+      return candidates[0].first;
+    }
+    
+    return "";
   }
 
 private:
@@ -103,39 +200,39 @@ private:
           case KEY_J: if (pressed) j_pressed_ = true; if (released) j_pressed_ = false; break;
           case KEY_K: if (pressed) k_pressed_ = true; if (released) k_pressed_ = false; break;
           case KEY_L: if (pressed) l_pressed_ = true; if (released) l_pressed_ = false; break;
-          case KEY_Z: if (pressed) z_pressed_ = true; if (released) z_pressed_ = false; break;
-          case KEY_X: if (pressed) x_pressed_ = true; if (released) x_pressed_ = false; break;
-          case KEY_SPACE: if (pressed) button_[0] = true; if (released) button_[0] = false; break;
-          case KEY_LEFTCTRL: if (pressed) button_[1] = true; if (released) button_[1] = false; break;
-          case KEY_LEFTALT: if (pressed) button_[2] = true; if (released) button_[2] = false; break;
-          case KEY_LEFTSHIFT: if (pressed) button_[3] = true; if (released) button_[3] = false; break;
-          case KEY_TAB: if (pressed) button_[4] = true; if (released) button_[4] = false; break;
-          case KEY_F1: if (pressed) button_[5] = true; if (released) button_[5] = false; break;
-          case KEY_ENTER: if (pressed) button_[6] = true; if (released) button_[6] = false; break;
-          case KEY_C: if (pressed) button_[7] = true; if (released) button_[7] = false; break;
-          case KEY_V: if (pressed) button_[8] = true; if (released) button_[8] = false; break;
-          case KEY_Q: if (pressed) button_[9] = true; if (released) button_[9] = false; break;
-          case KEY_E: if (pressed) button_[10] = true; if (released) button_[10] = false; break;
-          case KEY_T: if (pressed) button_[11] = true; if (released) button_[11] = false; break;
-          case KEY_G: if (pressed) button_[12] = true; if (released) button_[12] = false; break;
-          case KEY_F: if (pressed) button_[13] = true; if (released) button_[13] = false; break;
-          case KEY_H: if (pressed) button_[14] = true; if (released) button_[14] = false; break;
-          case KEY_M: if (pressed) button_[15] = true; if (released) button_[15] = false; break;
-          case KEY_1: if (pressed) button_[16] = true; if (released) button_[16] = false; break;
-          case KEY_2: if (pressed) button_[17] = true; if (released) button_[17] = false; break;
-          case KEY_3: if (pressed) button_[18] = true; if (released) button_[18] = false; break;
-          case KEY_4: if (pressed) button_[19] = true; if (released) button_[19] = false; break;
-          case KEY_5: if (pressed) button_[20] = true; if (released) button_[20] = false; break;
+          case KEY_Q: if (pressed) z_pressed_ = true; if (released) z_pressed_ = false; break;  // Left Trigger
+          case KEY_E: if (pressed) x_pressed_ = true; if (released) x_pressed_ = false; break;  // Right Trigger
+          case KEY_SPACE: if (pressed) button_[0] = true; if (released) button_[0] = false; break;  // A Button
+          case KEY_X: if (pressed) button_[1] = true; if (released) button_[1] = false; break;     // B Button  
+          case KEY_Z: if (pressed) button_[2] = true; if (released) button_[2] = false; break;     // X Button
+          case KEY_C: if (pressed) button_[3] = true; if (released) button_[3] = false; break;     // Y Button
+          case KEY_TAB: if (pressed) button_[4] = true; if (released) button_[4] = false; break;   // Left Bumper
+          case KEY_R: if (pressed) button_[5] = true; if (released) button_[5] = false; break;     // Right Bumper
+          case KEY_LEFTSHIFT: if (pressed) button_[6] = true; if (released) button_[6] = false; break; // Back/Select
+          case KEY_ENTER: if (pressed) button_[7] = true; if (released) button_[7] = false; break; // Start
+          case KEY_F: if (pressed) button_[8] = true; if (released) button_[8] = false; break;     // Left Stick Click
+          case KEY_V: if (pressed) button_[9] = true; if (released) button_[9] = false; break;     // Right Stick Click
+          case KEY_T: if (pressed) button_[10] = true; if (released) button_[10] = false; break;   // Extra Button
+          case KEY_G: if (pressed) button_[11] = true; if (released) button_[11] = false; break;   // Extra Button
+          case KEY_H: if (pressed) button_[12] = true; if (released) button_[12] = false; break;   // Extra Button
+          case KEY_M: if (pressed) button_[13] = true; if (released) button_[13] = false; break;   // Extra Button
+          case KEY_1: if (pressed) button_[14] = true; if (released) button_[14] = false; break;   // D-Pad Up
+          case KEY_2: if (pressed) button_[15] = true; if (released) button_[15] = false; break;   // D-Pad Down
+          case KEY_3: if (pressed) button_[16] = true; if (released) button_[16] = false; break;   // D-Pad Left
+          case KEY_4: if (pressed) button_[17] = true; if (released) button_[17] = false; break;   // D-Pad Right
+          case KEY_LEFTCTRL: if (pressed) button_[18] = true; if (released) button_[18] = false; break; // Extra
+          case KEY_LEFTALT: if (pressed) button_[19] = true; if (released) button_[19] = false; break;  // Extra
+          case KEY_5: if (pressed) button_[20] = true; if (released) button_[20] = false; break;   // Extra
         }
       }
     }
 
-    // LEFTX/LEFTY (arrow keys)
-    if (left_pressed_ && !right_pressed_) {
+    // LEFTX/LEFTY (arrow keys or WASD)
+    if ((left_pressed_ || a_pressed_) && !(right_pressed_ || d_pressed_)) {
       axis_x_ -= step_;
-    } else if (right_pressed_ && !left_pressed_) {
+    } else if ((right_pressed_ || d_pressed_) && !(left_pressed_ || a_pressed_)) {
       axis_x_ += step_;
-    } else if (!left_pressed_ && !right_pressed_) {
+    } else if (!(left_pressed_ || a_pressed_) && !(right_pressed_ || d_pressed_)) {
       // Gradually return to zero
       if (axis_x_ > 0) axis_x_ -= step_;
       else if (axis_x_ < 0) axis_x_ += step_;
@@ -143,11 +240,11 @@ private:
     }
     axis_x_ = std::max(std::min(axis_x_, max_val_), min_val_);
 
-    if (up_pressed_ && !down_pressed_) {
+    if ((up_pressed_ || w_pressed_) && !(down_pressed_ || s_pressed_)) {
       axis_y_ += step_;
-    } else if (down_pressed_ && !up_pressed_) {
+    } else if ((down_pressed_ || s_pressed_) && !(up_pressed_ || w_pressed_)) {
       axis_y_ -= step_;
-    } else if (!up_pressed_ && !down_pressed_) {
+    } else if (!(up_pressed_ || w_pressed_) && !(down_pressed_ || s_pressed_)) {
       if (axis_y_ > 0) axis_y_ -= step_;
       else if (axis_y_ < 0) axis_y_ += step_;
       if (std::abs(axis_y_) < step_) axis_y_ = 0.0f;
