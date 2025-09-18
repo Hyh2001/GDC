@@ -23,6 +23,7 @@ find_package(pluginlib REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(quadruped_msgs REQUIRED)
+find_package(pendulum_msgs REQUIRED)
 
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 set(CMAKE_INSTALL_RPATH "${CMAKE_CURRENT_SOURCE_DIR}/lib;${CMAKE_CURRENT_SOURCE_DIR}/lib/mujoco_plugin")
@@ -47,7 +48,8 @@ ament_target_dependencies(mujoco_sim_node_plugins
         pluginlib
         sensor_msgs
         common_msgs 
-        quadruped_msgs)
+        quadruped_msgs
+        pendulum_msgs)
 target_include_directories(mujoco_sim_node_plugins PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/plugins/include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

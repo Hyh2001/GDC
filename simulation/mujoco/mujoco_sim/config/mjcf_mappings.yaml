@@ -9,7 +9,7 @@ robots:
     package: pendulum_description
     model: mjcf/pendulum.xml
     nodes: 
-      normal: NotImplemented
+      normal: PendulumSimNode
       ground_truth: NotImplemented
 
 scenes:

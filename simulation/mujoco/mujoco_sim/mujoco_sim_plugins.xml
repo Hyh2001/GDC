@@ -2,4 +2,7 @@
   <class name="mujoco_sim::Go2SimNode"
          type="mujoco_sim::Go2SimNode"
          base_class_type="mujoco_sim::MujocoSimNodeBase"/>
+  <class name="mujoco_sim::PendulumSimNode"
+         type="mujoco_sim::PendulumSimNode"
+         base_class_type="mujoco_sim::MujocoSimNodeBase"/>
 </library>
