@@ -10,16 +10,15 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
-find_package(SDL REQUIRED)
+# find_package(SDL REQUIRED)
 
 include_directories(include)
-include_directories(${SDL2_INCLUDE_DIRS})
+# include_directories(${SDL2_INCLUDE_DIRS})
 add_executable(keyboard src/keyboard.cpp)
 ament_target_dependencies(keyboard
   rclcpp
   std_msgs
   sensor_msgs
-  SDL
   )
 install(TARGETS
   keyboard
