@@ -21,6 +21,7 @@ find_package(rclcpp REQUIRED)
 find_package(pluginlib REQUIRED)
 
 find_package(std_msgs REQUIRED)
+find_package(common_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(quadruped_msgs REQUIRED)
 find_package(pendulum_msgs REQUIRED)
@@ -49,7 +50,8 @@ ament_target_dependencies(mujoco_sim_node_plugins
         sensor_msgs
         common_msgs 
         quadruped_msgs
-        pendulum_msgs)
+        pendulum_msgs
+)
 target_include_directories(mujoco_sim_node_plugins PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/plugins/include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

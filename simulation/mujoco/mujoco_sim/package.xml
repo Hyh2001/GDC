@@ -17,6 +17,8 @@
 
   <depend>quadruped_msgs</depend>
   <depend>humanoid_msgs</depend>
+  <depend>pendulum_msgs</depend>
+  
   <depend>go2_description</depend>
   <depend>terrain_description</depend>
   <depend>pendulum_description</depend>
