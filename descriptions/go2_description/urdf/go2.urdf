@@ -33,7 +33,7 @@
   </material>
   <ros2_control name="Go2" type="system">
     <hardware>
-      <plugin>hardware_unitree_mujoco/HardwareUnitree</plugin>
+      <plugin>hardware_interfaces/Go2HardwareInterface</plugin>
     </hardware>
     <joint name="FR_hip_joint">
       <command_interface name="position"/>
@@ -155,7 +155,7 @@
       <state_interface name="velocity"/>
       <state_interface name="effort"/>
     </joint>
-    <sensor name="imu_sensor">
+    <sensor name="imu">
       <state_interface name="orientation.w"/>
       <state_interface name="orientation.x"/>
       <state_interface name="orientation.y"/>
