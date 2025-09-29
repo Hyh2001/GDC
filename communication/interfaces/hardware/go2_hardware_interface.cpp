@@ -7,6 +7,9 @@ namespace hardware_interfaces
     Go2HardwareInterface::Go2HardwareInterface()
     : QuadrupedHardwareInterface()
     {
+        node_name_ = "go2_hardware_interface";
+        publish_topic_name_ = "/go2/low_cmd";
+        subscribe_topic_name_ = "/go2/low_state";
     }
 
     hardware_interface::CallbackReturn Go2HardwareInterface::on_configure(const rclcpp_lifecycle::State & previous_state)
