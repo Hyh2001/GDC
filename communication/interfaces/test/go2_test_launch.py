@@ -1,5 +1,7 @@
 from launch import LaunchDescription
 from launch_ros.actions import Node
+from launch.actions import IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import PathJoinSubstitution,Command
 from launch_ros.substitutions import FindPackageShare 
 from ament_index_python.packages import get_package_share_directory
@@ -20,6 +22,19 @@ def generate_launch_description():
         get_package_share_directory("interfaces"),
         "test",
         "go2_config.yaml"
+    )
+    
+    mujoco_sim_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(os.path.join(
+            get_package_share_directory("mujoco_sim"),
+            "launch",
+            "sim_launch.py"
+        )),
+        launch_arguments={
+            'robot_type': 'go2',
+            'scene_type': 'flat_ground',
+            'ground_truth': 'false'
+        }.items()
     )
     
     # Start robot_state_publisher
@@ -43,6 +58,7 @@ def generate_launch_description():
 
 
     return LaunchDescription([
+        mujoco_sim_launch,
         ros2_control_node,
         robot_state_publisher_node,
         # joint_state_broadcaster_spawner
