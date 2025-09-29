@@ -19,8 +19,10 @@ find_package(quadruped_msgs REQUIRED)
 find_package(common_msgs REQUIRED)
 find_package(pendulum_msgs REQUIRED)
 # hardware interfaces
+file(GLOB HARDWARE_SOURCES hardware/*.cpp)
+# message(WARNING "HARDWARE_SOURCES: ${HARDWARE_SOURCES}")
 add_library(hardware_interfaces SHARED
-        hardware/pendulum_hardware_interface.cpp
+        ${HARDWARE_SOURCES}
         ${source})
 target_include_directories(hardware_interfaces PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/hardware/include>
