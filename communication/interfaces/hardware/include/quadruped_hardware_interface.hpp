@@ -30,6 +30,9 @@ namespace hardware_interfaces
         virtual hardware_interface::return_type write(const rclcpp::Time & time, const rclcpp::Duration & period) override;
     
     protected:
+        std::string node_name_ = "quadruped_hardware_interface";
+        std::string publish_topic_name_ = "/quadruped/low_cmd";
+        std::string subscribe_topic_name_ = "/quadruped/low_state";
         // FR FL RR RL
         std::array<std::string, 12> joint_names_ = {
             "FR_hip_joint", "FR_thigh_joint", "FR_calf_joint",

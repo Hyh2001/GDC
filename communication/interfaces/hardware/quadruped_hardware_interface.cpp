@@ -12,9 +12,10 @@ namespace hardware_interfaces
     hardware_interface::CallbackReturn QuadrupedHardwareInterface::on_configure(const rclcpp_lifecycle::State & previous_state)
     {   
         // create the node
-        node_ptr_ = rclcpp::Node::make_shared("quadruped_hardware_interface");
+        node_ptr_ = rclcpp::Node::make_shared(node_name_);
+        auto qos = rclcpp::QoS(rclcpp::KeepLast(2), rmw_qos_profile_sensor_data);
         LowState_subscriber_ = node_ptr_->create_subscription<quadruped_msgs::msg::LowState>(
-            "/quadruped/low_state", 10,
+            subscribe_topic_name_, qos,
             [this](const quadruped_msgs::msg::LowState::SharedPtr msg) {
                     for(int i = 0; i < 12; i++){
                         joint_pos_[i] = msg->motor_state[i].q;
@@ -36,7 +37,7 @@ namespace hardware_interfaces
                     accel_[1] = msg->imu.linear_acceleration.y;
                     accel_[2] = msg->imu.linear_acceleration.z;
             });
-        LowCmd_publisher_ = node_ptr_->create_publisher<quadruped_msgs::msg::LowCmd>("/quadruped/low_cmd", 10);
+        LowCmd_publisher_ = node_ptr_->create_publisher<quadruped_msgs::msg::LowCmd>(publish_topic_name_, qos);
         realtime_LowCmd_publisher_ = std::make_unique<realtime_tools::RealtimePublisher<quadruped_msgs::msg::LowCmd>>(LowCmd_publisher_);
         executor_.add_node(node_ptr_);
         return hardware_interface::CallbackReturn::SUCCESS;
