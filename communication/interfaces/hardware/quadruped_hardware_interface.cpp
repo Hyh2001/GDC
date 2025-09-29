@@ -66,7 +66,7 @@ namespace hardware_interfaces
 
     hardware_interface::CallbackReturn QuadrupedHardwareInterface::on_init(const hardware_interface::HardwareInfo & info)
     {
-        return hardware_interface::CallbackReturn::SUCCESS;
+        return hardware_interface::SystemInterface::on_init(info);
     }
 
     std::vector<hardware_interface::StateInterface> QuadrupedHardwareInterface::export_state_interfaces() {

@@ -38,7 +38,7 @@ namespace hardware_interfaces
 
     hardware_interface::CallbackReturn Go2HardwareInterface::on_init(const hardware_interface::HardwareInfo & info)
     {
-        return hardware_interface::CallbackReturn::SUCCESS;
+        return QuadrupedHardwareInterface::on_init(info);
     }
 
     std::vector<hardware_interface::StateInterface> Go2HardwareInterface::export_state_interfaces() {
