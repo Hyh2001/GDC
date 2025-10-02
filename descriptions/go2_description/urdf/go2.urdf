@@ -156,10 +156,10 @@
       <state_interface name="effort"/>
     </joint>
     <sensor name="imu">
-      <state_interface name="orientation.w"/>
+      <!-- <state_interface name="orientation.w"/>
       <state_interface name="orientation.x"/>
       <state_interface name="orientation.y"/>
-      <state_interface name="orientation.z"/>
+      <state_interface name="orientation.z"/> -->
       <state_interface name="angular_velocity.x"/>
       <state_interface name="angular_velocity.y"/>
       <state_interface name="angular_velocity.z"/>
@@ -167,7 +167,7 @@
       <state_interface name="linear_acceleration.y"/>
       <state_interface name="linear_acceleration.z"/>
     </sensor>
-    <sensor name="foot_contact_sensor">
+    <sensor name="contact_sensor">
       <state_interface name="FR"/>
       <state_interface name="FL"/>
       <state_interface name="RR"/>
