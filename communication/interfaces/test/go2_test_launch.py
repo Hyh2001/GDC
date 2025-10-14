@@ -33,7 +33,7 @@ def generate_launch_description():
         launch_arguments={
             'robot_type': 'go2',
             'scene_type': 'flat_ground',
-            'ground_truth': 'false'
+            'ground_truth': 'true'
         }.items()
     )
     
