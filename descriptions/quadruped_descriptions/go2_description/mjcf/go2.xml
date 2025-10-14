@@ -309,7 +309,12 @@
     
     <!-- Ground Truth -->
     <framepos name="frame_pos" objtype="site" objname="imu" />
-    <velocimeter name="frame_vel" site="imu"/>
+    <framequat name="frame_quat" objtype="site" objname="imu" />
+    <framelinvel name="frame_linvel" objtype= "site" objname="imu"/>
+    <frameangvel name="frame_angvel" objtype= "site" objname="imu"/>
+    <framelinacc name="frame_linacc" objtype= "site" objname="imu"/>
+    <frameangacc name="frame_angacc" objtype= "site" objname="imu"/>
+    
     <!--keep the relative order between these four sensors-->
     <force name="FR_grf" site="FR_grf_sensor"/>
     <force name="FL_grf" site="FL_grf_sensor"/>
