@@ -7,11 +7,11 @@ This package provides a standalone MuJoCo simulation implemented in C++ with con
 Before launching, ensure you have a valid MJCF model file in the corresponding description folder. Check the following:
 
 - Sensors
-  - Verify sensor names, associated sites, and orientations match your expectations.
+  - Verify **sensor names**, associated **sites**, and **orientations** match your expectations.
 - Actuators
-  - Verify actuator types, gains, and joint parameters are correct for your controller.
+  - Verify **actuator types**, **gains**, and **joint parameters** are correct for your controller.
 - Simulation configuration
-  - Verify timestep, solver settings (e.g., `solimp`, `solref` / solver parameters), and friction values are appropriate.
+  - Verify **timestep**, **solver settings** (e.g., `solimp`, `solref` / solver parameters), and **friction** values are appropriate.
 
 ## Realtime simulation with ROS 2 interfaces
 
