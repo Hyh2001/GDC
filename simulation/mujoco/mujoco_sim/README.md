@@ -18,8 +18,8 @@ Before launching, ensure you have a valid MJCF model file in the corresponding d
 To add a ROS 2 interface (plugin) for realtime simulation:
 
 1. Create plugin files in `plugins/`: `<your_name>_sim_node.hpp` and `<your_name>_sim_node.cpp`.
-2. Register the class in `config/mjcf_mappings.yaml` (add the robot -> class mapping).
-3. Declare the plugin in `mujoco_sim_plugins.xml` and ensure the XML is installed by CMake.
+2. Register the class in `config/mjcf_mappings.yaml` (add the nodes -> class mapping).
+3. Declare the plugin in `mujoco_sim_plugins.xml`. 
 
 After implementing the plugin, build and source the workspace:
 
