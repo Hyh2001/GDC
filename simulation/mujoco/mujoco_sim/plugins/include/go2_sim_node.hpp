@@ -33,8 +33,10 @@ protected:
     rclcpp::Publisher<quadruped_msgs::msg::LowState>::SharedPtr low_state_pub_ptr_;
     
     // sensor readings
+    // FR -> FL -> RR -> RL
     std::array<float, 12> joint_pos_;
     std::array<float, 12> joint_vel_;
+    std::array<float, 12> joint_torque_;
     std::array<float, 3> gyro_;
     std::array<float, 3> accelerom_;
     std::array<bool, 4> contact_; 
@@ -58,6 +60,20 @@ public:
 protected: 
     void ground_truth_callback();
     rclcpp::Publisher<quadruped_msgs::msg::QuadEst>::SharedPtr ground_truth_pub_ptr_;
+
+    // ground truth
+    std::array<float, 3> pos_truth_ {0.0, 0.0, 0.0}; // x, y, z in the world frame
+    std::array<float, 4> ori_truth_ {1.0, 0.0, 0.0, 0.0}; // w, x, y, z
+    std::array<float, 3> lin_vel_truth_ {0.0, 0.0, 0.0}; // vx, vy, vz in the world frame
+    std::array<float, 3> lin_accel_truth_ {0.0, 0.0, 0.0}; // ax, ay, az  in the world frame
+    std::array<float, 3> ang_vel_truth_ {0.0, 0.0, 0.0}; // wx, wy, wz in the world frame
+    std::array<float, 3> ang_acc_truth_ {0.0, 0.0, 0.0}; // alphax, alphay, alphaz in the world frame
+    std::array<std::array<float, 3>, 4> contact_forces_ {{
+        { {0.0f, 0.0f, 0.0f} },
+        { {0.0f, 0.0f, 0.0f} },
+        { {0.0f, 0.0f, 0.0f} },
+        { {0.0f, 0.0f, 0.0f} }
+    }}; // fx, fy, fz in the world frame
 };
 
 
