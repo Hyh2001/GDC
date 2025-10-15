@@ -1,4 +1,4 @@
-#include "include/quadruped_hardware_interface.hpp"
+#include "include/quadrupeds/quadruped_hardware_interface.hpp"
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
 
