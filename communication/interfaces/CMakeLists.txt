@@ -19,13 +19,14 @@ find_package(quadruped_msgs REQUIRED)
 find_package(common_msgs REQUIRED)
 find_package(pendulum_msgs REQUIRED)
 # hardware interfaces
-file(GLOB HARDWARE_SOURCES hardware/*.cpp)
+file(GLOB_RECURSE HARDWARE_SOURCES hardware/*.cpp)
 # message(WARNING "HARDWARE_SOURCES: ${HARDWARE_SOURCES}")
 add_library(hardware_interfaces SHARED
         ${HARDWARE_SOURCES}
         ${source})
 target_include_directories(hardware_interfaces PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/hardware/include>
+        # $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/hardware/include/quadrupeds>
         $<INSTALL_INTERFACE:include>)
 ament_target_dependencies(hardware_interfaces PUBLIC 
         hardware_interface
