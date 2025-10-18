@@ -5,6 +5,19 @@ namespace quadruped_controllers
 
     controller_interface::CallbackReturn DummyEstimator::on_init()
     {
+        return BaseQuadrupedEstimator::on_init();
+    }
+
+    controller_interface::InterfaceConfiguration DummyEstimator::state_interface_configuration() const
+    {
+        // use no state interfaces
+        controller_interface::InterfaceConfiguration state_interface_config;
+        state_interface_config.type = controller_interface::interface_configuration_type::NONE;
+        return state_interface_config; // state_interfaces_
+    }
+
+    controller_interface::CallbackReturn DummyEstimator::on_configure(const rclcpp_lifecycle::State &)
+    {
         // create the node and corresponding subscriber
         node_ptr_ = rclcpp::Node::make_shared(node_name_);
         auto qos = rclcpp::QoS(rclcpp::KeepLast(2), rmw_qos_profile_sensor_data);
@@ -52,48 +65,14 @@ namespace quadruped_controllers
         return controller_interface::CallbackReturn::SUCCESS;
     }
 
-    controller_interface::CallbackReturn DummyEstimator::on_configure(const rclcpp_lifecycle::State &)
+    controller_interface::return_type DummyEstimator::update_and_write_commands(
+        const rclcpp::Time &time, const rclcpp::Duration &period)
     {
-    }
+        // Process any waiting messages
+        executor_.spin_some(std::chrono::milliseconds(1));
 
-    controller_interface::CallbackReturn DummyEstimator::on_activate(const rclcpp_lifecycle::State &)
-    {
-    }
-
-    controller_interface::CallbackReturn DummyEstimator::on_deactivate(const rclcpp_lifecycle::State &)
-    {
-    }
-
-    controller_interface::InterfaceConfiguration DummyEstimator::command_interface_configuration() const
-    {
-        // no command interfaces
-        controller_interface::InterfaceConfiguration command_interface_config;
-        command_interface_config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
-        
-        // joint interfaces: "<joint>/<interface>"
-        for (const auto & joint : joint_names) {
-            for (const auto & iface : joint_interface_types) {
-                command_interface_config.names.push_back(joint + "/" + iface);
-            }
-        }
-        // contact sensors "<foot>/state", "<foot>/force_x", "<foot>/force_y", "<foot>/force_z"
-        for (const auto & foot : foot_names) {
-            for (const auto & sensor : foot_sensor_names) {
-                command_interface_config.names.push_back(foot + "/" + sensor);
-            }
-        }
-        // 
-        
-        
-        return command_interface_config;
-    }
-
-    controller_interface::InterfaceConfiguration DummyEstimator::state_interface_configuration() const
-    {
-        // use all the state interfaces
-        controller_interface::InterfaceConfiguration state_interface_config;
-        state_interface_config.type = controller_interface::interface_configuration_type::ALL;
-        return state_interface_config;
+        return BaseQuadrupedEstimator::update_and_write_commands(time, period);
     }
 
 }; // namespace quadruped_controllers
+
