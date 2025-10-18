@@ -21,8 +21,8 @@ namespace quadruped_controllers // estimator as a chainable controller
         controller_interface::return_type update_and_write_commands(
             const rclcpp::Time & time, const rclcpp::Duration & period) override;
     
-        std::string node_name_ = "dummy_quadruped_estimator";
-        std::string subscribe_topic_name_ = "quadruped/quad_est";
+        std::string node_name_ = "";
+        std::string subscribe_topic_name_ = "";
         rclcpp::Node::SharedPtr node_ptr_ = nullptr;
         rclcpp::executors::SingleThreadedExecutor executor_;
         rclcpp::Subscription<quadruped_msgs::msg::QuadEst>::SharedPtr QuadEst_subscriber_ = nullptr;

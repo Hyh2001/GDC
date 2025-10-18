@@ -18,6 +18,18 @@ namespace quadruped_controllers
 
     controller_interface::CallbackReturn DummyEstimator::on_configure(const rclcpp_lifecycle::State &)
     {
+        // load node_name_ and subscribe_topic_name_ parameters
+        node_name_ = auto_declare<std::string>("node_name", "");
+        subscribe_topic_name_ = auto_declare<std::string>("subscribe_topic_name", "");
+
+        if(node_name_.empty() || subscribe_topic_name_.empty())
+        {
+            RCLCPP_ERROR(
+                get_node()->get_logger(),
+                "DummyEstimator: 'node_name' or 'subscribe_topic_name' parameter is empty.");
+            return controller_interface::CallbackReturn::FAILURE;
+        }
+
         // create the node and corresponding subscriber
         node_ptr_ = rclcpp::Node::make_shared(node_name_);
         auto qos = rclcpp::QoS(rclcpp::KeepLast(2), rmw_qos_profile_sensor_data);
@@ -76,3 +88,5 @@ namespace quadruped_controllers
 
 }; // namespace quadruped_controllers
 
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS(quadruped_controllers::DummyEstimator, controller_interface::ChainableControllerInterface);
