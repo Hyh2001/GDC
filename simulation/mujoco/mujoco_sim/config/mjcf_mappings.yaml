@@ -14,7 +14,7 @@ robots:
 
 scenes:
   flat_ground:
-    package: terrain_description
+    package: scene_description
     model: mjcf/flat_ground.xml
   # rough_ground:
   #   package: terrain_description
