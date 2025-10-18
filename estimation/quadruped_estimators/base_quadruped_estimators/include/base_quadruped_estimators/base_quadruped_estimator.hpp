@@ -30,6 +30,9 @@ namespace quadruped_controllers // estimators are treated as chainable controlle
         controller_interface::return_type update_and_write_commands(
             const rclcpp::Time & time, const rclcpp::Duration & period) override;
     
+        std::vector<hardware_interface::CommandInterface> on_export_reference_interfaces() override;
+        controller_interface::return_type update_reference_from_subscribers() override;    
+        
         // FR FL RR RL
         std::array<double, 12> joint_pos_;
         std::array<double, 12> joint_vel_;

@@ -1,0 +1,6 @@
+<library path="base_quadruped_estimators">
+    <class name="quadruped_controllers/DummyEstimator"
+           type="quadruped_controllers::DummyEstimator"
+           base_class_type="controller_interface::ChainableControllerInterface">
+    </class>
+</library>

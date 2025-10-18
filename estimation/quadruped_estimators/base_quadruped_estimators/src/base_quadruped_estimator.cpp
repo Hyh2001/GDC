@@ -239,5 +239,15 @@ namespace quadruped_controllers
         return controller_interface::return_type::OK;
     }
 
+    std::vector<hardware_interface::CommandInterface> BaseQuadrupedEstimator::on_export_reference_interfaces()
+    {
+        return {};
+    }
+
+    controller_interface::return_type BaseQuadrupedEstimator::update_reference_from_subscribers()
+    {
+        return controller_interface::return_type::OK;
+    }
+
 } // namespace quadruped_controllers
 
