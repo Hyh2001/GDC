@@ -3,8 +3,12 @@ controller_manager:
   ros__parameters:
     update_rate: 1000  # Hz
 
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+      # type: pid_controller/PidController
+
     go2_dummy_estimator: # estimator from external topics
-      type: quadruped_controllers/DummyEstimator
+      type: base_quadruped_estimators/DummyEstimator
 
 #     unitree_guide_controller:
 #       type: unitree_guide_controller/UnitreeGuideController
