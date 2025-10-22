@@ -61,28 +61,34 @@ def generate_launch_description():
         output="screen"
     )
     
-    load_go2_dummy_estimator = ExecuteProcess(
-        cmd=[
-            "ros2",
-            "control",
-            "load_controller",
-            "--set-state",
-            "active",
-            "go2_dummy_estimator",
-        ],
-        output="screen",
-    )
+    # load_go2_dummy_estimator = ExecuteProcess(
+    #     cmd=[
+    #         "ros2",
+    #         "control",
+    #         "load_controller",
+    #         "--set-state",
+    #         "active",
+    #         "go2_dummy_estimator",
+    #     ],
+    #     output="screen",
+    # )
     
-    load_joint_state_broadcaster = ExecuteProcess(
-        cmd=[
-            "ros2",
-            "control",
-            "load_controller",
-            "--set-state",
-            "active",
-            "joint_state_broadcaster",
-        ],
-        output="screen",
+    # load_joint_state_broadcaster = ExecuteProcess(
+    #     cmd=[
+    #         "ros2",
+    #         "control",
+    #         "load_controller",
+    #         "--set-state",
+    #         "active",
+    #         "joint_state_broadcaster",
+    #     ],
+    #     output="screen",
+    # )
+
+    go2_dummy_estimator_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["go2_dummy_estimator", "--controller-manager", "/controller_manager"],
     )
 
 
@@ -90,7 +96,7 @@ def generate_launch_description():
         mujoco_sim_launch,
         ros2_control_node,
         robot_state_publisher_node,
-        load_joint_state_broadcaster,
-        load_go2_dummy_estimator,
-        # joint_state_broadcaster_spawner
+        go2_dummy_estimator_spawner,
+        # load_joint_state_broadcaster,
+        # load_go2_dummy_estimator,
     ])
