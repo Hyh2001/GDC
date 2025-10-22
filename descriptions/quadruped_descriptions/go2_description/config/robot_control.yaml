@@ -21,7 +21,7 @@ controller_manager:
 
 go2_dummy_estimator:
   ros__parameters:
-    node_name: "go2_dummy_estimator"
+    node_name: "go2_dummy_estimator_sub" # do not set to go2_dummy_estimator
     subscribe_topic_name: "go2/quad_est"
 
 # imu_sensor_broadcaster:
