@@ -8,41 +8,47 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(rclcpp_lifecycle REQUIRED)
 find_package(controller_interface REQUIRED)
+find_package(hardware_interface REQUIRED)
 find_package(pluginlib REQUIRED)
+find_package(realtime_tools REQUIRED)
 
 find_package(quadruped_msgs REQUIRED)
 
-file(GLOB SOURCES src/*.cpp src/*.cc)
-add_library(${PROJECT_NAME} SHARED
+file(GLOB_RECURSE SOURCES src/*.cpp src/*.cc)
+add_library(base_quadruped_estimators SHARED
         ${SOURCES}
         )
-target_include_directories(${PROJECT_NAME} PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+target_include_directories(base_quadruped_estimators PUBLIC
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>)
-ament_target_dependencies(${PROJECT_NAME} PUBLIC 
+ament_target_dependencies(base_quadruped_estimators PUBLIC 
         rclcpp 
+        rclcpp_lifecycle
         controller_interface
+        hardware_interface
         pluginlib
+        realtime_tools
         quadruped_msgs
 )
-pluginlib_export_plugin_description_file(${PROJECT_NAME} base_quadruped_estimators_config.xml)
-install(TARGETS ${PROJECT_NAME}
+pluginlib_export_plugin_description_file(controller_interface base_quadruped_estimators_config.xml)
+install(TARGETS base_quadruped_estimators
   EXPORT export_${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
 )
-ament_export_libraries(${PROJECT_NAME})
+ament_export_libraries(base_quadruped_estimators)
 ament_export_targets(
-  export_${PROJECT_NAME}
+  export_${PROJECT_NAME} HAS_LIBRARY_TARGET
 )
+# message(WARNING "CMake PROJECT_NAME='${PROJECT_NAME}'")
 
 install(
         DIRECTORY include/
-        DESTINATION include/
+        DESTINATION include/${PROJECT_NAME}
 )
-
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

@@ -3,7 +3,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "controller_interface/chainable_controller_interface.hpp"
 
-namespace quadruped_controllers // estimators are treated as chainable controllers
+namespace base_quadruped_estimators // estimators are treated as chainable controllers
 { 
     class BaseQuadrupedEstimator : public controller_interface::ChainableControllerInterface
     { 
@@ -31,6 +31,7 @@ namespace quadruped_controllers // estimators are treated as chainable controlle
             const rclcpp::Time & time, const rclcpp::Duration & period) override;
     
         std::vector<hardware_interface::CommandInterface> on_export_reference_interfaces() override;
+        
         controller_interface::return_type update_reference_from_subscribers() override;    
         
         // FR FL RR RL
@@ -70,8 +71,7 @@ namespace quadruped_controllers // estimators are treated as chainable controlle
         std::string ang_vel_name = "global_ang_vel";
         std::string lin_acc_name = "global_lin_acc";
         std::string ang_acc_name = "global_ang_acc";
-
     };
 
 
-} // namespace quadruped_controllers
+} // namespace base_quadruped_estimators
