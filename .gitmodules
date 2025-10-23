@@ -1,0 +1,3 @@
+[submodule "descriptions"]
+	path = descriptions
+	url = https://github.com/Hyh2001/descriptions.git
