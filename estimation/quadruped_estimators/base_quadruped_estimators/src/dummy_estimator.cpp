@@ -25,7 +25,7 @@ namespace base_quadruped_estimators
         if(node_name_.empty() || subscribe_topic_name_.empty())
         {
             RCLCPP_ERROR(
-                get_node()->get_logger(),
+                this->get_node()->get_logger(),
                 "DummyEstimator: 'node_name' or 'subscribe_topic_name' parameter is empty.");
             return controller_interface::CallbackReturn::FAILURE;
         }
