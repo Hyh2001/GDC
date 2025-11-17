@@ -10,7 +10,7 @@ robots:
     model: mjcf/pendulum.xml
     nodes: 
       normal: PendulumSimNode
-      ground_truth: NotImplemented
+      ground_truth: PendulumSimGroundTruth
 
 scenes:
   flat_ground:

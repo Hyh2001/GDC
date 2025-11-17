@@ -56,7 +56,7 @@ public:
 
 protected: 
     void ground_truth_callback();
-    rclcpp::Publisher<pendulum_msgs::msg::PendulumEst>::SharedPtr ground_truth_pub_ptr_;
+    rclcpp::Publisher<pendulum_msgs::msg::PendulumEst>::SharedPtr pendulum_est_pub_ptr_;
 
     // ground truth
     std::array<float, 4> tip_state_{0.0, 0.0, 0.0, 0.0}; // y, vy, z, vz  
