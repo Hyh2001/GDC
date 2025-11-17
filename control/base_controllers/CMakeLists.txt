@@ -7,6 +7,7 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(control_toolbox REQUIRED)
 find_package(rclcpp REQUIRED)
 
 file(GLOB_RECURSE BASE_CONTROLLER_SOURCES
@@ -21,6 +22,7 @@ add_library(${PROJECT_NAME} SHARED
 
 ament_target_dependencies(${PROJECT_NAME} 
     rclcpp
+    control_toolbox
 )
 target_include_directories(${PROJECT_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
