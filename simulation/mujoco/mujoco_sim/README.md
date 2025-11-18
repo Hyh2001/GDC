@@ -21,11 +21,16 @@ To add a ROS 2 interface (plugin) for realtime simulation:
 2. Register the class in `config/mjcf_mappings.yaml` (add the nodes -> class mapping).
 3. Declare the plugin in `mujoco_sim_plugins.xml`. 
 
-After implementing the plugin, build and source the workspace:
+After implementing the plugin, build and source the workspace as release version with debug info:
 
 ```bash
-colcon build --packages-select mujoco_sim
+colcon build --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo --packages-select mujoco_sim
 source install/setup.bash
 ```
 
-Then launch the simulator via the provided launch files (see `launch/`).
+Then launch the simulator via the provided launch file (see `launch/`) via:
+```bash
+ros2 launch mujoco_sim sim_launch.py robot_type:=pendulum
+
+```
+
