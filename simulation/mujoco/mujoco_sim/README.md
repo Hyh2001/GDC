@@ -28,7 +28,7 @@ colcon build --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo --packages-select mu
 source install/setup.bash
 ```
 
-Then launch the simulator via the provided launch file (see `launch/`) via:
+Then launch the simulator via the provided launch file and configurations (see `launch/` for details):
 ```bash
 ros2 launch mujoco_sim sim_launch.py robot_type:=pendulum
 
