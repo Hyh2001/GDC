@@ -20,17 +20,6 @@ namespace hardware_interfaces
                     pivot_velocity_ = msg->motor_state.dq;
                     pivot_effort_ = msg->motor_state.tau;
             });
-        // PendulumEst_subscriber_ = node_ptr_->create_subscription<pendulum_msgs::msg::PendulumEst>(
-        //     "/pendulum/pendulum_est", 10,
-        //     [this](const pendulum_msgs::msg::PendulumEst::SharedPtr msg) {
-        //             pivot_position_ = msg->motor_state.q;
-        //             pivot_velocity_ = msg->motor_state.dq;
-        //             pivot_effort_ = msg->motor_state.tau;
-        //             tip_sensor_y_ = msg->tip_state[0];
-        //             tip_sensor_z_ = msg->tip_state[1];
-        //             tip_sensor_vy_ = msg->tip_state[2];
-        //             tip_sensor_vz_ = msg->tip_state[3];
-        //     });
         LowCmd_publisher_ = node_ptr_->create_publisher<pendulum_msgs::msg::LowCmd>("/pendulum/low_cmd", 10);
         realtime_LowCmd_publisher_ = std::make_unique<realtime_tools::RealtimePublisher<pendulum_msgs::msg::LowCmd>>(LowCmd_publisher_);
         executor_.add_node(node_ptr_);
@@ -69,10 +58,6 @@ namespace hardware_interfaces
         state_interfaces.emplace_back("pivot", "position", &pivot_position_);
         state_interfaces.emplace_back("pivot", "velocity", &pivot_velocity_);
         state_interfaces.emplace_back("pivot", "effort", &pivot_effort_);
-        state_interfaces.emplace_back("tip_sensor", "y", &tip_sensor_y_);
-        state_interfaces.emplace_back("tip_sensor", "z", &tip_sensor_z_);
-        state_interfaces.emplace_back("tip_sensor", "vy", &tip_sensor_vy_);
-        state_interfaces.emplace_back("tip_sensor", "vz", &tip_sensor_vz_);
         return state_interfaces;
     }
 
