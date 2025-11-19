@@ -43,7 +43,7 @@ ament_export_libraries(${PROJECT_NAME})
 ament_export_targets(
   export_${PROJECT_NAME} HAS_LIBRARY_TARGET
 )
-message(WARNING "CMake PROJECT_NAME='${PROJECT_NAME}'")
+# message(WARNING "CMake PROJECT_NAME='${PROJECT_NAME}'")
 
 install(
         DIRECTORY include/
