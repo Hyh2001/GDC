@@ -1,6 +1,6 @@
 <library path="pendulum_estimators">
     <class name="pendulum_estimators/DummyEstimator"
            type="pendulum_estimators::DummyEstimator"
-           base_class_type="controller_interface::ChainableControllerInterface">
+           base_class_type="controller_interface::ControllerInterface">
     </class>
 </library>

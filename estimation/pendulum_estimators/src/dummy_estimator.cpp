@@ -5,7 +5,29 @@ namespace pendulum_estimators
 
     controller_interface::CallbackReturn DummyEstimator::on_init()
     {
-        return BasePendulumEstimator::on_init();
+        return controller_interface::CallbackReturn::SUCCESS;
+    }
+
+    controller_interface::InterfaceConfiguration DummyEstimator::command_interface_configuration() const
+    {
+        // export command interfaces for state estimation
+        controller_interface::InterfaceConfiguration command_interface_config;
+        command_interface_config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
+        command_interface_config.names.push_back(
+            ref_controller_name_+"/joint_position");
+        command_interface_config.names.push_back(
+            ref_controller_name_+"/joint_velocity");
+        command_interface_config.names.push_back(
+            ref_controller_name_+"/joint_effort");
+        command_interface_config.names.push_back(
+            ref_controller_name_+"/tip_y");
+        command_interface_config.names.push_back(
+            ref_controller_name_+"/tip_z");
+        command_interface_config.names.push_back(
+            ref_controller_name_+"/tip_vy");
+        command_interface_config.names.push_back(
+            ref_controller_name_+"/tip_vz");
+        return command_interface_config; // command_interfaces_
     }
 
     controller_interface::InterfaceConfiguration DummyEstimator::state_interface_configuration() const
@@ -21,7 +43,7 @@ namespace pendulum_estimators
         // load node_name_ and subscribe_topic_name_ parameters
         node_name_ = auto_declare<std::string>("node_name", "");
         subscribe_topic_name_ = auto_declare<std::string>("subscribe_topic_name", "");
-
+        ref_controller_name_ = auto_declare<std::string>("ref_controller_name", "");
         if(node_name_.empty() || subscribe_topic_name_.empty())
         {
             RCLCPP_ERROR(
@@ -52,20 +74,21 @@ namespace pendulum_estimators
         return controller_interface::CallbackReturn::SUCCESS;
     }
 
-    controller_interface::return_type DummyEstimator::update_and_write_commands(
+    controller_interface::return_type DummyEstimator::update(
         const rclcpp::Time &time, const rclcpp::Duration &period)
     {
-        return BasePendulumEstimator::update_and_write_commands(time, period);
-    }
+        command_interfaces_[0].set_value(joint_pos_);
+        command_interfaces_[1].set_value(joint_vel_);
+        command_interfaces_[2].set_value(joint_tau_);
+        command_interfaces_[3].set_value(tip_pos_[0]); // y
+        command_interfaces_[4].set_value(tip_pos_[1]); // z
+        command_interfaces_[5].set_value(tip_vel_[0]); // vy
+        command_interfaces_[6].set_value(tip_vel_[1]); // vz
 
-    controller_interface::return_type DummyEstimator::update_reference_from_subscribers()
-    {
-        executor_.spin_some(std::chrono::milliseconds(1));
-
-        return BasePendulumEstimator::update_reference_from_subscribers();
+        return controller_interface::return_type::OK;
     }
 
 }; // namespace pendulum_estimators
 
 #include <pluginlib/class_list_macros.hpp>
-PLUGINLIB_EXPORT_CLASS(pendulum_estimators::DummyEstimator, controller_interface::ChainableControllerInterface);
+PLUGINLIB_EXPORT_CLASS(pendulum_estimators::DummyEstimator, controller_interface::ControllerInterface);

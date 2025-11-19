@@ -1,28 +1,39 @@
 #include <vector>
 
 #include "rclcpp/rclcpp.hpp"
-#include "pendulum_estimators/base_pendulum_estimator.hpp"
+#include "controller_interface/controller_interface.hpp"
 
 #include "pendulum_msgs/msg/pendulum_est.hpp"
 
 namespace pendulum_estimators // estimator as a chainable controller
 {
-    class DummyEstimator : public BasePendulumEstimator
+    class DummyEstimator : public controller_interface::ControllerInterface
     {
     public:
         controller_interface::CallbackReturn on_init() override;
     
+        controller_interface::InterfaceConfiguration command_interface_configuration() const override;
+
         controller_interface::InterfaceConfiguration state_interface_configuration() const override;
 
         controller_interface::CallbackReturn on_configure(
             const rclcpp_lifecycle::State & previous_state) override;
 
     protected:
-        controller_interface::return_type update_and_write_commands(
+        controller_interface::return_type update(
             const rclcpp::Time & time, const rclcpp::Duration & period) override;
-    
-        controller_interface::return_type update_reference_from_subscribers() override;
 
+        
+        // sensor readings
+        std::string ref_controller_name_ = "";
+        double joint_pos_ = 0.0;
+        double joint_vel_ = 0.0;
+        double joint_tau_ = 0.0;
+        std::array<double, 2> tip_pos_ = {0.0, 0.0}; // y, z
+        std::array<double, 2> tip_vel_ = {0.0, 0.0}; // vy, vz
+
+
+        // ros2 related
         std::string node_name_ = "";
         std::string subscribe_topic_name_ = "";
         rclcpp::Node::SharedPtr node_ptr_ = nullptr;

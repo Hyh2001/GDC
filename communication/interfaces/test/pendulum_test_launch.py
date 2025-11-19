@@ -5,7 +5,7 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import PathJoinSubstitution,Command
 from launch_ros.substitutions import FindPackageShare 
 from ament_index_python.packages import get_package_share_directory
-
+from launch.event_handlers import OnProcessExit
 
 import os 
 
@@ -62,11 +62,46 @@ def generate_launch_description():
         arguments=["pendulum_dummy_estimator", "--controller-manager", "/controller_manager"],
     )
 
+    pendulum_pid_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["pendulum_pid_controller", "--controller-manager", "/controller_manager"],
+    )
+    
+    # Load joint state broadcaster
+    load_pendulum_dummy_estimator = ExecuteProcess(
+        cmd=[
+            'ros2', 'control', 'load_controller',
+            '--set-state', 'active',
+            'pendulum_dummy_estimator'
+        ],
+        output='screen'
+    )
+
+    # Load joint trajectory controller
+    load_pendulum_pid_controller = ExecuteProcess(
+        cmd=[
+            'ros2', 'control', 'load_controller',
+            '--set-state', 'active',
+            'pendulum_pid_controller'
+        ],
+        output='screen'
+    )
 
     return LaunchDescription([
+
+
         mujoco_sim_launch,
         ros2_control_node,
         robot_state_publisher_node,
+        # load_pendulum_pid_controller,
+        # RegisterEventHandler( 
+        #     event_handler=OnProcessExit(
+        #         target_action=load_pendulum_pid_controller,
+        #         on_exit=[load_pendulum_dummy_estimator]                 
+        #     )
+        # ),
+        pendulum_pid_controller_spawner,
         pendulum_dummy_estimator_spawner,
         # joint_state_broadcaster_spawner
     ])

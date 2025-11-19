@@ -7,6 +7,14 @@
   <maintainer email="huangyuhaowork@outlook.com">yuhao</maintainer>
   <license>TODO: License declaration</license>
 
+  <depend>rclcpp</depend>
+  <depend>rclcpp_lifecycle</depend>
+  <depend>pluginlib</depend>
+  <depend>realtime_tools</depend>
+  <depend>controller_interface</depend>
+  <depend>hardware_interface</depend>
+  <depend>pendulum_msgs</depend>
+
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <test_depend>ament_lint_auto</test_depend>
