@@ -13,8 +13,9 @@ namespace hardware_interfaces
     {   
         // create the node
         node_ptr_ = rclcpp::Node::make_shared("pendulum_hardware_interface");
+        auto qos = rclcpp::QoS(rclcpp::KeepLast(2), rmw_qos_profile_sensor_data);
         LowState_subscriber_ = node_ptr_->create_subscription<pendulum_msgs::msg::LowState>(
-            "/pendulum/low_state", 10,
+            "/pendulum/low_state", qos,
             [this](const pendulum_msgs::msg::LowState::SharedPtr msg) {
                     pivot_position_ = msg->motor_state.q;
                     pivot_velocity_ = msg->motor_state.dq;

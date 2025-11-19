@@ -6,9 +6,9 @@ PendulumSimNode::PendulumSimNode() : MujocoSimNodeBase("pendulum_sim"){
     auto qos = rclcpp::QoS(rclcpp::KeepLast(2), rmw_qos_profile_sensor_data);
 
     cmd_sub_ptr_ = this->create_subscription<pendulum_msgs::msg::LowCmd>(
-        "/Pendulum/low_cmd", qos, std::bind(&PendulumSimNode::callback_low_cmd, this, std::placeholders::_1));
+        "/pendulum/low_cmd", qos, std::bind(&PendulumSimNode::callback_low_cmd, this, std::placeholders::_1));
 
-    low_state_pub_ptr_ = this->create_publisher<pendulum_msgs::msg::LowState>("/Pendulum/low_state", qos);
+    low_state_pub_ptr_ = this->create_publisher<pendulum_msgs::msg::LowState>("/pendulum/low_state", qos);
 
     timers_.emplace_back(this->create_wall_timer(
       2ms, std::bind(&PendulumSimNode::callback_low_state, this)));
@@ -81,7 +81,7 @@ PendulumSimGroundTruth::PendulumSimGroundTruth() : PendulumSimNode(){
     auto qos = rclcpp::QoS(rclcpp::KeepLast(2), rmw_qos_profile_sensor_data);
 
     pendulum_est_pub_ptr_ = this->create_publisher<pendulum_msgs::msg::PendulumEst>(
-        "/Pendulum/pendulum_est", qos);
+        "/pendulum/pendulum_est", qos);
 
     timers_.emplace_back(this->create_wall_timer(
       2ms, std::bind(&PendulumSimGroundTruth::ground_truth_callback, this)));
