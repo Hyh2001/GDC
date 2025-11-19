@@ -1,0 +1,6 @@
+<library path="pendulum_controllers">
+    <class name="pendulum_controllers/PendulumPID"
+           type="pendulum_controllers::PendulumPID"
+           base_class_type="controller_interface::ChainableControllerInterface">
+    </class>
+</library>
