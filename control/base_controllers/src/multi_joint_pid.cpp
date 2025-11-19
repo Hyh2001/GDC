@@ -77,5 +77,12 @@ namespace base_controllers {
         }
     }
 
+    void MultiJointPID::cleanup()
+    {
+        pid_controllers_.clear();
+        outputs_.clear();
+        initialized_ = false;
+    }
+
 
 }; 

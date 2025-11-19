@@ -22,16 +22,15 @@ public:
     std::vector<double> compute(const std::vector<double> &errors, uint64_t dt); // for multiple PIDs
 
     void reset(bool clear_outputs = true);
+    void cleanup(); 
 
-    
     const double &getOutput(size_t idx) const {
         ensure_initialized(idx);
         return outputs_[idx];
     }
+
     const std::vector<double> &getOutputs() const {return outputs_;}
     
-
-
 protected:
     bool initialized_{false};
     std::vector<control_toolbox::Pid> pid_controllers_;
