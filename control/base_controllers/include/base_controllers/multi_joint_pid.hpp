@@ -18,8 +18,8 @@ public:
     void set_gains(const std::vector<double> &p, const std::vector<double> &i, const std::vector<double> &d,
                   double i_max = 1e6, double i_min = -1e6); // for multiple PIDs
 
-    double compute(size_t idx, double error, uint64_t dt); // for single PID
-    std::vector<double> compute(const std::vector<double> &errors, uint64_t dt); // for multiple PIDs
+    double compute(size_t idx, double error, const rclcpp::Duration &dt); // for single PID
+    std::vector<double> compute(const std::vector<double> &errors, const rclcpp::Duration &dt); // for multiple PIDs
 
     void reset(bool clear_outputs = true);
     void cleanup(); 

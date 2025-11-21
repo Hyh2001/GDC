@@ -42,26 +42,26 @@ namespace base_controllers {
         }
     }
 
-    double MultiJointPID::compute(size_t idx, double error, uint64_t dt)
+    double MultiJointPID::compute(size_t idx, double error, const rclcpp::Duration &dt)
     {
         ensure_initialized(idx);
         // if (dt <= 0.0) return outputs_[idx];
 
-        // rclcpp::Duration dur = rclcpp::Duration::from_seconds(dt);
-        double out = pid_controllers_[idx].computeCommand(error, dt);
+        uint64_t dt_ns = dt.nanoseconds();
+        double out = pid_controllers_[idx].computeCommand(error, dt_ns);
         outputs_[idx] = out;
         return out;
     }
 
-    std::vector<double> MultiJointPID::compute(const std::vector<double> &errors, uint64_t dt)
+    std::vector<double> MultiJointPID::compute(const std::vector<double> &errors, const rclcpp::Duration &dt)
     {
         if (!initialized_) throw std::runtime_error("MultiJointPID not initialized");
         if (errors.size() != pid_controllers_.size()) throw std::invalid_argument("errors size mismatch");
         // if (dt <= 0.0) return outputs_;
 
-        // rclcpp::Duration dur = rclcpp::Duration::from_seconds(dt);
+        uint64_t dt_ns = dt.nanoseconds();
         for (size_t idx = 0; idx < pid_controllers_.size(); ++idx) {
-            outputs_[idx] = pid_controllers_[idx].computeCommand(errors[idx], dt);
+            outputs_[idx] = pid_controllers_[idx].computeCommand(errors[idx], dt_ns);
         }
         return outputs_;
     }
