@@ -58,12 +58,13 @@ namespace pendulum_controllers
     std::vector<hardware_interface::CommandInterface> PendulumPID::on_export_reference_interfaces()
     {
         if (reference_interfaces_.empty()) {
-            // We need to create storage for all references: joints (3) + tip (4)
-            // Total: 3 + 4 = 7 values
-            reference_interfaces_.resize(7, 0.0);
+            // We need to create storage for all references: joints (3) + tip (4) + ref(2)
+            // Total: 3 + 4 + 2= 9 values
+            reference_interfaces_.resize(9, 0.0);
         }
         std::string controller_name = this->get_node()->get_name();
         std::vector<hardware_interface::CommandInterface> reference_interfaces;
+        // state estimation
         reference_interfaces.push_back(hardware_interface::CommandInterface(
             controller_name, "joint_position", &reference_interfaces_[0]));
         reference_interfaces.push_back(hardware_interface::CommandInterface(
@@ -78,6 +79,11 @@ namespace pendulum_controllers
             controller_name, "tip_vy", &reference_interfaces_[5]));
         reference_interfaces.push_back(hardware_interface::CommandInterface(
             controller_name, "tip_vz", &reference_interfaces_[6]));
+        // reference
+        reference_interfaces.push_back(hardware_interface::CommandInterface(
+            controller_name, "joint_position_ref", &reference_interfaces_[7]));
+        reference_interfaces.push_back(hardware_interface::CommandInterface(
+            controller_name, "joint_velocity_ref", &reference_interfaces_[8])); 
         return reference_interfaces;
     }
 
@@ -92,6 +98,16 @@ namespace pendulum_controllers
         // get the current state
         double position = reference_interfaces_[0]; // joint_position
         double velocity = reference_interfaces_[1]; // joint_velocity
+        double position_ref = reference_interfaces_[7]; // joint_position_ref
+        double velocity_ref = reference_interfaces_[8]; // joint_velocity_ref
+        // std::cout << "PendulumPID: pos_ref=" << position_ref << ", pos=" << position << std::endl;
+        double error = position_ref - position;
+        double error_dot = velocity_ref - velocity;
+        // compute control effort
+        double effort_command = pid_controller_.compute(
+            0, error, period);
+        // write to command interface
+        command_interfaces_[0].set_value(effort_command); // effort
 
         return controller_interface::return_type::OK;
     }

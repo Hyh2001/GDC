@@ -77,6 +77,15 @@ def generate_launch_description():
         ],
         output='screen'
     )
+    
+    load_pendulum_periodic_planner = ExecuteProcess(
+        cmd=[
+            'ros2', 'control', 'load_controller',
+            '--set-state', 'active',
+            'pendulum_joint_periodic_planner'
+        ],
+        output='screen'
+    )
 
     # Load joint trajectory controller
     load_pendulum_pid_controller = ExecuteProcess(
@@ -110,6 +119,12 @@ def generate_launch_description():
             event_handler=OnProcessExit(
                 target_action=load_pendulum_pid_controller,
                 on_exit=[load_pendulum_dummy_estimator]                 
+            )
+        ),
+        RegisterEventHandler( 
+            event_handler=OnProcessExit(
+                target_action=load_pendulum_pid_controller,
+                on_exit=[load_pendulum_periodic_planner]                 
             )
         ),
         # pendulum_pid_controller_spawner,
