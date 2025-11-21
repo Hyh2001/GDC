@@ -77,6 +77,8 @@ namespace pendulum_estimators
     controller_interface::return_type DummyEstimator::update(
         const rclcpp::Time &time, const rclcpp::Duration &period)
     {
+        executor_.spin_some(std::chrono::milliseconds(0));  
+
         command_interfaces_[0].set_value(joint_pos_);
         command_interfaces_[1].set_value(joint_vel_);
         command_interfaces_[2].set_value(joint_tau_);
@@ -84,7 +86,7 @@ namespace pendulum_estimators
         command_interfaces_[4].set_value(tip_pos_[1]); // z
         command_interfaces_[5].set_value(tip_vel_[0]); // vy
         command_interfaces_[6].set_value(tip_vel_[1]); // vz
-
+        // std::cout << "DummyEstimator: pos=" << joint_pos_ << ", vel=" << joint_vel_ << std::endl;
         return controller_interface::return_type::OK;
     }
 
