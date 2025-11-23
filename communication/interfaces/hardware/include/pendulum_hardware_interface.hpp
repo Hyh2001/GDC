@@ -37,7 +37,11 @@ namespace hardware_interfaces
         double tip_sensor_z_ = 0.0;
         double tip_sensor_vy_ = 0.0;
         double tip_sensor_vz_ = 0.0;
+        double pivot_pos_command_ = 0.0;
+        double pivot_vel_command_ = 0.0;
         double pivot_effort_command_ = 0.0;
+        double kp_command_ = 0.0;
+        double kd_command_ = 0.0;
     
         rclcpp::Node::SharedPtr node_ptr_ = nullptr;
         rclcpp::executors::SingleThreadedExecutor executor_;

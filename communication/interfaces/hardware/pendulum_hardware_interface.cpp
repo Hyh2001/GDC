@@ -64,7 +64,11 @@ namespace hardware_interfaces
 
     std::vector<hardware_interface::CommandInterface> PendulumHardwareInterface::export_command_interfaces() {
         std::vector<hardware_interface::CommandInterface> command_interfaces;
+        command_interfaces.emplace_back("pivot", "position", &pivot_pos_command_);
+        command_interfaces.emplace_back("pivot", "velocity", &pivot_vel_command_);
         command_interfaces.emplace_back("pivot", "effort", &pivot_effort_command_);
+        command_interfaces.emplace_back("pivot", "kp", &kp_command_);
+        command_interfaces.emplace_back("pivot", "kd", &kd_command_);
         return command_interfaces;
     }
 
@@ -78,8 +82,10 @@ namespace hardware_interfaces
     {
         auto msg = pendulum_msgs::msg::LowCmd();
         msg.header.stamp = node_ptr_->now();
-        msg.motor_cmd.kp = 0.0;
-        msg.motor_cmd.kd = 0.0;
+        msg.motor_cmd.kp = kp_command_;
+        msg.motor_cmd.kd = kd_command_;
+        msg.motor_cmd.q = pivot_pos_command_;
+        msg.motor_cmd.dq = pivot_vel_command_;
         msg.motor_cmd.tau = pivot_effort_command_;
         realtime_LowCmd_publisher_->lock();
         realtime_LowCmd_publisher_->msg_ = msg;
