@@ -97,6 +97,14 @@ def generate_launch_description():
         output='screen'
     )
     
+    load_pendulum_velocity_policy_controller = ExecuteProcess(
+        cmd=[
+            'ros2', 'control', 'load_controller',
+            '--set-state', 'active',
+            'pendulum_velocity_policy_controller'
+        ],
+        output='screen'
+    )
     
 
     return LaunchDescription([
@@ -114,16 +122,17 @@ def generate_launch_description():
         #     period=3.0, # wait for hardware interface and simulation to ready
         #     actions=[load_pendulum_pid_controller]
         # ),
-        load_pendulum_pid_controller,
+        # load_pendulum_pid_controller,
+        load_pendulum_velocity_policy_controller,
         RegisterEventHandler( 
             event_handler=OnProcessExit(
-                target_action=load_pendulum_pid_controller,
+                target_action=load_pendulum_velocity_policy_controller, # load_pendulum_pid_controller
                 on_exit=[load_pendulum_dummy_estimator]                 
             )
         ),
         RegisterEventHandler( 
             event_handler=OnProcessExit(
-                target_action=load_pendulum_pid_controller,
+                target_action=load_pendulum_velocity_policy_controller, # load_pendulum_pid_controller
                 on_exit=[load_pendulum_periodic_planner]                 
             )
         ),

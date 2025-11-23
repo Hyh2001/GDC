@@ -15,6 +15,8 @@ find_package(pluginlib REQUIRED)
 find_package(realtime_tools REQUIRED)
 find_package(base_controllers REQUIRED)
 
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.cc)
 add_library(${PROJECT_NAME} SHARED
         ${SOURCES}

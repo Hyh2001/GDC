@@ -3,4 +3,8 @@
            type="pendulum_controllers::PendulumPID"
            base_class_type="controller_interface::ChainableControllerInterface">
     </class>
+    <class name="pendulum_controllers/PendulumVelocityPolicy"
+           type="pendulum_controllers::PendulumVelocityPolicy"
+           base_class_type="controller_interface::ChainableControllerInterface">
+    </class>
 </library>
