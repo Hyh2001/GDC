@@ -14,6 +14,7 @@
   <depend>controller_interface</depend>
   <depend>hardware_interface</depend>
   <depend>base_controllers</depend>
+  <depend>loggers</depend>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 

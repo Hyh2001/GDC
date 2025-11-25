@@ -14,6 +14,7 @@ find_package(hardware_interface REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(realtime_tools REQUIRED)
 find_package(base_controllers REQUIRED)
+find_package(loggers REQUIRED)
 
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
@@ -32,6 +33,7 @@ ament_target_dependencies(${PROJECT_NAME} PUBLIC
         pluginlib
         realtime_tools
         base_controllers
+        loggers
 )
 pluginlib_export_plugin_description_file(controller_interface pendulum_controllers_config.xml)
 install(TARGETS ${PROJECT_NAME}

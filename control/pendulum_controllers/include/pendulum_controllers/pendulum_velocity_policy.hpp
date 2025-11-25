@@ -4,6 +4,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "controller_interface/chainable_controller_interface.hpp"
 #include "base_controllers/onnx_policy.hpp"
+#include "loggers/logger.hpp"
 
 namespace pendulum_controllers // controller as chained interfaces from estimators
 {
@@ -40,10 +41,13 @@ namespace pendulum_controllers // controller as chained interfaces from estimato
         // onnx policy
         std::shared_ptr<base_controllers::OnnxPolicy> velocity_policy_ptr_{nullptr};
         std::vector<double> input_vector_;
-        std::vector<double > output_vector_;
+        std::vector<double> output_vector_;
         double kp_ = 0.0;
         double kd_ = 0.0;
-        
+
+        // debug related
+        bool debug_ = false;
+        std::unique_ptr<loggers::Logger> logger_ptr_{nullptr};
     };
 
 

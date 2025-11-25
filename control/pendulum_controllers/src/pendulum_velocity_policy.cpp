@@ -40,21 +40,47 @@ namespace pendulum_controllers
         velocity_policy_ptr_ = std::make_shared<base_controllers::OnnxPolicy>(policy_path, input_size, output_size);
         input_vector_.resize(input_size, 0.0);
         output_vector_.resize(output_size, 0.0);
+        
+        // debug related
+        debug_ = auto_declare<bool>("debug", false);
+        if (debug_){
+            logger_ptr_ = std::make_unique<loggers::Logger>(
+                "pendulum_velocity_policy_logger", 20
+            ); 
+            loggers::ValueConfig config;
+            config.source_name = "pendulum_velocity_policy"; 
+            config.labels.resize(2); 
+            config.labels[0] = "velocity_ref";
+            config.labels[1] = "velocity_real";
+            config.value_ptrs.resize(2);
+            config.value_ptrs[0] = &input_vector_[2]; // velocity_ref
+            config.value_ptrs[1] = &input_vector_[1]; // velocity_real
+            logger_ptr_->register_values(config);    
+        };
         return controller_interface::CallbackReturn::SUCCESS;
     }
 
     controller_interface::CallbackReturn PendulumVelocityPolicy::on_cleanup(const rclcpp_lifecycle::State &)
     {
+        if(debug_ && logger_ptr_){
+            logger_ptr_->stop();
+        }
         return controller_interface::CallbackReturn::SUCCESS;
     }
 
     controller_interface::CallbackReturn PendulumVelocityPolicy::on_activate(const rclcpp_lifecycle::State &)
     {
+        if(debug_ && logger_ptr_){
+            logger_ptr_->start();
+        }
         return controller_interface::CallbackReturn::SUCCESS;
     }
 
     controller_interface::CallbackReturn PendulumVelocityPolicy::on_deactivate(const rclcpp_lifecycle::State &)
     {
+        if(debug_ && logger_ptr_){
+            logger_ptr_->pause();
+        }
         return controller_interface::CallbackReturn::SUCCESS;
     }
 
@@ -117,7 +143,7 @@ namespace pendulum_controllers
         command_interfaces_[0].set_value(output_vector_[0]); // effort
         command_interfaces_[1].set_value(kp_); // kp
         command_interfaces_[2].set_value(kd_); // kd
-
+        
         return controller_interface::return_type::OK;
     }
 
