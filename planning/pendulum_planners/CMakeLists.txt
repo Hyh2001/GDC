@@ -13,6 +13,7 @@ find_package(controller_interface REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(realtime_tools REQUIRED)
 find_package(control_toolbox REQUIRED)
+find_package(base_planners REQUIRED)
 
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.cc)
 add_library(${PROJECT_NAME} SHARED
@@ -28,6 +29,7 @@ ament_target_dependencies(${PROJECT_NAME} PUBLIC
         pluginlib
         realtime_tools
         control_toolbox
+        base_planners
 )
 pluginlib_export_plugin_description_file(controller_interface pendulum_planners_config.xml)
 install(TARGETS ${PROJECT_NAME}
