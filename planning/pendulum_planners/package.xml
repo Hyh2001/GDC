@@ -13,6 +13,7 @@
   <depend>realtime_tools</depend>
   <depend>controller_interface</depend>
   <depend>control_toolbox</depend>
+  <depend>base_planners</depend>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
