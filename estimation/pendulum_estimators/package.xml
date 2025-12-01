@@ -13,7 +13,7 @@
   <depend>realtime_tools</depend>
   <depend>controller_interface</depend>
   <depend>hardware_interface</depend>
-  <depend>pendulum_msgs</depend>
+  <depend>pend_msgs</depend>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 

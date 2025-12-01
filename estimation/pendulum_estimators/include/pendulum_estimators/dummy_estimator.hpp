@@ -2,13 +2,13 @@
 #include <vector>
 
 #include "rclcpp/rclcpp.hpp"
-#include "controller_interface/controller_interface.hpp"
+#include "controller_interface/chainable_controller_interface.hpp"
 
-#include "pendulum_msgs/msg/pendulum_est.hpp"
+#include "pend_msgs/msg/pendulum_est.hpp"
 
 namespace pendulum_estimators // estimator as a chainable controller
 {
-    class DummyEstimator : public controller_interface::ControllerInterface
+    class DummyEstimator : public controller_interface::ChainableControllerInterface
     {
     public:
         controller_interface::CallbackReturn on_init() override;
@@ -21,12 +21,15 @@ namespace pendulum_estimators // estimator as a chainable controller
             const rclcpp_lifecycle::State & previous_state) override;
 
     protected:
-        controller_interface::return_type update(
+        std::vector<hardware_interface::StateInterface> on_export_state_interfaces() override;
+
+        controller_interface::return_type update_and_write_commands(
             const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
-        
+        controller_interface::return_type update_reference_from_subscribers(
+            const rclcpp::Time &time, const rclcpp::Duration &period) override;
+
         // sensor readings
-        std::string ref_controller_name_ = "";
         double joint_pos_ = 0.0;
         double joint_vel_ = 0.0;
         double joint_tau_ = 0.0;
@@ -39,7 +42,7 @@ namespace pendulum_estimators // estimator as a chainable controller
         std::string subscribe_topic_name_ = "";
         rclcpp::Node::SharedPtr node_ptr_ = nullptr;
         rclcpp::executors::SingleThreadedExecutor executor_;
-        rclcpp::Subscription<pendulum_msgs::msg::PendulumEst>::SharedPtr PendulumEst_subscriber_ = nullptr;
+        rclcpp::Subscription<pend_msgs::msg::PendulumEst>::SharedPtr PendulumEst_subscriber_ = nullptr;
 
     };
 

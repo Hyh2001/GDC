@@ -2,12 +2,12 @@
 #include <vector>
 
 #include "rclcpp/rclcpp.hpp"
-#include "controller_interface/chainable_controller_interface.hpp"
+#include "controller_interface/controller_interface.hpp"
 #include "base_controllers/multi_joint_pid.hpp"
 
 namespace pendulum_controllers // controller as chained interfaces from estimators
 {
-    class PendulumPID : public controller_interface::ChainableControllerInterface
+    class PendulumPID : public controller_interface::ControllerInterface
     {
     public:
         controller_interface::CallbackReturn on_init() override;
@@ -28,15 +28,12 @@ namespace pendulum_controllers // controller as chained interfaces from estimato
         controller_interface::CallbackReturn on_cleanup(
             const rclcpp_lifecycle::State & previous_state) override;
     protected:
-        std::vector<hardware_interface::CommandInterface> on_export_reference_interfaces() override;
-        
-        bool on_set_chained_mode(bool chained_mode) override;
-
-        controller_interface::return_type update_and_write_commands(
+        controller_interface::return_type update(
             const rclcpp::Time & time, const rclcpp::Duration & period) override;
-
-        controller_interface::return_type update_reference_from_subscribers() override;
         
+        // interfaces
+        std::string estimator_name_ = "";
+        std::string planner_name_ = "";
         // pid controller
         double kp_ = 0.0; 
         double kd_ = 0.0;

@@ -12,11 +12,7 @@ namespace pendulum_planners
     {
         // export command interfaces for reference traj
         controller_interface::InterfaceConfiguration command_interface_config;
-        command_interface_config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
-        command_interface_config.names.push_back(
-            ref_controller_name_+"/joint_position_ref");
-        command_interface_config.names.push_back(
-            ref_controller_name_+"/joint_velocity_ref");
+        command_interface_config.type = controller_interface::interface_configuration_type::NONE;
         return command_interface_config; // command_interfaces_    
     }
 
@@ -34,7 +30,6 @@ namespace pendulum_planners
         amplitude_ = auto_declare<double>("amplitude", 1.0);
         frequency_ = auto_declare<double>("frequency", 0.5); // Hz
         phase_ = auto_declare<double>("phase", 0.0); // rad
-        ref_controller_name_ = auto_declare<std::string>("ref_controller_name", "");
         sinusoid_planner_ptr_ = std::make_shared<control_toolbox::Sinusoid>(
             offset_, amplitude_, frequency_, phase_);
         return controller_interface::CallbackReturn::SUCCESS;
@@ -56,13 +51,30 @@ namespace pendulum_planners
         return controller_interface::CallbackReturn::SUCCESS;
     }
 
-    controller_interface::return_type PendulumJointPeriodicPlanner::update(
+    std::vector<hardware_interface::StateInterface> PendulumJointPeriodicPlanner::on_export_state_interfaces()
+    {
+        std::vector<hardware_interface::StateInterface> state_interfaces;
+        std::string planner_name = this->get_name();
+        state_interfaces.emplace_back(
+            planner_name, "joint_position_ref", &q_);
+        state_interfaces.emplace_back(
+            planner_name, "joint_velocity_ref", &qd_);
+        return state_interfaces;
+    }
+
+    controller_interface::return_type PendulumJointPeriodicPlanner::update_and_write_commands(
         const rclcpp::Time &time, const rclcpp::Duration &period)
     {
         q_ = sinusoid_planner_ptr_->update(
             time.nanoseconds() * 1e-9, qd_, qdd_);
-        command_interfaces_[0].set_value(q_);
-        command_interfaces_[1].set_value(qd_);
+
+        return controller_interface::return_type::OK;
+    }
+
+    controller_interface::return_type PendulumJointPeriodicPlanner::update_reference_from_subscribers(
+        const rclcpp::Time & time, const rclcpp::Duration & period)
+    {
+        // no-op since this planner does not subscribe to any topic
         return controller_interface::return_type::OK;
     }
 
@@ -70,4 +82,4 @@ namespace pendulum_planners
 }; // namespace pendulum_planners 
 
 #include <pluginlib/class_list_macros.hpp>
-PLUGINLIB_EXPORT_CLASS(pendulum_planners::PendulumJointPeriodicPlanner, controller_interface::ControllerInterface);
+PLUGINLIB_EXPORT_CLASS(pendulum_planners::PendulumJointPeriodicPlanner, controller_interface::ChainableControllerInterface);

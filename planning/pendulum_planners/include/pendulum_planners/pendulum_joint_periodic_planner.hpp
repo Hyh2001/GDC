@@ -2,12 +2,12 @@
 #include <vector>
 
 #include "rclcpp/rclcpp.hpp"
-#include "controller_interface/controller_interface.hpp"
+#include "controller_interface/chainable_controller_interface.hpp"
 #include "control_toolbox/sinusoid.hpp"
 
 namespace pendulum_planners
 {
-    class PendulumJointPeriodicPlanner : public controller_interface::ControllerInterface
+    class PendulumJointPeriodicPlanner : public controller_interface::ChainableControllerInterface
     {
     public:
         controller_interface::CallbackReturn on_init() override;
@@ -28,9 +28,14 @@ namespace pendulum_planners
         controller_interface::CallbackReturn on_cleanup(
             const rclcpp_lifecycle::State & previous_state) override;
     protected:
-        controller_interface::return_type update(
+        std::vector<hardware_interface::StateInterface> on_export_state_interfaces() override;
+
+        controller_interface::return_type update_and_write_commands(
             const rclcpp::Time & time, const rclcpp::Duration & period) override;
         
+        controller_interface::return_type update_reference_from_subscribers(
+            const rclcpp::Time & time, const rclcpp::Duration & period) override;
+
         std::string ref_controller_name_ = "";
         double offset_ = 0.0;
         double amplitude_ = 1.0;

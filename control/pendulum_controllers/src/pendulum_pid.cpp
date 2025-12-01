@@ -20,14 +20,30 @@ namespace pendulum_controllers
 
     controller_interface::InterfaceConfiguration PendulumPID::state_interface_configuration() const
     {
-        // use no state interfaces
+        // use state interfaces exported from estimators and planners
         controller_interface::InterfaceConfiguration state_interface_config;
-        state_interface_config.type = controller_interface::interface_configuration_type::NONE;
+        state_interface_config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
+
+        // state estimation
+        state_interface_config.names.push_back(estimator_name_ + "/joint_position_est");
+        state_interface_config.names.push_back(estimator_name_ + "/joint_velocity_est");
+        state_interface_config.names.push_back(estimator_name_ + "/joint_torque_est");
+        state_interface_config.names.push_back(estimator_name_ + "/tip_position_y_est");
+        state_interface_config.names.push_back(estimator_name_ + "/tip_position_z_est");
+        state_interface_config.names.push_back(estimator_name_ + "/tip_velocity_y_est");
+        state_interface_config.names.push_back(estimator_name_ + "/tip_velocity_z_est");
+
+        // reference trajectory
+        state_interface_config.names.push_back(planner_name_ + "/joint_position_ref");
+        state_interface_config.names.push_back(planner_name_ + "/joint_velocity_ref");
+
         return state_interface_config; // state_interfaces_
     }
 
     controller_interface::CallbackReturn PendulumPID::on_configure(const rclcpp_lifecycle::State &)
     {
+        estimator_name_ = auto_declare<std::string>("estimator_name", "estimator");
+        planner_name_ = auto_declare<std::string>("planner_name", "planner");
         kp_ = auto_declare<double>("kp", 0.0);
         kd_ = auto_declare<double>("kd", 0.0);
         ki_ = auto_declare<double>("ki", 0.0);
@@ -55,51 +71,14 @@ namespace pendulum_controllers
         return controller_interface::CallbackReturn::SUCCESS;
     }
 
-    std::vector<hardware_interface::CommandInterface> PendulumPID::on_export_reference_interfaces()
-    {
-        if (reference_interfaces_.empty()) {
-            // We need to create storage for all references: joints (3) + tip (4) + ref(2)
-            // Total: 3 + 4 + 2= 9 values
-            reference_interfaces_.resize(9, 0.0);
-        }
-        std::string controller_name = this->get_node()->get_name();
-        std::vector<hardware_interface::CommandInterface> reference_interfaces;
-        // state estimation
-        reference_interfaces.push_back(hardware_interface::CommandInterface(
-            controller_name, "joint_position", &reference_interfaces_[0]));
-        reference_interfaces.push_back(hardware_interface::CommandInterface(
-            controller_name, "joint_velocity", &reference_interfaces_[1]));
-        reference_interfaces.push_back(hardware_interface::CommandInterface(
-            controller_name, "joint_effort", &reference_interfaces_[2]));
-        reference_interfaces.push_back(hardware_interface::CommandInterface(
-            controller_name, "tip_y", &reference_interfaces_[3]));
-        reference_interfaces.push_back(hardware_interface::CommandInterface(
-            controller_name, "tip_z", &reference_interfaces_[4]));
-        reference_interfaces.push_back(hardware_interface::CommandInterface(
-            controller_name, "tip_vy", &reference_interfaces_[5]));
-        reference_interfaces.push_back(hardware_interface::CommandInterface(
-            controller_name, "tip_vz", &reference_interfaces_[6]));
-        // reference
-        reference_interfaces.push_back(hardware_interface::CommandInterface(
-            controller_name, "joint_position_ref", &reference_interfaces_[7]));
-        reference_interfaces.push_back(hardware_interface::CommandInterface(
-            controller_name, "joint_velocity_ref", &reference_interfaces_[8])); 
-        return reference_interfaces;
-    }
-
-    bool PendulumPID::on_set_chained_mode(bool chained_mode)
-    {
-        return true; // enable chaining since this is a controller and leverage command interface
-    }
-
-    controller_interface::return_type PendulumPID::update_and_write_commands(
+    controller_interface::return_type PendulumPID::update(
         const rclcpp::Time &time, const rclcpp::Duration &period)
     {
         // get the current state
-        double position = reference_interfaces_[0]; // joint_position
-        double velocity = reference_interfaces_[1]; // joint_velocity
-        double position_ref = reference_interfaces_[7]; // joint_position_ref
-        double velocity_ref = reference_interfaces_[8]; // joint_velocity_ref
+        double position = state_interfaces_[0].get_value(); // joint_position
+        double velocity = state_interfaces_[1].get_value(); // joint_velocity
+        double position_ref = state_interfaces_[7].get_value(); // joint_position_ref
+        double velocity_ref = state_interfaces_[8].get_value(); // joint_velocity_ref
         // std::cout << "PendulumPID: pos_ref=" << position_ref << ", pos=" << position << std::endl;
         double error = position_ref - position;
         double error_dot = velocity_ref - velocity;
@@ -111,14 +90,8 @@ namespace pendulum_controllers
 
         return controller_interface::return_type::OK;
     }
-
-    controller_interface::return_type PendulumPID::update_reference_from_subscribers()
-    {
-        return controller_interface::return_type::OK;
-    }
-
     
 }; // namespace pendulum_controllers
 
 #include <pluginlib/class_list_macros.hpp>
-PLUGINLIB_EXPORT_CLASS(pendulum_controllers::PendulumPID, controller_interface::ChainableControllerInterface);
+PLUGINLIB_EXPORT_CLASS(pendulum_controllers::PendulumPID, controller_interface::ControllerInterface);
