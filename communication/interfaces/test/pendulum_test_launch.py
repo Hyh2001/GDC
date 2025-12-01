@@ -43,9 +43,9 @@ def generate_launch_description():
         executable='robot_state_publisher',
         parameters=[{'robot_description': Command(['cat ', urdf_file])}],
         output='screen',
-        remappings=[
-            ('/robot_description', '/controller_manager/robot_description')
-        ]
+        # remappings=[
+        #     ('/robot_description', '/controller_manager/robot_description')
+        # ]
     )
 
     # Start ros2_control_node
@@ -100,7 +100,7 @@ def generate_launch_description():
     load_pendulum_velocity_policy_controller = ExecuteProcess(
         cmd=[
             'ros2', 'control', 'load_controller',
-            '--set-state', 'active',
+            '--set-state', 'inactive',
             'pendulum_velocity_policy_controller'
         ],
         output='screen'
@@ -122,18 +122,20 @@ def generate_launch_description():
         #     period=3.0, # wait for hardware interface and simulation to ready
         #     actions=[load_pendulum_pid_controller]
         # ),
+        load_pendulum_dummy_estimator,
+        load_pendulum_periodic_planner,
         # load_pendulum_pid_controller,
-        load_pendulum_velocity_policy_controller,
+        # load_pendulum_velocity_policy_controller,
         RegisterEventHandler( 
             event_handler=OnProcessExit(
-                target_action=load_pendulum_velocity_policy_controller, # load_pendulum_pid_controller
-                on_exit=[load_pendulum_dummy_estimator]                 
+                target_action=load_pendulum_dummy_estimator, # load_pendulum_pid_controller
+                on_exit=[load_pendulum_pid_controller]                 
             )
         ),
         RegisterEventHandler( 
             event_handler=OnProcessExit(
-                target_action=load_pendulum_velocity_policy_controller, # load_pendulum_pid_controller
-                on_exit=[load_pendulum_periodic_planner]                 
+                target_action=load_pendulum_dummy_estimator, # load_pendulum_pid_controller
+                on_exit=[load_pendulum_velocity_policy_controller]                 
             )
         ),
         # pendulum_pid_controller_spawner,
