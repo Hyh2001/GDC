@@ -91,7 +91,7 @@ def generate_launch_description():
     load_pendulum_pid_controller = ExecuteProcess(
         cmd=[
             'ros2', 'control', 'load_controller',
-            '--set-state', 'active',
+            '--set-state', 'inactive',
             'pendulum_pid_controller'
         ],
         output='screen'
@@ -100,7 +100,7 @@ def generate_launch_description():
     load_pendulum_velocity_policy_controller = ExecuteProcess(
         cmd=[
             'ros2', 'control', 'load_controller',
-            '--set-state', 'inactive',
+            '--set-state', 'active',
             'pendulum_velocity_policy_controller'
         ],
         output='screen'
