@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 project(mujoco_sim)
 
 # if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -24,7 +24,7 @@ find_package(std_msgs REQUIRED)
 find_package(common_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(quadruped_msgs REQUIRED)
-find_package(pendulum_msgs REQUIRED)
+find_package(pend_msgs REQUIRED)
 
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 set(CMAKE_INSTALL_RPATH "${CMAKE_CURRENT_SOURCE_DIR}/lib;${CMAKE_CURRENT_SOURCE_DIR}/lib/mujoco_plugin")
@@ -50,8 +50,9 @@ ament_target_dependencies(mujoco_sim_node_plugins
         sensor_msgs
         common_msgs 
         quadruped_msgs
-        pendulum_msgs
+        pend_msgs
 )
+
 target_include_directories(mujoco_sim_node_plugins PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/plugins/include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

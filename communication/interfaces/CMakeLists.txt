@@ -17,7 +17,7 @@ find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(quadruped_msgs REQUIRED)
 find_package(common_msgs REQUIRED)
-find_package(pendulum_msgs REQUIRED)
+find_package(pend_msgs REQUIRED)
 # hardware interfaces
 file(GLOB_RECURSE HARDWARE_SOURCES hardware/*.cpp)
 # message(WARNING "HARDWARE_SOURCES: ${HARDWARE_SOURCES}")
@@ -37,7 +37,7 @@ ament_target_dependencies(hardware_interfaces PUBLIC
         sensor_msgs 
         common_msgs 
         quadruped_msgs
-        pendulum_msgs
+        pend_msgs
 )
 pluginlib_export_plugin_description_file(hardware_interface
         hardware_config.xml)

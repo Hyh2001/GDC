@@ -14,15 +14,15 @@ namespace hardware_interfaces
         // create the node
         node_ptr_ = rclcpp::Node::make_shared("pendulum_hardware_interface");
         auto qos = rclcpp::QoS(rclcpp::KeepLast(2), rmw_qos_profile_sensor_data);
-        LowState_subscriber_ = node_ptr_->create_subscription<pendulum_msgs::msg::LowState>(
+        LowState_subscriber_ = node_ptr_->create_subscription<pend_msgs::msg::LowState>(
             "/pendulum/low_state", qos,
-            [this](const pendulum_msgs::msg::LowState::SharedPtr msg) {
+            [this](const pend_msgs::msg::LowState::SharedPtr msg) {
                     pivot_position_ = msg->motor_state.q;
                     pivot_velocity_ = msg->motor_state.dq;
                     pivot_effort_ = msg->motor_state.tau;
             });
-        LowCmd_publisher_ = node_ptr_->create_publisher<pendulum_msgs::msg::LowCmd>("/pendulum/low_cmd", 10);
-        realtime_LowCmd_publisher_ = std::make_unique<realtime_tools::RealtimePublisher<pendulum_msgs::msg::LowCmd>>(LowCmd_publisher_);
+        LowCmd_publisher_ = node_ptr_->create_publisher<pend_msgs::msg::LowCmd>("/pendulum/low_cmd", 10);
+        realtime_LowCmd_publisher_ = std::make_unique<realtime_tools::RealtimePublisher<pend_msgs::msg::LowCmd>>(LowCmd_publisher_);
         executor_.add_node(node_ptr_);
         return hardware_interface::CallbackReturn::SUCCESS;
     }        
@@ -80,7 +80,7 @@ namespace hardware_interfaces
 
     hardware_interface::return_type PendulumHardwareInterface::write(const rclcpp::Time & time, const rclcpp::Duration & period)
     {
-        auto msg = pendulum_msgs::msg::LowCmd();
+        auto msg = pend_msgs::msg::LowCmd();
         msg.header.stamp = node_ptr_->now();
         msg.motor_cmd.kp = kp_command_;
         msg.motor_cmd.kd = kd_command_;

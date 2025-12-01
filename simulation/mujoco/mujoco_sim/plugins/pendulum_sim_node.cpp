@@ -5,10 +5,10 @@ namespace mujoco_sim{
 PendulumSimNode::PendulumSimNode() : MujocoSimNodeBase("pendulum_sim"){
     auto qos = rclcpp::QoS(rclcpp::KeepLast(2), rmw_qos_profile_sensor_data);
 
-    cmd_sub_ptr_ = this->create_subscription<pendulum_msgs::msg::LowCmd>(
+    cmd_sub_ptr_ = this->create_subscription<pend_msgs::msg::LowCmd>(
         "/pendulum/low_cmd", qos, std::bind(&PendulumSimNode::callback_low_cmd, this, std::placeholders::_1));
 
-    low_state_pub_ptr_ = this->create_publisher<pendulum_msgs::msg::LowState>("/pendulum/low_state", qos);
+    low_state_pub_ptr_ = this->create_publisher<pend_msgs::msg::LowState>("/pendulum/low_state", qos);
 
     timers_.emplace_back(this->create_wall_timer(
       2ms, std::bind(&PendulumSimNode::callback_low_state, this)));
@@ -39,7 +39,7 @@ void PendulumSimNode::reset_params() {
 void PendulumSimNode::callback_low_state() {
     // get the sensor data
     if (sim_ -> d_){
-        pendulum_msgs::msg::LowState low_state_msg = pendulum_msgs::msg::LowState();
+        pend_msgs::msg::LowState low_state_msg = pend_msgs::msg::LowState();
 
         // lock the thread
         const std::unique_lock<std::recursive_mutex> lock(sim_->mtx);
@@ -65,7 +65,7 @@ void PendulumSimNode::callback_low_state() {
 
 }
 
-void PendulumSimNode::callback_low_cmd(const pendulum_msgs::msg::LowCmd::SharedPtr msg) {
+void PendulumSimNode::callback_low_cmd(const pend_msgs::msg::LowCmd::SharedPtr msg) {
     if(sim_ ->  d_){
         // const std::unique_lock<std::recursive_mutex> lock(sim_->mtx);
         // apply the motor commands
@@ -80,7 +80,7 @@ void PendulumSimNode::callback_low_cmd(const pendulum_msgs::msg::LowCmd::SharedP
 PendulumSimGroundTruth::PendulumSimGroundTruth() : PendulumSimNode(){
     auto qos = rclcpp::QoS(rclcpp::KeepLast(2), rmw_qos_profile_sensor_data);
 
-    pendulum_est_pub_ptr_ = this->create_publisher<pendulum_msgs::msg::PendulumEst>(
+    pendulum_est_pub_ptr_ = this->create_publisher<pend_msgs::msg::PendulumEst>(
         "/pendulum/pendulum_est", qos);
 
     timers_.emplace_back(this->create_wall_timer(
@@ -95,7 +95,7 @@ void PendulumSimGroundTruth::reset_params() {
 }
 
 void PendulumSimGroundTruth::ground_truth_callback() {
-    pendulum_msgs::msg::PendulumEst pendulum_est_msg = pendulum_msgs::msg::PendulumEst();
+    pend_msgs::msg::PendulumEst pendulum_est_msg = pend_msgs::msg::PendulumEst();
     
     if (sim_ -> d_){
         // lock the thread

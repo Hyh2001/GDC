@@ -7,9 +7,9 @@
 #include "hardware_interface/system_interface.hpp"
 #include "realtime_tools/realtime_publisher.hpp"
 
-#include "pendulum_msgs/msg/low_state.hpp"
-#include "pendulum_msgs/msg/low_cmd.hpp"
-#include "pendulum_msgs/msg/pendulum_est.hpp"
+#include "pend_msgs/msg/low_state.hpp"
+#include "pend_msgs/msg/low_cmd.hpp"
+#include "pend_msgs/msg/pendulum_est.hpp"
 
 namespace hardware_interfaces
 {
@@ -45,9 +45,9 @@ namespace hardware_interfaces
     
         rclcpp::Node::SharedPtr node_ptr_ = nullptr;
         rclcpp::executors::SingleThreadedExecutor executor_;
-        rclcpp::Subscription<pendulum_msgs::msg::LowState>::SharedPtr LowState_subscriber_ = nullptr;
-        rclcpp::Publisher<pendulum_msgs::msg::LowCmd>::SharedPtr LowCmd_publisher_ = nullptr;
-        realtime_tools::RealtimePublisher<pendulum_msgs::msg::LowCmd>::SharedPtr realtime_LowCmd_publisher_ = nullptr;
+        rclcpp::Subscription<pend_msgs::msg::LowState>::SharedPtr LowState_subscriber_ = nullptr;
+        rclcpp::Publisher<pend_msgs::msg::LowCmd>::SharedPtr LowCmd_publisher_ = nullptr;
+        realtime_tools::RealtimePublisher<pend_msgs::msg::LowCmd>::SharedPtr realtime_LowCmd_publisher_ = nullptr;
         // rclcpp::Subscription<pendulum_msgs::msg::PendulumEst>::SharedPtr PendulumEst_subscriber_ = nullptr;
     }; 
 
