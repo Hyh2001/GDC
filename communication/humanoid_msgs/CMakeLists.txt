@@ -16,6 +16,7 @@ find_package(rosidl_default_generators REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}  
   msg/LowCmd.msg
   msg/LowState.msg
+  msg/HumanoidEst.msg
 DEPENDENCIES std_msgs sensor_msgs geometry_msgs common_msgs)
 ament_export_dependencies(rosidl_default_runtime)
 
