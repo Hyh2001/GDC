@@ -60,7 +60,7 @@ namespace pendulum_controllers
         debug_ = auto_declare<bool>("debug", false);
         if (debug_){
             logger_ptr_ = std::make_unique<loggers::Logger>(
-                "pendulum_velocity_policy_logger", 20
+                "pendulum_velocity_policy_logger", 5
             ); 
             loggers::ValueConfig config;
             config.source_name = "pendulum_velocity_policy"; 
@@ -102,6 +102,10 @@ namespace pendulum_controllers
     controller_interface::return_type PendulumVelocityPolicy::update(
         const rclcpp::Time &time, const rclcpp::Duration &period)
     {
+        // if ((time - last_infer_time_).nanoseconds() * 1e-9 < infer_period_) {
+        //         return controller_interface::return_type::OK;
+        // }
+        // last_infer_time_ = time;
         // get the current state
         double position = state_interfaces_[0].get_value(); // joint_position
         double velocity = state_interfaces_[1].get_value(); // joint_velocity

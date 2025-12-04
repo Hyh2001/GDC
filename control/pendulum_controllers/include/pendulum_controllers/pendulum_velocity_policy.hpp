@@ -37,6 +37,8 @@ namespace pendulum_controllers // controller as chained interfaces from estimato
         std::string planner_name_ = "";
 
         // onnx policy
+        // rclcpp::Time last_infer_time_{0, 0, RCL_ROS_TIME};
+        // double infer_period_{0.02}; // in seconds
         std::shared_ptr<base_controllers::OnnxPolicy> velocity_policy_ptr_{nullptr};
         std::vector<double> input_vector_;
         std::vector<double> output_vector_;
