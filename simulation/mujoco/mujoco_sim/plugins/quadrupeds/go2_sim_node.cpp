@@ -1,4 +1,4 @@
-#include "include/go2_sim_node.hpp"
+#include "quadrupeds/go2_sim_node.hpp"
 
 namespace mujoco_sim{ 
 
