@@ -32,8 +32,9 @@ def generate_launch_description():
         )),
         launch_arguments={
             'robot_type': 'pendulum',
+            'mjcf_name': 'pendulum',
             'scene_type': 'flat_ground',
-            'ground_truth': 'true'
+            'node_class_name': 'PendulumSimNode'
         }.items()
     )
     
