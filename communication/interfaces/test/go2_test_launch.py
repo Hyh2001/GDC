@@ -37,8 +37,9 @@ def generate_launch_description():
         )),
         launch_arguments={
             'robot_type': 'go2',
+            'mjcf_name': 'go2',
             'scene_type': 'flat_ground',
-            'ground_truth': 'true'
+            'node_class_name': 'Go2SimNode'
         }.items()
     )
     
@@ -48,9 +49,6 @@ def generate_launch_description():
         executable='robot_state_publisher',
         parameters=[{'robot_description': Command(['cat ', urdf_file])}],
         output='screen',
-        remappings=[
-            ('/robot_description', '/controller_manager/robot_description')
-        ]
     )
 
     # Start ros2_control_node
