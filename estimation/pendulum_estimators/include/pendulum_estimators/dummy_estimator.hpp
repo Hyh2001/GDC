@@ -30,6 +30,7 @@ namespace pendulum_estimators // estimator as a chainable controller
             const rclcpp::Time &time, const rclcpp::Duration &period) override;
 
         // sensor readings
+        pend_msgs::msg::PendulumEst latest_est_msg_;
         double joint_pos_ = 0.0;
         double joint_vel_ = 0.0;
         double joint_tau_ = 0.0;

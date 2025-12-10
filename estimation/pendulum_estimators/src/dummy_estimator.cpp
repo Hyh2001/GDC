@@ -68,14 +68,7 @@ namespace pendulum_estimators
             subscribe_topic_name_, qos,
             [this](const pend_msgs::msg::PendulumEst::SharedPtr msg)
             {
-                joint_pos_ = msg->motor_state.q;
-                joint_vel_ = msg->motor_state.dq;
-                joint_tau_ = msg->motor_state.tau;
-
-                tip_pos_[0] = msg->tip_state[0]; // y
-                tip_pos_[1] = msg->tip_state[1]; // z
-                tip_vel_[0] = msg->tip_state[2]; // vy
-                tip_vel_[1] = msg->tip_state[3]; // vz
+                latest_est_msg_= *msg;
             });
 
         executor_.add_node(node_ptr_);
@@ -86,14 +79,15 @@ namespace pendulum_estimators
         const rclcpp::Time &time, const rclcpp::Duration &period)
     {
         executor_.spin_some(std::chrono::milliseconds(0));  
+        joint_pos_ = latest_est_msg_.motor_state.q;
+        joint_vel_ = latest_est_msg_.motor_state.dq;
+        joint_tau_ = latest_est_msg_.motor_state.tau;
 
-        // command_interfaces_[0].set_value(joint_pos_);
-        // command_interfaces_[1].set_value(joint_vel_);
-        // command_interfaces_[2].set_value(joint_tau_);
-        // command_interfaces_[3].set_value(tip_pos_[0]); // y
-        // command_interfaces_[4].set_value(tip_pos_[1]); // z
-        // command_interfaces_[5].set_value(tip_vel_[0]); // vy
-        // command_interfaces_[6].set_value(tip_vel_[1]); // vz
+        tip_pos_[0] = latest_est_msg_.tip_state[0]; // y
+        tip_pos_[1] = latest_est_msg_.tip_state[1]; // z
+        tip_vel_[0] = latest_est_msg_.tip_state[2]; // vy
+        tip_vel_[1] = latest_est_msg_.tip_state[3]; // vz
+
         // std::cout << "DummyEstimator: pos=" << joint_pos_ << ", vel=" << joint_vel_ << std::endl;
         return controller_interface::return_type::OK;
     }
