@@ -15,6 +15,7 @@ public:
 
     void set_sim_ptr(mj::Simulate* sim) { sim_ = sim; }
 
+    virtual void load_ros2_params() {};
 protected:
     mj::Simulate* sim_;
 

@@ -40,6 +40,10 @@ int main(int argc, char** argv) {
         return 1;
     }
     mujoco_ros2_node_ptr->set_sim_ptr(sim_ptr);
+    std::string config_path = std::string(argv[3]);
+    if (config_path != "none"){
+        mujoco_ros2_node_ptr->load_ros2_params();
+    }
     std::function<void(std::shared_ptr<MujocoSimNodeBase>)> spin_func;
     spin_func = [](std::shared_ptr<MujocoSimNodeBase> node_ptr){
         rclcpp::spin(node_ptr); // spin constantly, the message frequencey is set based on timmer;

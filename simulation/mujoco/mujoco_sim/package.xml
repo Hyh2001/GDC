@@ -19,9 +19,11 @@
   <depend>humanoid_msgs</depend>
   <depend>pend_msgs</depend>
   
-  <depend>go2_description</depend>
-  <depend>terrain_description</depend>
+
+  <depend>scene_description</depend>
   <depend>pendulum_description</depend>
+  <depend>go2_description</depend>
+  <depend>tron1_description</depend>
 
   <export>
     <build_type>ament_cmake</build_type>

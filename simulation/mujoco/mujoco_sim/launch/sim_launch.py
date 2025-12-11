@@ -111,6 +111,11 @@ def generate_launch_description():
         default_value='PendulumSimNode',
         description='Name of the simulation node to invoke'
     )
+    config_path_arg = DeclareLaunchArgument(
+        'config_path',
+        default_value='none',
+        description='configuration file path for simulation node'
+    )
     
     create_temp_mjcf_action = OpaqueFunction(function=create_temp_mjcf)
     
@@ -119,8 +124,10 @@ def generate_launch_description():
         executable='simulation',
         arguments=[
             LaunchConfiguration('temp_mjcf_path'),
-            LaunchConfiguration('node_class_name')
+            LaunchConfiguration('node_class_name'),
+            LaunchConfiguration('config_path')
         ],
+        parameters=[LaunchConfiguration('config_path')],
         name='simulation',
         output='screen'
     )
@@ -139,6 +146,7 @@ def generate_launch_description():
         mjcf_name_arg,
         scene_type_arg,
         node_class_name_arg,
+        config_path_arg,
         create_temp_mjcf_action,
         simulation_node,
         delete_file_handler
