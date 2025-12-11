@@ -1,8 +1,6 @@
 #include "base_quadruped_estimators/dummy_estimator.hpp"
-
-namespace base_quadruped_estimators
+namespace quadruped_estimators
 {
-
     controller_interface::CallbackReturn DummyEstimator::on_init()
     {
         return BaseQuadrupedEstimator::on_init();
@@ -80,17 +78,11 @@ namespace base_quadruped_estimators
     controller_interface::return_type DummyEstimator::update_and_write_commands(
         const rclcpp::Time &time, const rclcpp::Duration &period)
     {
-        return BaseQuadrupedEstimator::update_and_write_commands(time, period);
-    }
-
-    controller_interface::return_type DummyEstimator::update_reference_from_subscribers()
-    {
         executor_.spin_some(std::chrono::milliseconds(1));
-
-        return BaseQuadrupedEstimator::update_reference_from_subscribers();
+        return BaseQuadrupedEstimator::update_and_write_commands(time, period);
     }
 
 }; // namespace base_quadruped_estimators
 
 #include <pluginlib/class_list_macros.hpp>
-PLUGINLIB_EXPORT_CLASS(base_quadruped_estimators::DummyEstimator, controller_interface::ChainableControllerInterface);
+PLUGINLIB_EXPORT_CLASS(quadruped_estimators::DummyEstimator, controller_interface::ChainableControllerInterface);

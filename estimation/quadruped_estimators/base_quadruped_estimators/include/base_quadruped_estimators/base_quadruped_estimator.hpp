@@ -4,7 +4,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "controller_interface/chainable_controller_interface.hpp"
 
-namespace base_quadruped_estimators // estimators are treated as chainable controllers
+namespace quadruped_estimators // estimators are treated as chainable controllers
 { 
     class BaseQuadrupedEstimator : public controller_interface::ChainableControllerInterface
     { 
@@ -26,15 +26,14 @@ namespace base_quadruped_estimators // estimators are treated as chainable contr
 
 
     protected:
-        bool on_set_chained_mode(bool chained_mode) override;
-
+        std::vector<hardware_interface::StateInterface> on_export_state_interfaces() override;
+            
         controller_interface::return_type update_and_write_commands(
-            const rclcpp::Time & time, const rclcpp::Duration & period) override;
-    
-        std::vector<hardware_interface::CommandInterface> on_export_reference_interfaces() override;
+            const rclcpp::Time & time, const rclcpp::Duration & period) override;    
         
-        controller_interface::return_type update_reference_from_subscribers() override;    
-        
+        controller_interface::return_type update_reference_from_subscribers(
+            const rclcpp::Time &time, const rclcpp::Duration &period) override;
+
         // FR FL RR RL
         std::array<double, 12> joint_pos_;
         std::array<double, 12> joint_vel_;
@@ -49,8 +48,7 @@ namespace base_quadruped_estimators // estimators are treated as chainable contr
         std::array<double, 3> lin_acc_;
         std::array<double, 3> ang_acc_;
 
-        // ros2_control related
-        // command interface names
+        // exported state interface names
         std::vector<std::string> joint_names = {
             "FR_hip_joint", "FR_thigh_joint", "FR_calf_joint",
             "FL_hip_joint", "FL_thigh_joint", "FL_calf_joint",
@@ -75,4 +73,4 @@ namespace base_quadruped_estimators // estimators are treated as chainable contr
     };
 
 
-} // namespace base_quadruped_estimators
+} // namespace quadruped_estimators

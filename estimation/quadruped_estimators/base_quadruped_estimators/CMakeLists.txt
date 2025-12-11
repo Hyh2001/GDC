@@ -17,13 +17,13 @@ find_package(realtime_tools REQUIRED)
 find_package(quadruped_msgs REQUIRED)
 
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.cc)
-add_library(base_quadruped_estimators SHARED
+add_library(quadruped_estimators SHARED
         ${SOURCES}
         )
-target_include_directories(base_quadruped_estimators PUBLIC
+target_include_directories(quadruped_estimators PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>)
-ament_target_dependencies(base_quadruped_estimators PUBLIC 
+ament_target_dependencies(quadruped_estimators PUBLIC 
         rclcpp 
         rclcpp_lifecycle
         controller_interface
@@ -33,13 +33,13 @@ ament_target_dependencies(base_quadruped_estimators PUBLIC
         quadruped_msgs
 )
 pluginlib_export_plugin_description_file(controller_interface base_quadruped_estimators_config.xml)
-install(TARGETS base_quadruped_estimators
+install(TARGETS quadruped_estimators
   EXPORT export_${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
 )
-ament_export_libraries(base_quadruped_estimators)
+ament_export_libraries(quadruped_estimators)
 ament_export_targets(
   export_${PROJECT_NAME} HAS_LIBRARY_TARGET
 )

@@ -6,7 +6,7 @@
 
 #include "quadruped_msgs/msg/quad_est.hpp"
 
-namespace base_quadruped_estimators // estimator as a chainable controller
+namespace quadruped_estimators // estimator as a chainable controller
 {
     class DummyEstimator : public BaseQuadrupedEstimator
     {
@@ -22,8 +22,6 @@ namespace base_quadruped_estimators // estimator as a chainable controller
         controller_interface::return_type update_and_write_commands(
             const rclcpp::Time & time, const rclcpp::Duration & period) override;
     
-        controller_interface::return_type update_reference_from_subscribers() override;
-
         std::string node_name_ = "";
         std::string subscribe_topic_name_ = "";
         rclcpp::Node::SharedPtr node_ptr_ = nullptr;
