@@ -9,4 +9,9 @@
         type="hardware_interfaces::Go2HardwareInterface"
         base_class_type="hardware_interface::SystemInterface">
   </class>
+  <class 
+        name="hardware_interfaces/Tron1HardwareInterface"
+        type="hardware_interfaces::Tron1HardwareInterface"
+        base_class_type="hardware_interface::SystemInterface">
+  </class>
 </library>
