@@ -1,3 +1,6 @@
 [submodule "descriptions"]
 	path = descriptions
 	url = https://github.com/Hyh2001/descriptions.git
+[submodule "command/keyboard_joy"]
+	path = command/keyboard_joy
+	url = git@github.com:Hyh2001/keyboard_joy.git
