@@ -111,6 +111,9 @@ The `mode` field in motor messages typically follows these conventions:
 | **Position Control** | 1 | Control motor to target position using PD control |
 | **Velocity Control** | 2 | Control motor to target velocity |
 | **Torque Control** | 3 | Direct torque control |
+| **Actuator Network**| 4 | Control with a neural network based torque model|
+**Note**: not all the `mode`s are supported for all the robots, double check the simulation node implementation before calling. 
+
 ## Building the Package
 
 ```bash
