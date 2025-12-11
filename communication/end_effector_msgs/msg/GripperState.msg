@@ -1,0 +1,1 @@
+#TODO: what are the states needed for a gripper?
