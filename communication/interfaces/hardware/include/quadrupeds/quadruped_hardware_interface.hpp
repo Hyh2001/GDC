@@ -36,19 +36,19 @@ namespace hardware_interfaces
         // FR FL RR RL
         hardware_interface::HardwareInfo info_;
         // state interfaces
-        std::array<double, 12> joint_pos_;
-        std::array<double, 12> joint_vel_;
-        std::array<double, 12> joint_acc_;
-        std::array<double, 12> joint_tau_;
-        std::array<double, 4> contact_states_;
-        std::array<double, 3> gyro_; 
-        std::array<double, 3> accel_;
+        std::array<double, 12> joint_pos_{0};
+        std::array<double, 12> joint_vel_{0};
+        std::array<double, 12> joint_acc_{0};
+        std::array<double, 12> joint_tau_{0};
+        std::array<double, 4> contact_states_{0};
+        std::array<double, 3> gyro_{0}; 
+        std::array<double, 3> accel_{0};
         // command interfaces
-        std::array<double, 12> joint_pos_command_;
-        std::array<double, 12> joint_vel_command_;
-        std::array<double, 12> joint_tau_command_;
-        std::array<double, 12> joint_kp_;
-        std::array<double, 12> joint_kd_;
+        std::array<double, 12> joint_pos_command_{0};
+        std::array<double, 12> joint_vel_command_{0};
+        std::array<double, 12> joint_tau_command_{0};
+        std::array<double, 12> joint_kp_{0};
+        std::array<double, 12> joint_kd_{0};
     
         rclcpp::Node::SharedPtr node_ptr_ = nullptr;
         rclcpp::executors::SingleThreadedExecutor executor_;

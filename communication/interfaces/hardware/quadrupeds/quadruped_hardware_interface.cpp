@@ -68,6 +68,7 @@ namespace hardware_interfaces
     hardware_interface::CallbackReturn QuadrupedHardwareInterface::on_init(const hardware_interface::HardwareInfo & info)
     {
         info_ = info;
+
         return hardware_interface::SystemInterface::on_init(info);
     }
 
