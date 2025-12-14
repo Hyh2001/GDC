@@ -1,0 +1,6 @@
+<library path="humanoid_estimators">
+    <class name="humanoid_estimators/HumanoidDummyEstimator"
+           type="humanoid_estimators::HumanoidDummyEstimator"
+           base_class_type="controller_interface::ChainableControllerInterface">
+    </class>
+</library>
