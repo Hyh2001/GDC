@@ -12,6 +12,8 @@ find_package(controller_interface REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(pluginlib REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(control_toolbox REQUIRED)
 
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.cc)
 add_library(${PROJECT_NAME} SHARED
@@ -26,6 +28,8 @@ ament_target_dependencies(${PROJECT_NAME} PUBLIC
         rclcpp 
         rclcpp_lifecycle
         pluginlib
+        sensor_msgs
+        control_toolbox
 )
 install(TARGETS ${PROJECT_NAME}
   EXPORT export_${PROJECT_NAME}
