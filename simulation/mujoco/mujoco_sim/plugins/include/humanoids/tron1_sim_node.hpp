@@ -25,7 +25,7 @@ public:
 
     void reset_params();
 
-    void load_ros2_params() override;
+    virtual void load_ros2_params() override;
 
 protected: 
     // robot_type
@@ -75,6 +75,8 @@ public:
     Tron1SimGroundTruth();
 
     void reset_params();
+
+    void load_ros2_params() override;
 
 protected: 
     void build_ground_truth_msg();
