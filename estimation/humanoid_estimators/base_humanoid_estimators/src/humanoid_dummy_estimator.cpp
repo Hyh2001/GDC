@@ -26,13 +26,6 @@ namespace humanoid_estimators
             subscribe_topic_name_, qos,
             [this](const humanoid_msgs::msg::HumanoidEst::SharedPtr msg)
             {
-                if (joint_pos_.size() != msg->motor_state.size())
-                {
-                    joint_pos_.resize(msg->motor_state.size(), 0.0);
-                    joint_vel_.resize(msg->motor_state.size(), 0.0);
-                    joint_acc_.resize(msg->motor_state.size(), 0.0);
-                    joint_tau_.resize(msg->motor_state.size(), 0.0);
-                }
                 for (size_t i = 0; i < joint_pos_.size() ; i++)
                 {
                     joint_pos_[i] = msg->motor_state[i].q;

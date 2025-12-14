@@ -7,6 +7,7 @@ namespace humanoid_estimators
     {
         // interface names for parameters
         joint_names_ = auto_declare<std::vector<std::string>>("joint_names", joint_names_);
+        num_joints_ = joint_names_.size();
         joint_state_interface_types_ = auto_declare<std::vector<std::string>>(
             "joint_state_interfaces", joint_state_interface_types_);
         joint_command_interface_types_ = auto_declare<std::vector<std::string>>(
@@ -21,6 +22,11 @@ namespace humanoid_estimators
         ang_vel_name_ = auto_declare<std::string>("ang_vel_name", ang_vel_name_);
         lin_acc_name_ = auto_declare<std::string>("lin_acc_name", lin_acc_name_);
         ang_acc_name_ = auto_declare<std::string>("ang_acc_name", ang_acc_name_);
+        
+        joint_pos_.resize(num_joints_, 0.0);
+        joint_vel_.resize(num_joints_, 0.0);
+        joint_acc_.resize(num_joints_, 0.0);
+        joint_tau_.resize(num_joints_, 0.0);
         return controller_interface::CallbackReturn::SUCCESS;
     }
 

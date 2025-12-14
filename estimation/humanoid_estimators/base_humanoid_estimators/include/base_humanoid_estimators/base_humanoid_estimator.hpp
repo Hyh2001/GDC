@@ -32,6 +32,7 @@ namespace humanoid_estimators // estimator as a chainable controller
 
         // sensor reading fields
         std::vector<std::string> joint_names_ = {};
+        int num_joints_ = 0;
         std::vector<std::string> joint_state_interface_types_ = {"position", "velocity", "effort"};
         std::vector<std::string> joint_command_interface_types_ = {"position", "velocity", "effort", "kp", "kd"};
         std::vector<std::string> foot_names_ = {};
