@@ -1,0 +1,6 @@
+<library path="base_humanoid_controllers">
+    <class name="humanoid_controllers/HumanoidPassthroughController"
+           type="humanoid_controllers::HumanoidPassthroughController"
+           base_class_type="controller_interface::ChainableControllerInterface">
+    </class>
+</library>
