@@ -21,6 +21,10 @@ public:
     double compute(size_t idx, double error, const rclcpp::Duration &dt); // for single PID
     std::vector<double> compute(const std::vector<double> &errors, const rclcpp::Duration &dt); // for multiple PIDs
 
+    double compute(size_t idx, double error, double error_dot, const rclcpp::Duration &dt); // for single PID
+    std::vector<double> compute(const std::vector<double> &errors, 
+        const std::vector<double> &errors_dot, const rclcpp::Duration &dt); // for multiple PIDs
+
     void reset(bool clear_outputs = true);
     void cleanup(); 
 
