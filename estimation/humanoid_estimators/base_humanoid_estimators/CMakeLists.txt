@@ -22,7 +22,7 @@ add_library(humanoid_estimators SHARED
         )
 target_include_directories(humanoid_estimators PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:include>)
+        $<INSTALL_INTERFACE:include/${PROJECT_NAME}>)
 ament_target_dependencies(humanoid_estimators PUBLIC 
         rclcpp 
         rclcpp_lifecycle

@@ -22,7 +22,7 @@ add_library(quadruped_estimators SHARED
         )
 target_include_directories(quadruped_estimators PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:include>)
+        $<INSTALL_INTERFACE:include/${PROJECT_NAME}>)
 ament_target_dependencies(quadruped_estimators PUBLIC 
         rclcpp 
         rclcpp_lifecycle
