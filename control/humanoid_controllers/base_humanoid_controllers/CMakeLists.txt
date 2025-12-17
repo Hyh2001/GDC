@@ -22,7 +22,7 @@ add_library(${PROJECT_NAME} SHARED
 )
 target_include_directories(${PROJECT_NAME} PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:include>)
+        $<INSTALL_INTERFACE:include/${PROJECT_NAME}>)
 ament_target_dependencies(${PROJECT_NAME} PUBLIC 
         rclcpp 
         rclcpp_lifecycle
@@ -30,6 +30,7 @@ ament_target_dependencies(${PROJECT_NAME} PUBLIC
         pluginlib
         realtime_tools
         base_controllers
+        humanoid_msgs
 )
 pluginlib_export_plugin_description_file(controller_interface base_humanoid_controllers_config.xml)
 install(TARGETS ${PROJECT_NAME}
@@ -48,7 +49,7 @@ install(
         DESTINATION include/${PROJECT_NAME}
 )
 ament_export_include_directories(include)
-
+ament_export_dependencies(humanoid_msgs base_controllers)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
