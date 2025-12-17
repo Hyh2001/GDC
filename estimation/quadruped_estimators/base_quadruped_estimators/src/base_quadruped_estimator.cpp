@@ -67,7 +67,7 @@ namespace quadruped_estimators
             joint_idx++;
         }
 
-            size_t foot_idx = 0;
+        size_t foot_idx = 0;
         // Contact sensors and force sensors
         for (const auto &foot : foot_names) {
             for (const auto &sensor : foot_sensor_names) {
