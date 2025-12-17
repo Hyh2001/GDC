@@ -10,7 +10,7 @@ namespace rl_utils {
         /* 
             Projects the gravity vector into the base frame
         */
-        Eigen::Vector3d gravity_w(0.0, 0.0, -9.81);
+        Eigen::Vector3d gravity_w(0.0, 0.0, -1);
         gravity_proj = base_w.inverse() * gravity_w;
     }
 
