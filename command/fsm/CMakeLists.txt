@@ -9,12 +9,11 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 find_package(controller_manager_msgs REQUIRED)
 
-file(GLOB_RECURSE FSM_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.c 
+set(FSM_SOURCES 
+    src/fsm.cpp
 )
 add_library(${PROJECT_NAME} SHARED 
     ${FSM_SOURCES}
@@ -23,26 +22,39 @@ ament_target_dependencies(${PROJECT_NAME}
   rclcpp
   std_msgs
   controller_manager_msgs
+  sensor_msgs
 )
 target_include_directories(${PROJECT_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
 
-add_executable(fsm_node src/joy_fsm_node.cpp)
+add_executable(joy_fsm_node src/joy_fsm_node.cpp)
 target_link_libraries(
-  fsm_node
+  joy_fsm_node
   ${PROJECT_NAME}
 )
-
+ament_target_dependencies(joy_fsm_node
+  rclcpp
+  sensor_msgs
+  controller_manager_msgs
+)
 install(TARGETS
   ${PROJECT_NAME}
-  fsm_node
+  EXPORT ${PROJECT_NAME}_targets
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
+)
+install(TARGETS
+  ${PROJECT_NAME}
+  joy_fsm_node
   DESTINATION lib/${PROJECT_NAME}
 )
 install(DIRECTORY include/
   DESTINATION include/
 )
+ament_export_targets(${PROJECT_NAME}_targets HAS_LIBRARY_TARGET)
 ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
 ament_export_dependencies(controller_manager_msgs)
