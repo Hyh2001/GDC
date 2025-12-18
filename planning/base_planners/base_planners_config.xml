@@ -1,0 +1,6 @@
+<library path="base_planners">
+    <class name="base_planners/JoystickVelocityPlanner"
+           type="base_planners::JoystickVelocityPlanner"
+           base_class_type="controller_interface::ChainableControllerInterface">
+    </class>
+</library>

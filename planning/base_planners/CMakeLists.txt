@@ -21,7 +21,7 @@ add_library(${PROJECT_NAME} SHARED
 )
 target_include_directories(${PROJECT_NAME} PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:include>)
+        $<INSTALL_INTERFACE:include/${PROJECT_NAME}>)
 ament_target_dependencies(${PROJECT_NAME} PUBLIC 
         controller_interface
         controller_manager_msgs
@@ -31,6 +31,7 @@ ament_target_dependencies(${PROJECT_NAME} PUBLIC
         sensor_msgs
         control_toolbox
 )
+pluginlib_export_plugin_description_file(controller_interface base_planners_config.xml)
 install(TARGETS ${PROJECT_NAME}
   EXPORT export_${PROJECT_NAME}
   ARCHIVE DESTINATION lib
@@ -38,9 +39,9 @@ install(TARGETS ${PROJECT_NAME}
   RUNTIME DESTINATION bin
 )
 install(DIRECTORY include/
-  DESTINATION include
+  DESTINATION include/${PROJECT_NAME}
 )
-ament_export_include_directories(include ${ONNXRUNTIME_INCLUDE_DIRS})
+ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
 ament_export_dependencies(controller_manager_msgs)
 
