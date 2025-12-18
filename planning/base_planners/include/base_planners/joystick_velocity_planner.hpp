@@ -41,6 +41,9 @@ protected:
 
     std::vector<hardware_interface::StateInterface> on_export_state_interfaces() override;
 
+    int velocity_x_button_{0};
+    int velocity_y_button_{1};
+    int yaw_rate_button_{2};
     double sampling_frequency_{50.0}; // Hz
     double damping_frequency_{1.0}; // Hz
     double damping_intensity_{0.0}; // dB

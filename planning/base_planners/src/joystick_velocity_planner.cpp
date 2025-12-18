@@ -4,18 +4,22 @@ namespace base_planners
 {
 controller_interface::CallbackReturn JoystickVelocityPlanner::on_init()
 {
+    // configure the joystick related stuffs
+    int velocity_x_button_ = auto_declare<int>("velocity_x_button", 0); 
+    int velocity_y_button_ = auto_declare<int>("velocity_y_button", 1); 
+    int yaw_rate_button_ = auto_declare<int>("yaw_rate_button", 2);
     // configure the ros2 related stuffs
     node_ptr_ = rclcpp::Node::make_shared(std::string(this->get_node()->get_name()) + "_joystick_listener");
     auto qos = rclcpp::QoS(rclcpp::KeepLast(2), rmw_qos_profile_sensor_data);
     joy_subscriber_ = this->get_node()->create_subscription<sensor_msgs::msg::Joy>(
         "/joy", qos,
-        [this](const sensor_msgs::msg::Joy::SharedPtr msg)
+        [this,  velocity_x_button_, velocity_y_button_, yaw_rate_button_](const sensor_msgs::msg::Joy::SharedPtr msg)
         {
             // left stick
-            velocity_cmd_raw_[0] = msg->axes[1]; // vx
-            velocity_cmd_raw_[1] = msg->axes[0]; // vy
+            velocity_cmd_raw_[0] = msg->axes[velocity_x_button_]; // vx
+            velocity_cmd_raw_[1] = msg->axes[velocity_y_button_]; // vy
             // right stick
-            velocity_cmd_raw_[2] = msg->axes[3]; // yaw rate
+            velocity_cmd_raw_[2] = msg->axes[yaw_rate_button_]; // yaw rate
         });
     executor_.add_node(node_ptr_);
     // configure the filter
