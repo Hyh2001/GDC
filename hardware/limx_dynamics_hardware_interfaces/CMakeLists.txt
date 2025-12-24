@@ -7,14 +7,9 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-include(FetchContent)
-
-FetchContent_Declare(
-  limxsdk_lowlevel
-  GIT_REPOSITORY https://github.com/limxdynamics/limxsdk-lowlevel.git
-  GIT_TAG main  
-)
-FetchContent_MakeAvailable(limxsdk_lowlevel)
+find_package(rclcpp REQUIRED)
+find_package(humanoid_msgs REQUIRED)
+find_package(base_hardware_interfaces REQUIRED)
 
 
 if(BUILD_TESTING)
