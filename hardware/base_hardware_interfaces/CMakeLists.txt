@@ -7,9 +7,39 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(rclcpp_lifecycle REQUIRED)
+find_package(realtime_tools REQUIRED)
+
+find_package(end_effector_msgs REQUIRED)
+find_package(humanoid_msgs REQUIRED)
+find_package(manipulator_msgs REQUIRED)
+find_package(quadruped_msgs REQUIRED)
+
+add_library(base_hardware_interface INTERFACE)
+target_include_directories(base_hardware_interface INTERFACE
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include/${PROJECT_NAME}>)
+ament_target_dependencies(base_hardware_interface INTERFACE
+        rclcpp 
+        rclcpp_lifecycle
+        realtime_tools
+        end_effector_msgs
+        humanoid_msgs
+        manipulator_msgs
+        quadruped_msgs
+)
+install(TARGETS base_hardware_interface
+  EXPORT export_${PROJECT_NAME}
+)
+ament_export_targets(
+  export_${PROJECT_NAME}
+)
+
+install(
+        DIRECTORY include/
+        DESTINATION include/${PROJECT_NAME}
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
