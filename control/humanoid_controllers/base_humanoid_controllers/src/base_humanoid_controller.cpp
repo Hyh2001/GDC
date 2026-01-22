@@ -27,6 +27,10 @@ namespace humanoid_controllers
         ang_vel_name_ = auto_declare<std::string>("ang_vel_name", ang_vel_name_);
         lin_acc_name_ = auto_declare<std::string>("lin_acc_name", lin_acc_name_);
         ang_acc_name_ = auto_declare<std::string>("ang_acc_name", ang_acc_name_);
+        
+        // debug
+        debug_ = auto_declare<bool>("debug", false);
+        
         return controller_interface::CallbackReturn::SUCCESS;
     }
 

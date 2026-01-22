@@ -3,6 +3,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "realtime_tools/realtime_buffer.hpp"
 #include "controller_interface/chainable_controller_interface.hpp"
+#include "hardware_interface/introspection.hpp"
 
 namespace humanoid_controllers
 {
@@ -76,5 +77,8 @@ namespace humanoid_controllers
         std::string ang_vel_name_ = "global_ang_vel";
         std::string lin_acc_name_ = "global_lin_acc";
         std::string ang_acc_name_ = "global_ang_acc";
+
+        // debug
+        bool debug_ = false; 
     };
 };
