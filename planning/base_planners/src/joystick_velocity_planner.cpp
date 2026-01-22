@@ -32,9 +32,10 @@ controller_interface::CallbackReturn JoystickVelocityPlanner::on_init()
         lp_filters_[i]->configure();
     }
     // configure max velocity
-    max_velocity_[0] = auto_declare<double>("max_linear_velocity_x", 1.0);
-    max_velocity_[1] = auto_declare<double>("max_linear_velocity_y", 1.0);
-    max_velocity_[2] = auto_declare<double>("max_angular_velocity_yaw", 0.5);
+    auto ret = VelocityPlanner::on_init();
+    if (ret != controller_interface::CallbackReturn::SUCCESS) {
+        return ret;
+    }
     return controller_interface::CallbackReturn::SUCCESS;
 }
 
@@ -84,17 +85,10 @@ controller_interface::return_type JoystickVelocityPlanner::update_and_write_comm
         lp_filters_[i]->update(velocity_cmd_raw_[i], velocity_cmd_[i]);
     }
     // clip the velocity commands
-    for (size_t i = 0; i < 3; ++i) {
-        if (velocity_cmd_[i] > max_velocity_[i]) {
-            velocity_cmd_[i] = max_velocity_[i];
-        } else if (velocity_cmd_[i] < -max_velocity_[i]) {  
-            velocity_cmd_[i] = -max_velocity_[i];
-        }
+    auto ret = VelocityPlanner::update_and_write_commands(time, period);
+    if (ret != controller_interface::return_type::OK) {
+        return ret;
     }
-    // std::cout << "Velocity Command (vx, vy, yaw_rate): "
-    //         << velocity_cmd_[0] << ", "
-    //         << velocity_cmd_[1] << ", "
-    //         << velocity_cmd_[2] << std::endl;
     return controller_interface::return_type::OK;
 }
 
@@ -106,15 +100,7 @@ controller_interface::return_type JoystickVelocityPlanner::update_reference_from
 
 std::vector<hardware_interface::StateInterface> JoystickVelocityPlanner::on_export_state_interfaces()
 {
-    std::vector<hardware_interface::StateInterface> state_interfaces;
-    std::string planner_name = this->get_name();
-    state_interfaces.emplace_back(hardware_interface::StateInterface(
-            planner_name, "lin_x_vel_ref", &velocity_cmd_[0]));
-    state_interfaces.emplace_back(hardware_interface::StateInterface(
-            planner_name, "lin_y_vel_ref", &velocity_cmd_[1]));
-    state_interfaces.emplace_back(hardware_interface::StateInterface(
-            planner_name, "yaw_rate_ref", &velocity_cmd_[2]));
-    return state_interfaces;
+    return VelocityPlanner::on_export_state_interfaces();
 }
 
 
