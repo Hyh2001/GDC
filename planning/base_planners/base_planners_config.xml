@@ -3,4 +3,8 @@
            type="base_planners::JoystickVelocityPlanner"
            base_class_type="controller_interface::ChainableControllerInterface">
     </class>
+    <class name="base_planners/ConstantVelocityPlanner"
+           type="base_planners::ConstantVelocityPlanner"
+           base_class_type="controller_interface::ChainableControllerInterface">
+    </class>
 </library>
