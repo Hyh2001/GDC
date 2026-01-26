@@ -85,11 +85,6 @@ namespace fsm
             std::cout << "[FSM] WARNING: Requested controllers cannot be switched ." << std::endl;
             return;
         }
-        
-        auto srv_request = std::make_shared<controller_manager_msgs::srv::SwitchController::Request>();
-        srv_request->activate_controllers = request.start_controllers;
-        srv_request->deactivate_controllers = get_active_controllers();
-        srv_request->strictness = request.strictness;
 
         if (!switch_client_ptr_->wait_for_service(std::chrono::seconds(2)))
         {
@@ -97,29 +92,64 @@ namespace fsm
             return ;
         }
 
-        std::cout << "[FSM] Switching controllers async - Start: [";
-        for (const auto& c : srv_request->activate_controllers) std::cout << c << " ";
+        const auto active_controllers = get_active_controllers();
+        const auto start_controllers = request.start_controllers;
+
+        std::cout << "[FSM] Switching controllers (two-stage) - Start: [";
+        for (const auto& c : start_controllers) std::cout << c << " ";
         std::cout << "] Stop: [";
-        for (const auto& c : srv_request->deactivate_controllers) std::cout << c << " ";
+        for (const auto& c : active_controllers) std::cout << c << " ";
         std::cout << "]" << std::endl;
 
-        auto callback = [this](rclcpp::Client<controller_manager_msgs::srv::SwitchController>::SharedFuture future)
-        {
-            try {
-                auto response = future.get();
-                if (response->ok) {
-                    std::cout << "[FSM] ✓ Controller switch successful." << std::endl;
-                    // Update states after successful switch
-                    this->get_controller_states();
-                } else {
-                    std::cout << "[FSM] ✗ Controller switch failed." << std::endl;
-                }
-            } catch (const std::exception& e) {
-                std::cout << "[FSM] Exception during controller switch: " << e.what() << std::endl;
+        auto send_activate = [this, start_controllers, request]() {
+            if (start_controllers.empty()) {
+                this->get_controller_states();
+                return;
             }
+            auto activate_req = std::make_shared<controller_manager_msgs::srv::SwitchController::Request>();
+            activate_req->activate_controllers = start_controllers;
+            activate_req->strictness = request.strictness;
+            switch_client_ptr_->async_send_request(
+                activate_req,
+                [this](rclcpp::Client<controller_manager_msgs::srv::SwitchController>::SharedFuture future) {
+                    try {
+                        auto response = future.get();
+                        if (response->ok) {
+                            std::cout << "[FSM] ✓ Controller activation successful." << std::endl;
+                            this->get_controller_states();
+                        } else {
+                            std::cout << "[FSM] ✗ Controller activation failed." << std::endl;
+                        }
+                    } catch (const std::exception& e) {
+                        std::cout << "[FSM] Exception during controller activation: " << e.what() << std::endl;
+                    }
+                });
         };
 
-        switch_client_ptr_->async_send_request(srv_request, callback);
+        if (active_controllers.empty()) {
+            send_activate();
+            return;
+        }
+
+        auto deactivate_req = std::make_shared<controller_manager_msgs::srv::SwitchController::Request>();
+        deactivate_req->deactivate_controllers = active_controllers;
+        deactivate_req->strictness = request.strictness;
+
+        switch_client_ptr_->async_send_request(
+            deactivate_req,
+            [this, send_activate](rclcpp::Client<controller_manager_msgs::srv::SwitchController>::SharedFuture future) {
+                try {
+                    auto response = future.get();
+                    if (response->ok) {
+                        std::cout << "[FSM] ✓ Controller deactivation successful." << std::endl;
+                        send_activate();
+                    } else {
+                        std::cout << "[FSM] ✗ Controller deactivation failed." << std::endl;
+                    }
+                } catch (const std::exception& e) {
+                    std::cout << "[FSM] Exception during controller deactivation: " << e.what() << std::endl;
+                }
+            });
     }
 
     bool FSM::is_switchable(const std::vector<std::string> start_controllers, 
