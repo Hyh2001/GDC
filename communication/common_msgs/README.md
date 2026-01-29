@@ -111,7 +111,8 @@ The `mode` field in motor messages typically follows these conventions:
 | **Position Control** | 1 | Control motor to target position using PD control |
 | **Velocity Control** | 2 | Control motor to target velocity |
 | **Torque Control** | 3 | Direct torque control |
-| **Actuator Network**| 4 | Control with a neural network based torque model|
+| **Torque Feedforward + Position and Velocity Feedback** | 4 | MIT actuator like torque control with feedback |
+| **Actuator Network**| 5 | Control with a neural network based torque model that takes in $q,\dot{q}$ and output $\tau$ |
 **Note**: not all the `mode`s are supported for all the robots, double check the simulation node implementation before calling. 
 
 ## Building the Package
