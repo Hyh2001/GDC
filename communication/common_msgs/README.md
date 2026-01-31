@@ -108,6 +108,7 @@ The `mode` field in motor messages typically follows these conventions:
 
 | Mode | Value | Description |
 |------|-------|-------------|
+| **Free Mode** | 0 | No control to the motor |
 | **Position Control** | 1 | Control motor to target position using PD control |
 | **Velocity Control** | 2 | Control motor to target velocity |
 | **Torque Control** | 3 | Direct torque control |
