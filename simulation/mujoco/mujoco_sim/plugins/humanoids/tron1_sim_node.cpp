@@ -19,6 +19,7 @@ namespace mujoco_sim
         joint_pos_.resize(8, 0.0f);
         joint_vel_.resize(8, 0.0f);
         joint_torque_.resize(8, 0.0f);
+        mode_.resize(8, 0); // default mode 0
         cmd_torque_.resize(8, 0.0f);
         cmd_pos_.resize(8, 0.0f);
         cmd_vel_.resize(8, 0.0f);
@@ -40,6 +41,7 @@ namespace mujoco_sim
         std::fill(std::begin(contact_), std::end(contact_), false);
 
         // motor commands
+        std::fill(std::begin(mode_), std::end(mode_), 0);
         std::fill(std::begin(cmd_torque_), std::end(cmd_torque_), 0.0);
         std::fill(std::begin(cmd_pos_), std::end(cmd_pos_), 0.0);
         std::fill(std::begin(cmd_vel_), std::end(cmd_vel_), 0.0);
@@ -63,6 +65,7 @@ namespace mujoco_sim
             joint_pos_.resize(6, 0.0f);
             joint_vel_.resize(6, 0.0f);
             joint_torque_.resize(6, 0.0f);
+            mode_.resize(6, 0);
             cmd_torque_.resize(6, 0.0f);
             cmd_pos_.resize(6, 0.0f);
             cmd_vel_.resize(6, 0.0f);
@@ -79,6 +82,7 @@ namespace mujoco_sim
             joint_pos_.resize(14, 0.0f);
             joint_vel_.resize(14, 0.0f);
             joint_torque_.resize(14, 0.0f);
+            mode_.resize(14, 0);
             cmd_torque_.resize(14, 0.0f);
             cmd_pos_.resize(14, 0.0f);
             cmd_vel_.resize(14, 0.0f);
@@ -212,11 +216,45 @@ namespace mujoco_sim
             }
 
             // apply the motor commands
-            const int idx_joint_pos = sim_->m_->sensor_adr[mj_name2id(sim_->m_, mjOBJ_SENSOR, "abad_L_pos")];
-            const int idx_joint_vel = sim_->m_->sensor_adr[mj_name2id(sim_->m_, mjOBJ_SENSOR, "abad_L_vel")];
+            // assume actuator orders of position -> velocity -> torque
             for (size_t i = 0; i < joint_pos_.size(); i++)
             {
-                sim_->d_->ctrl[i] = msg->motor_cmd[i].tau + msg->motor_cmd[i].kp * (msg->motor_cmd[i].q - sim_->d_->sensordata[idx_joint_pos + i]) + msg->motor_cmd[i].kd * (msg->motor_cmd[i].dq - sim_->d_->sensordata[idx_joint_vel + i]);
+                switch (msg->motor_cmd[i].mode)
+                {
+                case uint8_t(0): // no control
+                    // sim_->d_->ctrl[i] = 0.0;
+                    break;
+                case uint8_t(1): // position control
+                    sim_->m_->actuator_gainprm[i * mjNGAIN + 0] = cmd_kp_[i]; // set kp
+                    sim_->m_->actuator_biasprm[i * mjNBIAS + 1] = -cmd_kp_[i]; 
+                    sim_->m_->actuator_biasprm[i * mjNBIAS + 2] = -cmd_kd_[i]; // set kd
+                    sim_->d_->ctrl[i] = cmd_pos_[i];
+                    break;
+                case uint8_t(2): // velocity control
+                    sim_->m_->actuator_gainprm[(joint_pos_.size() + i) * mjNGAIN + 0] = cmd_kd_[i]; 
+                    sim_->m_->actuator_biasprm[(joint_pos_.size() + i) * mjNBIAS + 2] = -cmd_kd_[i];
+                    sim_->d_->ctrl[i + joint_pos_.size()] = cmd_vel_[i];
+                    break;
+                case uint8_t(3): // torque control
+                    sim_->d_->ctrl[i + 2 * joint_pos_.size()] = cmd_torque_[i];
+                    break;
+                case uint8_t(4): // torque + pd
+                    sim_->m_->actuator_gainprm[i * mjNGAIN + 0] = cmd_kp_[i]; // set kp
+                    sim_->m_->actuator_biasprm[i * mjNBIAS + 1] = -cmd_kp_[i]; 
+                    sim_->m_->actuator_biasprm[i * mjNBIAS + 2] = -cmd_kd_[i]; // set kd
+                    sim_->m_->actuator_gainprm[(joint_pos_.size() + i) * mjNGAIN + 0] = cmd_kd_[i]; 
+                    sim_->m_->actuator_biasprm[(joint_pos_.size() + i) * mjNBIAS + 2] = 0.0;
+                    sim_->d_->ctrl[i] = cmd_pos_[i];
+                    sim_->d_->ctrl[i + joint_pos_.size()] = cmd_vel_[i];
+                    sim_->d_->ctrl[i + 2 * joint_pos_.size()] = cmd_torque_[i];
+                    break;
+                case uint8_t(5): // actuator network
+                    RCLCPP_ERROR(this->get_logger(), "Actuator network mode not implemented yet.");
+                    break;
+                default:
+                    RCLCPP_ERROR(this->get_logger(), "Unknown control mode: %d for joint %zu", msg->motor_cmd[i].mode, i);
+                    break;
+                }
             }
         }
     }

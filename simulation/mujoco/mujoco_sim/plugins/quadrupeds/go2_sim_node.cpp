@@ -89,14 +89,47 @@ void Go2SimNode::callback_low_state() {
 
 void Go2SimNode::callback_low_cmd(const quadruped_msgs::msg::LowCmd::SharedPtr msg) {
     if(sim_ ->  d_){
-        // const std::unique_lock<std::recursive_mutex> lock(sim_->mtx);
+        const std::unique_lock<std::recursive_mutex> lock(sim_->mtx);
         // apply the motor commands
-        const int idx_joint_pos = sim_->m_->sensor_adr[mj_name2id(sim_->m_, mjOBJ_SENSOR, "FR_hip_pos")];
-        const int idx_joint_vel = sim_->m_->sensor_adr[mj_name2id(sim_->m_, mjOBJ_SENSOR, "FR_hip_vel")];
-        for (int i = 0; i < 12; i++){
-            sim_->d_->ctrl[i] = msg->motor_cmd[i].tau 
-                + msg->motor_cmd[i].kp * (msg->motor_cmd[i].q - sim_->d_->sensordata[idx_joint_pos + i])
-                + msg->motor_cmd[i].kd * (msg->motor_cmd[i].dq - sim_->d_->sensordata[idx_joint_vel + i]);
+        // assume actuator orders of position -> velocity -> torque
+        for (size_t i = 0; i < joint_pos_.size(); i++)
+        {
+            switch (msg->motor_cmd[i].mode)
+            {
+            case uint8_t(0): // no control
+                // sim_->d_->ctrl[i] = 0.0;
+                break;
+            case uint8_t(1): // position control
+                sim_->m_->actuator_gainprm[i * mjNGAIN + 0] = msg->motor_cmd[i].kp; // set kp
+                sim_->m_->actuator_biasprm[i * mjNBIAS + 1] = -msg->motor_cmd[i].kp; 
+                sim_->m_->actuator_biasprm[i * mjNBIAS + 2] = -msg->motor_cmd[i].kd; // set kd
+                sim_->d_->ctrl[i] = msg->motor_cmd[i].q;
+                break;
+            case uint8_t(2): // velocity control
+                sim_->m_->actuator_gainprm[(joint_pos_.size() + i) * mjNGAIN + 0] = msg->motor_cmd[i].kd; 
+                sim_->m_->actuator_biasprm[(joint_pos_.size() + i) * mjNBIAS + 2] = -msg->motor_cmd[i].kd;
+                sim_->d_->ctrl[i + joint_pos_.size()] = msg->motor_cmd[i].dq;
+                break;
+            case uint8_t(3): // torque control
+                sim_->d_->ctrl[i + 2 * joint_pos_.size()] = msg->motor_cmd[i].tau;
+                break;
+            case uint8_t(4): // torque + pd
+                sim_->m_->actuator_gainprm[i * mjNGAIN + 0] = msg->motor_cmd[i].kp; // set kp
+                sim_->m_->actuator_biasprm[i * mjNBIAS + 1] = -msg->motor_cmd[i].kp; 
+                sim_->m_->actuator_biasprm[i * mjNBIAS + 2] = -msg->motor_cmd[i].kd; // set kd
+                sim_->m_->actuator_gainprm[(joint_pos_.size() + i) * mjNGAIN + 0] = msg->motor_cmd[i].kd; 
+                sim_->m_->actuator_biasprm[(joint_pos_.size() + i) * mjNBIAS + 2] = 0.0;
+                sim_->d_->ctrl[i] = msg->motor_cmd[i].q;
+                sim_->d_->ctrl[i + joint_pos_.size()] = msg->motor_cmd[i].dq;
+                sim_->d_->ctrl[i + 2 * joint_pos_.size()] = msg->motor_cmd[i].tau;
+                break;
+            case uint8_t(5): // actuator network
+                RCLCPP_ERROR(this->get_logger(), "Actuator network mode not implemented yet.");
+                break;
+            default:
+                RCLCPP_ERROR(this->get_logger(), "Unknown control mode: %d for joint %zu", msg->motor_cmd[i].mode, i);
+                break;
+            }
         }
     }
 }

@@ -58,6 +58,7 @@ protected:
     std::array<bool, 2> contact_; 
 
     // motor commands
+    std::vector<uint8_t> mode_;
     std::vector<float> cmd_torque_;
     std::vector<float> cmd_pos_; 
     std::vector<float> cmd_vel_;

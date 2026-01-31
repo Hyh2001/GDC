@@ -67,13 +67,44 @@ void PendulumSimNode::callback_low_state() {
 
 void PendulumSimNode::callback_low_cmd(const pend_msgs::msg::LowCmd::SharedPtr msg) {
     if(sim_ ->  d_){
-        // const std::unique_lock<std::recursive_mutex> lock(sim_->mtx);
+        const std::unique_lock<std::recursive_mutex> lock(sim_->mtx);
         // apply the motor commands
-        const int idx_joint_pos = sim_->m_->sensor_adr[mj_name2id(sim_->m_, mjOBJ_SENSOR, "joint_position")];
-        const int idx_joint_vel = sim_->m_->sensor_adr[mj_name2id(sim_->m_, mjOBJ_SENSOR, "joint_velocity")];
-        sim_ ->d_->ctrl[0] = msg->motor_cmd.tau 
-                + msg->motor_cmd.kp * (msg->motor_cmd.q - sim_->d_->sensordata[idx_joint_pos])
-                + msg->motor_cmd.kd * (msg->motor_cmd.dq - sim_->d_->sensordata[idx_joint_vel]);
+        switch (msg->motor_cmd.mode)
+        {
+        case uint8_t(0): // no control
+            // sim_->d_->ctrl[0] = 0.0;
+            break;
+        case uint8_t(1): // position control
+            sim_->m_->actuator_gainprm[0] = msg->motor_cmd.kp; // set kp
+            sim_->m_->actuator_biasprm[1] = -msg->motor_cmd.kp; 
+            sim_->m_->actuator_biasprm[2] = -msg->motor_cmd.kd; // set kd
+            sim_->d_->ctrl[0] = msg->motor_cmd.q;
+            break;
+        case uint8_t(2): // velocity control
+            sim_->m_->actuator_gainprm[mjNGAIN + 0] = msg->motor_cmd.kd; 
+            sim_->m_->actuator_biasprm[mjNBIAS + 2] = -msg->motor_cmd.kd;
+            sim_->d_->ctrl[1] = msg->motor_cmd.dq;
+            break;
+        case uint8_t(3): // torque control
+            sim_->d_->ctrl[2] = msg->motor_cmd.tau;
+            break;
+        case uint8_t(4): // torque + pd
+            sim_->m_->actuator_gainprm[0] = msg->motor_cmd.kp; // set kp
+            sim_->m_->actuator_biasprm[1] = -msg->motor_cmd.kp; 
+            sim_->m_->actuator_biasprm[2] = -msg->motor_cmd.kd; // set kd
+            sim_->m_->actuator_gainprm[mjNGAIN + 0] = msg->motor_cmd.kd; 
+            sim_->m_->actuator_biasprm[mjNBIAS + 2] = 0.0;
+            sim_->d_->ctrl[0] = msg->motor_cmd.q;
+            sim_->d_->ctrl[1] = msg->motor_cmd.dq;
+            sim_->d_->ctrl[2] = msg->motor_cmd.tau;
+            break;
+        case uint8_t(5): // actuator network
+            RCLCPP_ERROR(this->get_logger(), "Actuator network mode not implemented yet.");
+            break;
+        default:
+            RCLCPP_ERROR(this->get_logger(), "Unknown control mode: %d for joint %zu", msg->motor_cmd.mode, 0);
+            break;
+        }
     }
 }
 
