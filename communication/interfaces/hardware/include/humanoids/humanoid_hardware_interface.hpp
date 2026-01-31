@@ -46,6 +46,7 @@ namespace hardware_interfaces
         std::array<double, 3> gyro_{0}; 
         std::array<double, 3> accel_{0};
         // command interfaces
+        std::vector<uint8_t> mode_{0};
         std::vector<double> joint_pos_command_{0};
         std::vector<double> joint_vel_command_{0};
         std::vector<double> joint_tau_command_{0};

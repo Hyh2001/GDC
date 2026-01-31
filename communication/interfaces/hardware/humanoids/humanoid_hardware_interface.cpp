@@ -70,6 +70,7 @@ namespace hardware_interfaces
         joint_vel_.resize(num_joints_, 0.0);
         joint_acc_.resize(num_joints_, 0.0);
         joint_tau_.resize(num_joints_, 0.0);
+        mode_.resize(num_joints_, 0);
         joint_pos_command_.resize(num_joints_, 0.0);
         joint_vel_command_.resize(num_joints_, 0.0);
         joint_tau_command_.resize(num_joints_, 0.0);
@@ -169,6 +170,7 @@ namespace hardware_interfaces
         msg.header.stamp = node_ptr_->now();
         msg.motor_cmd.resize(num_joints_);
         for(size_t i = 0; i < num_joints_; i++){
+            msg.motor_cmd[i].mode = mode_[i];
             msg.motor_cmd[i].q = joint_pos_command_[i];
             msg.motor_cmd[i].dq = joint_vel_command_[i];
             msg.motor_cmd[i].tau = joint_tau_command_[i];

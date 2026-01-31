@@ -10,6 +10,8 @@ namespace hardware_interfaces
         node_name_ = "go2_hardware_interface";
         publish_topic_name_ = "/go2/low_cmd";
         subscribe_topic_name_ = "/go2/low_state";
+
+        mode_.fill(4);
     }
 
     hardware_interface::CallbackReturn Go2HardwareInterface::on_configure(const rclcpp_lifecycle::State & previous_state)

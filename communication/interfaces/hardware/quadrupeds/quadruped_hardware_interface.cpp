@@ -26,10 +26,6 @@ namespace hardware_interfaces
                     for(int i = 0; i < 4; i++){
                         contact_states_[i] = msg->contact_state[i].contact;
                     } 
-                    // orientation_[0] = msg->imu.orientation.w;
-                    // orientation_[1] = msg->imu.orientation.x;
-                    // orientation_[2] = msg->imu.orientation.y;
-                    // orientation_[3] = msg->imu.orientation.z;
                     gyro_[0] = msg->imu.angular_velocity.x;
                     gyro_[1] = msg->imu.angular_velocity.y;
                     gyro_[2] = msg->imu.angular_velocity.z;

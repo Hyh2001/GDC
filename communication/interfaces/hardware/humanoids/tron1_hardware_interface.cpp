@@ -13,7 +13,7 @@ namespace hardware_interfaces
     }
 
     hardware_interface::CallbackReturn Tron1HardwareInterface::on_configure(const rclcpp_lifecycle::State & previous_state)
-    {   
+    {           
         return HumanoidHardwareInterface::on_configure(previous_state);
     }        
 
@@ -40,7 +40,13 @@ namespace hardware_interfaces
 
     hardware_interface::CallbackReturn Tron1HardwareInterface::on_init(const hardware_interface::HardwareInfo & info)
     {
-        return HumanoidHardwareInterface::on_init(info);
+        auto ret = HumanoidHardwareInterface::on_init(info);
+        if (ret != hardware_interface::CallbackReturn::SUCCESS)
+        {
+            return ret;
+        }
+        std::fill(mode_.begin(), mode_.end(), 4); // torque + pd
+        return hardware_interface::CallbackReturn::SUCCESS;
     }
 
     std::vector<hardware_interface::StateInterface> Tron1HardwareInterface::export_state_interfaces() {
