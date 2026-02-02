@@ -413,6 +413,13 @@ void MujocoSim::PhysicsThread() {
       // lock the sim mutex
       const std::unique_lock<std::recursive_mutex> lock(sim->mtx);
 
+      int keyframe_id = mj_name2id(m, mjOBJ_KEY, "home");
+      if (keyframe_id >= 0) {
+        mj_resetDataKeyframe(m, d, keyframe_id);
+      } else {
+        mju_warning("Keyframe 'home' not found; Start with default joint states.");
+      }
+
       mj_forward(m, d);
 
     } else {
