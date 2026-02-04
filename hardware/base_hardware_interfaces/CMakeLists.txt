@@ -35,6 +35,13 @@ install(TARGETS base_hardware_interface
 ament_export_targets(
   export_${PROJECT_NAME}
 )
+ament_export_dependencies(
+  realtime_tools
+  humanoid_msgs
+  quadruped_msgs
+  manipulator_msgs
+  end_effector_msgs
+)
 
 install(
         DIRECTORY include/
