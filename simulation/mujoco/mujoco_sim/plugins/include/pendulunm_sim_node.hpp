@@ -11,58 +11,59 @@
 #include "simulate.h"
 #include "mujoco_sim_node_base.hpp"
 
-using namespace std::chrono_literals; 
+using namespace std::chrono_literals;
 
-namespace mujoco_sim{
+namespace mujoco_sim
+{
 
 namespace mj = mujoco;
 
-class PendulumSimNode : public MujocoSimNodeBase{
+class PendulumSimNode : public MujocoSimNodeBase
+{
 public:
-    // constructor of the node
-    PendulumSimNode();
+  // constructor of the node
+  PendulumSimNode();
 
-    void reset_params();
+  void reset_params();
 
-protected: 
-    void callback_low_state();
-    void callback_low_cmd(const pend_msgs::msg::LowCmd::SharedPtr msg);
+protected:
+  void callback_low_state();
+  void callback_low_cmd(const pend_msgs::msg::LowCmd::SharedPtr msg);
 
-    std::vector<rclcpp::TimerBase::SharedPtr> timers_;
-    rclcpp::Subscription<pend_msgs::msg::LowCmd>::SharedPtr cmd_sub_ptr_;
-    rclcpp::Publisher<pend_msgs::msg::LowState>::SharedPtr low_state_pub_ptr_;
-    
-    // sensor readings
-    float joint_pos_;
-    float joint_vel_;
-    float joint_accel_;
-    float joint_torque_;
+  std::vector<rclcpp::TimerBase::SharedPtr> timers_;
+  rclcpp::Subscription<pend_msgs::msg::LowCmd>::SharedPtr cmd_sub_ptr_;
+  rclcpp::Publisher<pend_msgs::msg::LowState>::SharedPtr low_state_pub_ptr_;
 
-    // motor commands
-    float cmd_torque_;
-    float cmd_pos_; 
-    float cmd_vel_;
-    // motor params
-    float cmd_kp_;
-    float cmd_kd_;
+  // sensor readings
+  float joint_pos_;
+  float joint_vel_;
+  float joint_accel_;
+  float joint_torque_;
+
+  // motor commands
+  float cmd_torque_;
+  float cmd_pos_;
+  float cmd_vel_;
+  // motor params
+  float cmd_kp_;
+  float cmd_kd_;
 };
 
-class PendulumSimGroundTruth : public PendulumSimNode{
+class PendulumSimGroundTruth : public PendulumSimNode
+{
 public:
+  PendulumSimGroundTruth();
 
-    PendulumSimGroundTruth();
+  void reset_params();
 
-    void reset_params();
+protected:
+  void ground_truth_callback();
+  rclcpp::Publisher<pend_msgs::msg::PendulumEst>::SharedPtr pendulum_est_pub_ptr_;
 
-protected: 
-    void ground_truth_callback();
-    rclcpp::Publisher<pend_msgs::msg::PendulumEst>::SharedPtr pendulum_est_pub_ptr_;
-
-    // ground truth
-    std::array<float, 4> tip_state_{0.0, 0.0, 0.0, 0.0}; // y, vy, z, vz  
+  // ground truth
+  std::array<float, 4> tip_state_{ 0.0, 0.0, 0.0, 0.0 };  // y, vy, z, vz
 };
 
+}  // namespace mujoco_sim
 
-} // namespace mujoco_sim
-
-#endif 
+#endif
