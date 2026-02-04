@@ -1,4 +1,7 @@
 #include "limx_dynamics_hardware_interfaces/tron1_hardware_interface.hpp"
+#include "lifecycle_msgs/msg/state.hpp"
+#include "lifecycle_msgs/msg/transition.hpp"
+#include "rclcpp/executors/single_threaded_executor.hpp"
 
 namespace limx_dynamics_hardware_interfaces{
 
@@ -82,7 +85,11 @@ namespace limx_dynamics_hardware_interfaces{
         robot_cmd_ = limxsdk::RobotCmd(robot_->getMotorNumber());
         robot_state_ = limxsdk::RobotState(robot_->getMotorNumber());
         if(robot_->getMotorNumber() != joint_positions_.size()){
-            RCLCPP_ERROR(this->get_logger(), "Motor number from robot API (%d) does not match the initialized size (%d).", robot_->getMotorNumber(), joint_positions_.size());
+            RCLCPP_ERROR(
+                this->get_logger(),
+                "Motor number from robot API (%zu) does not match the initialized size (%zu).",
+                static_cast<size_t>(robot_->getMotorNumber()),
+                joint_positions_.size());
             return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::FAILURE;
         }
         // sdk subscribers
@@ -233,6 +240,13 @@ namespace limx_dynamics_hardware_interfaces{
             joint_kp_gains_[i] = msg->motor_cmd[i].kp;
             joint_kd_gains_[i] = msg->motor_cmd[i].kd;
         }
+        // send to robot
+        write();
+    }
+
+    void Tron1HardwareInterface::publish_low_state()
+    {
+        read();
     }
 
     void Tron1HardwareInterface::write()
@@ -269,3 +283,32 @@ namespace limx_dynamics_hardware_interfaces{
     }
 
 }; 
+
+int main(int argc, char * argv[])
+{
+  rclcpp::init(argc, argv);
+
+  auto node = std::make_shared<limx_dynamics_hardware_interfaces::Tron1HardwareInterface>();
+  const auto configured_state = node->trigger_transition(
+      lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  if (configured_state.id() != lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE) {
+    RCLCPP_ERROR(node->get_logger(), "Failed to transition tron1 hardware interface node to 'configured'.");
+    rclcpp::shutdown();
+    return 1;
+  }
+
+  const auto activated_state = node->trigger_transition(
+      lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  if (activated_state.id() != lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE) {
+    RCLCPP_ERROR(node->get_logger(), "Failed to transition tron1 hardware interface node to 'active'.");
+    rclcpp::shutdown();
+    return 1;
+  }
+
+  rclcpp::executors::SingleThreadedExecutor executor;
+  executor.add_node(node->get_node_base_interface());
+  executor.spin();
+
+  rclcpp::shutdown();
+  return 0;
+}
