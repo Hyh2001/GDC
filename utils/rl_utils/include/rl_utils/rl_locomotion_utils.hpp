@@ -1,10 +1,14 @@
+#pragma once
+#ifndef RL_UTILS_RL_LOCOMOTION_UTILS_HPP
+#define RL_UTILS_RL_LOCOMOTION_UTILS_HPP
+
 #include <vector>
 
 #include "Eigen/Dense"
 
 namespace rl_utils {
 
-    void projected_gravity(const Eigen::Quaterniond& base_w,
+    inline void projected_gravity(const Eigen::Quaterniond& base_w,
                         Eigen::Vector3d& gravity_proj) 
     {
         /* 
@@ -18,3 +22,5 @@ namespace rl_utils {
 
 
 }; // namespace rl_utils
+
+#endif // RL_UTILS_RL_LOCOMOTION_UTILS_HPP

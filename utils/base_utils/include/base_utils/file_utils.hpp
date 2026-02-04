@@ -1,9 +1,28 @@
+#pragma once
+#ifndef BASE_UTILS_FILE_UTILS_HPP
+#define BASE_UTILS_FILE_UTILS_HPP
+
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <filesystem>
 
 namespace file_utils
 {
-    std::string resolve_file_path(const std::string & input_path, const std::string & package_name)
+    inline std::string resolve_package_path(const std::string & package_name)
+    {
+        std::string package_path;
+        try {
+            package_path = ament_index_cpp::get_package_share_directory(package_name);
+        } catch (const std::exception & e) {
+            RCLCPP_ERROR(
+                rclcpp::get_logger("file_utils"),
+                "Failed to get package share directory for package '%s': %s",
+                package_name.c_str(),
+                e.what());
+        }
+        return package_path;
+    }
+
+    inline std::string resolve_file_path(const std::string & input_path, const std::string & package_name)
     {
         std::string resolved_path = input_path;
         if (!input_path.empty() && !std::filesystem::path(input_path).is_absolute()) {
@@ -40,3 +59,5 @@ namespace file_utils
 
 
 }
+
+#endif // BASE_UTILS_FILE_UTILS_HPP
