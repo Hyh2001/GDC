@@ -43,6 +43,9 @@ namespace limx_dynamics_hardware_interfaces{
         limxsdk::RobotState robot_state_;
         limxsdk::ImuData imu_data_;
         limxsdk::DiagnosticValue diagnostic_value_;
+        std::atomic<bool> imu_diagnostic_received_{false};
+        std::atomic<bool> ethercat_diagnostic_received_{false};
+        std::atomic<bool> calibration_diagnostic_received_{false};
     };
 
 

@@ -95,9 +95,10 @@ namespace limx_dynamics_hardware_interfaces{
         // sdk subscribers
         robot_->subscribeRobotState([&](const limxsdk::RobotStateConstPtr &msg)
         {
-            mtx_.lock();
+            // mtx_.lock();
             robot_state_ = *msg;
-            mtx_.unlock(); });
+            // mtx_.unlock(); 
+        });
         robot_->subscribeImuData([&](const limxsdk::ImuDataConstPtr &msg)
         {
             imu_data_ = *msg;
@@ -105,6 +106,17 @@ namespace limx_dynamics_hardware_interfaces{
         robot_->subscribeDiagnosticValue([&](const limxsdk::DiagnosticValueConstPtr &msg)
         {
             diagnostic_value_ = *msg;
+            
+            // Set persistent flags
+            if (diagnostic_value_.name == "imu" && diagnostic_value_.code == 0) {
+                imu_diagnostic_received_ = true;
+            }
+            else if (diagnostic_value_.name == "ethercat" && diagnostic_value_.code == 0) {
+                ethercat_diagnostic_received_ = true;
+            }
+            else if (diagnostic_value_.name == "calibration" && diagnostic_value_.code == 0) {
+                calibration_diagnostic_received_ = true;
+            }
         });
         // check the diagnostic before activation
         if(!check_hardware()){
@@ -119,38 +131,14 @@ namespace limx_dynamics_hardware_interfaces{
     {
         RCLCPP_INFO(this->get_logger(), "Checking hardware diagnostics...");
         
-        bool imu_ok = false;
-        bool ethercat_ok = false;
-        bool calibration_ok = false;
-        
         auto start_time = std::chrono::steady_clock::now();
-        auto timeout = std::chrono::seconds(10); // wait 10 seconds
+        auto timeout = std::chrono::seconds(10);
         
         while (std::chrono::steady_clock::now() - start_time < timeout)
         {
-            if (diagnostic_value_.name == "imu" && 
-                diagnostic_value_.level == limxsdk::DiagnosticValue::OK && 
-                diagnostic_value_.code == 0)
-            {
-                imu_ok = true;
-                RCLCPP_INFO(this->get_logger(), "IMU check passed: %s", diagnostic_value_.message.c_str());
-            }
-            else if (diagnostic_value_.name == "ethercat" && 
-                    diagnostic_value_.level == limxsdk::DiagnosticValue::OK && 
-                    diagnostic_value_.code == 0)
-            {
-                ethercat_ok = true;
-                RCLCPP_INFO(this->get_logger(), "EtherCAT check passed: %s", diagnostic_value_.message.c_str());
-            }
-            else if (diagnostic_value_.name == "calibration" && 
-                    diagnostic_value_.level == limxsdk::DiagnosticValue::OK && 
-                    diagnostic_value_.code == 0)
-            {
-                calibration_ok = true;
-                RCLCPP_INFO(this->get_logger(), "Calibration check passed: %s", diagnostic_value_.message.c_str());
-            }
-            
-            if (imu_ok && ethercat_ok && calibration_ok)
+            if (imu_diagnostic_received_ && 
+                ethercat_diagnostic_received_ && 
+                calibration_diagnostic_received_)
             {
                 RCLCPP_INFO(this->get_logger(), "All hardware diagnostics passed!");
                 return true;
@@ -161,9 +149,9 @@ namespace limx_dynamics_hardware_interfaces{
         
         // timeout
         RCLCPP_ERROR(this->get_logger(), "Hardware diagnostic check timeout!");
-        if (!imu_ok) RCLCPP_ERROR(this->get_logger(), "IMU diagnostic failed");
-        if (!ethercat_ok) RCLCPP_ERROR(this->get_logger(), "EtherCAT diagnostic failed");
-        if (!calibration_ok) RCLCPP_ERROR(this->get_logger(), "Calibration diagnostic failed");
+        if (!imu_diagnostic_received_) RCLCPP_ERROR(this->get_logger(), "IMU diagnostic failed");
+        if (!ethercat_diagnostic_received_) RCLCPP_ERROR(this->get_logger(), "EtherCAT diagnostic failed");
+        if (!calibration_diagnostic_received_) RCLCPP_ERROR(this->get_logger(), "Calibration diagnostic failed");
         
         return false;
     }
