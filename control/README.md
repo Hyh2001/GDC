@@ -3,12 +3,22 @@
 ## Installation
 ### Installation of onnxruntime
 1. Download the latest release at `https://github.com/microsoft/onnxruntime/releases` for your corresponding architecture. 
-2. Extract all the files to a folder `onnxruntime` and move the folder to `/usr/local`
-3. Set an environment variable:
-  - Temporarily: `export ONNXRUNTIME_ROOT_PATH=/usr/local/onnxruntime`
-  - Permanently: 
-  ```bash
-  echo 'export ONNXRUNTIME_ROOT_PATH=/usr/local/onnxruntime' >> ~/.bashrc source ~/.bashrc
+2. Extract the downloaded archive to a temporary location
+3. Install to system paths:
+   ```bash
+   # Extract (adjust filename as needed)
+   tar -xzf onnxruntime-linux-x64-*.tgz
+   cd onnxruntime-linux-x64-*
+   
+   # Install to system directories
+   sudo cp -r include/* /usr/local/include/
+   sudo cp -r lib/* /usr/local/lib/
+   
+   # Update linker cache
+   sudo ldconfig
+   
+   # Verify installation
+   ldconfig -p | grep onnxruntime
   ```
 
 ## Troubleshooting: plugin not found
