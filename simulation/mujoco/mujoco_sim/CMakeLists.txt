@@ -26,6 +26,8 @@ find_package(sensor_msgs REQUIRED)
 find_package(quadruped_msgs REQUIRED)
 find_package(pend_msgs REQUIRED)
 find_package(humanoid_msgs REQUIRED)
+find_package(manipulator_msgs REQUIRED)
+find_package(end_effector_msgs REQUIRED)
 
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 set(CMAKE_INSTALL_RPATH "${CMAKE_CURRENT_SOURCE_DIR}/lib;${CMAKE_CURRENT_SOURCE_DIR}/lib/mujoco_plugin")
@@ -53,6 +55,8 @@ ament_target_dependencies(mujoco_sim_node_plugins
         quadruped_msgs
         pend_msgs
         humanoid_msgs
+        manipulator_msgs
+        end_effector_msgs
 )
 
 target_include_directories(mujoco_sim_node_plugins PUBLIC
