@@ -1,1 +1,3 @@
-#TODO: what are the states needed for a gripper?
+std_msgs/Header header
+
+common_msgs/MotorState gripper_state

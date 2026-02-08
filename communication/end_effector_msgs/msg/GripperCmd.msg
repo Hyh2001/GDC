@@ -1,2 +1,3 @@
-float64 position
-float64 max_effort
+std_msgs/Header header
+
+common_msgs/MotorCmd gripper_cmd 
