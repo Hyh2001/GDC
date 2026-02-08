@@ -1,3 +1,7 @@
+#pragma once
+#ifndef BASE_PLANNERS_VELOCITY_PLANNER_HPP__
+#define BASE_PLANNERS_VELOCITY_PLANNER_HPP__
+
 #include <vector>
 
 #include "rclcpp/rclcpp.hpp"
@@ -45,7 +49,6 @@ protected:
     std::array<double, 3> velocity_cmd_{0.0, 0.0, 0.0}; // vx, vy, yaw rate
 };
 
-
-
-
 }; // base_planners
+
+#endif // BASE_PLANNERS_VELOCITY_PLANNER_HPP__

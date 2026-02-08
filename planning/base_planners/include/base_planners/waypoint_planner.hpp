@@ -1,3 +1,7 @@
+#pragma once
+#ifndef BASE_PLANNERS_WAYPOINT_PLANNER_HPP__
+#define BASE_PLANNERS_WAYPOINT_PLANNER_HPP__
+
 #include <vector>
 
 #include "rclcpp/rclcpp.hpp"
@@ -52,3 +56,5 @@ namespace base_planners
     };
 
 }; // base_planners
+
+#endif // BASE_PLANNERS_WAYPOINT_PLANNER_HPP__
