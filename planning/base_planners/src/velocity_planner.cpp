@@ -1,6 +1,6 @@
 #include "base_planners/velocity_planner.hpp"
 
-namespace base_planners 
+namespace base_planners
 {
 controller_interface::CallbackReturn VelocityPlanner::on_init()
 {
@@ -26,7 +26,7 @@ controller_interface::InterfaceConfiguration VelocityPlanner::command_interface_
     controller_interface::InterfaceConfiguration command_interface_config;
     command_interface_config.type = controller_interface::interface_configuration_type::NONE;
 
-    return command_interface_config; // command_interfaces_  
+    return command_interface_config; // command_interfaces_
 }
 
 controller_interface::CallbackReturn VelocityPlanner::on_configure(
@@ -54,7 +54,7 @@ controller_interface::return_type VelocityPlanner::update_and_write_commands(
     for (size_t i = 0; i < 3; ++i) {
         if (velocity_cmd_[i] > max_velocity_[i]) {
             velocity_cmd_[i] = max_velocity_[i];
-        } else if (velocity_cmd_[i] < -max_velocity_[i]) {  
+        } else if (velocity_cmd_[i] < -max_velocity_[i]) {
             velocity_cmd_[i] = -max_velocity_[i];
         }
     }

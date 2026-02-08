@@ -27,7 +27,7 @@
   <depend>pend_msgs</depend>
   <depend>manipulator_msgs</depend>
   <depend>end_effector_msgs</depend>
-  
+
   <depend>go2_description</depend>
   <depend>terrain_description</depend>
   <depend>pendulum_description</depend>

@@ -21,7 +21,7 @@ namespace base_hardware_interfaces
         virtual void read() = 0;
         virtual void write() = 0;
         virtual void reset() = 0;
-    
+
     protected:
         // low state
         std::vector<double> joint_positions_{};

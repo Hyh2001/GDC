@@ -1,4 +1,4 @@
-### 
+###
 # task in load parameters robot_name, mjcf_name, scene_name, node_name
 # build up the temp mjcf file containing robot and scene
 # launch the node
@@ -14,7 +14,7 @@ from launch.actions import OpaqueFunction, RegisterEventHandler
 from launch.event_handlers import OnProcessExit
 
 import tempfile
-import yaml 
+import yaml
 
 ### utils
 def load_mappings(config_path):
@@ -81,7 +81,7 @@ def create_temp_mjcf(context):
         temp_file.close()
         print(f"Generated temporary MJCF file: {temp_file.name}")
         return [SetLaunchConfiguration('temp_mjcf_path', temp_file.name)]
-    
+
 def delete_temp_mjcf(context):
     temp_mjcf_path = LaunchConfiguration('temp_mjcf_path').perform(context)
     if temp_mjcf_path and os.path.exists(temp_mjcf_path):
@@ -103,7 +103,7 @@ def generate_launch_description():
     scene_type_arg = DeclareLaunchArgument(
         'scene_type',
         default_value='plane',
-        description='''Specify the scene where the robot is simulated in, 
+        description='''Specify the scene where the robot is simulated in,
             the model will be searched in default scene package and specified robot description package'''
     )
     node_class_name_arg = DeclareLaunchArgument(
@@ -116,9 +116,9 @@ def generate_launch_description():
         default_value='none',
         description='configuration file path for simulation node'
     )
-    
+
     create_temp_mjcf_action = OpaqueFunction(function=create_temp_mjcf)
-    
+
     simulation_node = Node(
         package='mujoco_sim',
         executable='simulation',

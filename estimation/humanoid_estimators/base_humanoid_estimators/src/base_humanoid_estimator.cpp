@@ -22,7 +22,7 @@ namespace humanoid_estimators
         ang_vel_name_ = auto_declare<std::string>("ang_vel_name", ang_vel_name_);
         lin_acc_name_ = auto_declare<std::string>("lin_acc_name", lin_acc_name_);
         ang_acc_name_ = auto_declare<std::string>("ang_acc_name", ang_acc_name_);
-        
+
         joint_pos_.resize(num_joints_, 0.0);
         joint_vel_.resize(num_joints_, 0.0);
         joint_acc_.resize(num_joints_, 0.0);
@@ -121,7 +121,7 @@ namespace humanoid_estimators
             estimator_name, pos_name_ + "_y" + "_est", &pos_[1]));
         state_interfaces.emplace_back(hardware_interface::StateInterface(
             estimator_name, pos_name_ + "_z" + "_est", &pos_[2]));
-    
+
         // Orientation
         state_interfaces.emplace_back(hardware_interface::StateInterface(
             estimator_name, ori_name_ + "_w" + "_est", &ori_[0]));
@@ -131,7 +131,7 @@ namespace humanoid_estimators
             estimator_name, ori_name_ + "_y" + "_est", &ori_[2]));
         state_interfaces.emplace_back(hardware_interface::StateInterface(
             estimator_name, ori_name_ + "_z" + "_est", &ori_[3]));
-            
+
         // Global Linear velocity
         state_interfaces.emplace_back(hardware_interface::StateInterface(
             estimator_name, lin_vel_name_ + "_x" + "_est", &lin_vel_[0]));
@@ -155,7 +155,7 @@ namespace humanoid_estimators
             estimator_name, lin_acc_name_ + "_y" + "_est", &lin_acc_[1]));
         state_interfaces.emplace_back(hardware_interface::StateInterface(
             estimator_name, lin_acc_name_ + "_z" + "_est", &lin_acc_[2]));
-        
+
         // Global Angular acceleration
         state_interfaces.emplace_back(hardware_interface::StateInterface(
             estimator_name, ang_acc_name_ + "_x" + "_est", &ang_acc_[0]));
@@ -163,7 +163,7 @@ namespace humanoid_estimators
             estimator_name, ang_acc_name_ + "_y" + "_est", &ang_acc_[1]));
         state_interfaces.emplace_back(hardware_interface::StateInterface(
             estimator_name, ang_acc_name_ + "_z" + "_est", &ang_acc_[2]));
-    
+
         return state_interfaces;
     }
 
@@ -172,4 +172,4 @@ namespace humanoid_estimators
     {
         return controller_interface::return_type::OK;
     }
-}; 
+};

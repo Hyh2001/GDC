@@ -10,7 +10,7 @@ namespace humanoid_estimators // estimator as a chainable controller
     {
     public:
         controller_interface::CallbackReturn on_init() override;
-    
+
         controller_interface::InterfaceConfiguration command_interface_configuration() const override;
 
         controller_interface::InterfaceConfiguration state_interface_configuration() const override;

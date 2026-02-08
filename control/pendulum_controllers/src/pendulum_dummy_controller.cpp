@@ -31,7 +31,7 @@ namespace pendulum_controllers
             ref_controller_name_+"/joint_position_ref");
         command_interface_config.names.push_back(
             ref_controller_name_+"/joint_velocity_ref");
-        return command_interface_config; // command_interfaces_    
+        return command_interface_config; // command_interfaces_
     }
 
     controller_interface::InterfaceConfiguration PendulumDummyController::state_interface_configuration() const
@@ -115,7 +115,7 @@ namespace pendulum_controllers
         reference_interfaces.push_back(hardware_interface::CommandInterface(
             controller_name, "joint_position_ref", &reference_interfaces_[7]));
         reference_interfaces.push_back(hardware_interface::CommandInterface(
-            controller_name, "joint_velocity_ref", &reference_interfaces_[8])); 
+            controller_name, "joint_velocity_ref", &reference_interfaces_[8]));
         return reference_interfaces;
     }
 
@@ -147,7 +147,7 @@ namespace pendulum_controllers
         return controller_interface::return_type::OK;
     }
 
-    
+
 }; // namespace pendulum_controllers
 
 #include <pluginlib/class_list_macros.hpp>

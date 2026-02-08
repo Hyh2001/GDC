@@ -78,7 +78,7 @@ namespace pendulum_estimators
     controller_interface::return_type DummyEstimator::update_and_write_commands(
         const rclcpp::Time &time, const rclcpp::Duration &period)
     {
-        executor_.spin_some(std::chrono::milliseconds(0));  
+        executor_.spin_some(std::chrono::milliseconds(0));
         joint_pos_ = latest_est_msg_.motor_state.q;
         joint_vel_ = latest_est_msg_.motor_state.dq;
         joint_tau_ = latest_est_msg_.motor_state.tau;

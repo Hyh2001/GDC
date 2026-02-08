@@ -8,4 +8,4 @@ common_msgs/FTSensor[2] contact_wrench # contact wrench
 # base
 geometry_msgs/Pose pose
 geometry_msgs/Twist twist
-geometry_msgs/Accel accel  
+geometry_msgs/Accel accel

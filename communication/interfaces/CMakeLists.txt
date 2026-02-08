@@ -32,14 +32,14 @@ target_include_directories(hardware_interfaces PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/hardware/include>
         # $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/hardware/include/quadrupeds>
         $<INSTALL_INTERFACE:include>)
-ament_target_dependencies(hardware_interfaces PUBLIC 
+ament_target_dependencies(hardware_interfaces PUBLIC
         hardware_interface
         pluginlib
         rclcpp
         rclcpp_lifecycle
         realtime_tools
-        sensor_msgs 
-        common_msgs 
+        sensor_msgs
+        common_msgs
         quadruped_msgs
         pend_msgs
         humanoid_msgs
@@ -64,7 +64,7 @@ install(
         DESTINATION include/
 )
 
-install(DIRECTORY 
+install(DIRECTORY
         test
         DESTINATION share/${PROJECT_NAME}/
 )

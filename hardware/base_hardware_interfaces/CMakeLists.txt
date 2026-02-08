@@ -21,7 +21,7 @@ target_include_directories(base_hardware_interface INTERFACE
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include/${PROJECT_NAME}>)
 ament_target_dependencies(base_hardware_interface INTERFACE
-        rclcpp 
+        rclcpp
         rclcpp_lifecycle
         realtime_tools
         end_effector_msgs

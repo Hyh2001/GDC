@@ -14,7 +14,7 @@ namespace fsm
     {
     public:
         FSMNode() : rclcpp::Node("joy_fsm_node") {
-            // initialize 
+            // initialize
             get_params();
             // subscriber
             auto qos = rclcpp::QoS(rclcpp::KeepLast(2), rmw_qos_profile_sensor_data);
@@ -37,13 +37,13 @@ namespace fsm
             fsm_ptr_->get_controller_states();
         }
 
-        void get_params(){ 
-            std::vector<int> keys = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};  
-    
+        void get_params(){
+            std::vector<int> keys = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+
             for (int key : keys) {
                 std::string param_name = "key_controller_map." + std::to_string(key);
                 this->declare_parameter(param_name, std::vector<std::string>{});
-                
+
                 if (this->has_parameter(param_name)) {
                     auto controllers = this->get_parameter(param_name).as_string_array();
                     // Only add to map if it has controllers
@@ -61,7 +61,7 @@ namespace fsm
                 bool current_state = msg->buttons[i] != 0;
                 if (current_state && !button_states_[i]) {
                     if (key_controller_map_.find(i) != key_controller_map_.end()) {
-                        auto request = ControllerSwitchRequest(); 
+                        auto request = ControllerSwitchRequest();
                         request.start_controllers.clear();
                         for (const auto& controller_name : key_controller_map_[i]) {
                             request.start_controllers.push_back(controller_name);
@@ -89,7 +89,7 @@ namespace fsm
                     controllers_str += controller + ", ";
                 }
                 if (!controllers_str.empty()) {
-                    controllers_str = controllers_str.substr(0, controllers_str.length() - 2); 
+                    controllers_str = controllers_str.substr(0, controllers_str.length() - 2);
                 }
                 RCLCPP_INFO(this->get_logger(), "  Key %d: [%s]", key, controllers_str.c_str());
             }
@@ -106,10 +106,10 @@ namespace fsm
         rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_subscriber_ = nullptr;
         std::string joy_topic_ = "/joy";
         std::array<bool, 10> button_states_ = {false, false, false,
-                                               false, false, false, 
+                                               false, false, false,
                                                false, false, false, false};
         std::map<int, std::vector<std::string>> key_controller_map_;
         std::shared_ptr<FSM> fsm_ptr_ = nullptr;
-    }; 
+    };
 
 };

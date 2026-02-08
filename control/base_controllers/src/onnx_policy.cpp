@@ -2,7 +2,7 @@
 
 namespace base_controllers{
 
-OnnxPolicy::OnnxPolicy(const std::string& model_path, 
+OnnxPolicy::OnnxPolicy(const std::string& model_path,
     int input_size, int output_size) {
     input_shape_[1] = input_size;
     output_shape_[1] = output_size;
@@ -23,22 +23,22 @@ OnnxPolicy::OnnxPolicy(const std::string& model_path,
     // Create data tensors
     input_tensor_ = Ort::Value::CreateTensor<float>(
         Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator, OrtMemTypeCPU),
-        input_data_ptr_->data(), 
-        input_data_ptr_->size(), 
+        input_data_ptr_->data(),
+        input_data_ptr_->size(),
         input_shape_.data(),
-        input_shape_.size()); 
+        input_shape_.size());
     output_tensor_ = Ort::Value::CreateTensor<float>(
         Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator, OrtMemTypeCPU),
-        output_data_ptr_->data(), 
-        output_data_ptr_->size(), 
+        output_data_ptr_->data(),
+        output_data_ptr_->size(),
         output_shape_.data(),
         output_shape_.size());
     // names
     Ort::AllocatorWithDefaultOptions allocator;
-    Ort::AllocatedStringPtr input_name_ptr = 
+    Ort::AllocatedStringPtr input_name_ptr =
         session_ptr_->GetInputNameAllocated(0, allocator);
     input_name_ = std::string(input_name_ptr.get());
-    Ort::AllocatedStringPtr output_name_ptr = 
+    Ort::AllocatedStringPtr output_name_ptr =
         session_ptr_->GetOutputNameAllocated(0, allocator);
     output_name_ = std::string(output_name_ptr.get());
 }
@@ -55,12 +55,12 @@ std::vector<double> OnnxPolicy::infer(
         *run_options_ptr_,
         input_names, &input_tensor_, 1,
         output_names, &output_tensor_, 1);
-    
+
         std::vector<double> result(output_data_ptr_->size());
     for (size_t i = 0; i < output_data_ptr_->size(); ++i) {
         result[i] = static_cast<double>((*output_data_ptr_)[i]);
     }
-    
+
     return result;
 }
 

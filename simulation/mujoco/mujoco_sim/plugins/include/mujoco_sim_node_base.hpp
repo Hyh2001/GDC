@@ -9,7 +9,7 @@ namespace mujoco_sim{
 class MujocoSimNodeBase: public rclcpp::Node {
 public:
     MujocoSimNodeBase(const std::string& node_name)
-        : Node(node_name){        
+        : Node(node_name){
     }
     virtual ~MujocoSimNodeBase() = default;
 
@@ -19,7 +19,7 @@ public:
 protected:
     mj::Simulate* sim_;
 
-}; 
+};
 
 } // namespace mujoco_sim
 

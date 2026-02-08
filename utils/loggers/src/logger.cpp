@@ -2,7 +2,7 @@
 
 namespace loggers
 {
-Logger::Logger(const std::string & node_name, 
+Logger::Logger(const std::string & node_name,
     double publish_rate_hz)
 {
     node_ptr_ = rclcpp::Node::make_shared(node_name);
@@ -40,12 +40,12 @@ void Logger::start() {
     if(exec_thread_.joinable()) {
         exec_thread_.join();  // Wait for previous thread to finish
     }
-    
+
     // Create new thread (works for both first time and restart)
     exec_thread_ = std::thread([this]() {
         executor_.spin();
     });
-} 
+}
 
 void Logger::pause() {
     if(!is_running_) {
@@ -73,7 +73,7 @@ void Logger::publish_callback() {
     // Update values
     for (size_t i = 0; i < s_.value_ptrs.size(); ++i) {
         if(s_.value_ptrs[i] == nullptr){
-            s_.msg.values[i] = std::numeric_limits<double>::quiet_NaN(); 
+            s_.msg.values[i] = std::numeric_limits<double>::quiet_NaN();
             continue;
         }
         s_.msg.values[i] = *(s_.value_ptrs[i]);

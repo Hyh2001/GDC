@@ -3,11 +3,11 @@ from launch_ros.actions import Node
 from launch.actions import IncludeLaunchDescription, ExecuteProcess, RegisterEventHandler, TimerAction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import PathJoinSubstitution,Command
-from launch_ros.substitutions import FindPackageShare 
+from launch_ros.substitutions import FindPackageShare
 from ament_index_python.packages import get_package_share_directory
 from launch.event_handlers import OnProcessStart, OnProcessExit
 
-import os 
+import os
 
 def generate_launch_description():
     # Define the robot_description from xacro
@@ -23,7 +23,7 @@ def generate_launch_description():
     #     "config",
     #     "robot_control.yaml"
     # )
-    
+
     mujoco_sim_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(
             get_package_share_directory("mujoco_sim"),
@@ -38,7 +38,7 @@ def generate_launch_description():
             'config_path': '/home/yuhao/ros2_ws/deploy_ws/src/deployment_code_base/communication/interfaces/test/tron1_sim_config.yaml'  # no ros2_control for tron1 for now
         }.items()
     )
-    
+
     # Start robot_state_publisher
     robot_state_publisher_node = Node(
         package='robot_state_publisher',
@@ -57,7 +57,7 @@ def generate_launch_description():
     #     parameters=[config_file],
     #     output="screen"
     # )
-    
+
 
     return LaunchDescription([
         mujoco_sim_launch,
@@ -68,16 +68,16 @@ def generate_launch_description():
         # load_pendulum_periodic_planner,
         # load_pendulum_pid_controller,
         # load_pendulum_velocity_policy_controller,
-        # RegisterEventHandler( 
+        # RegisterEventHandler(
         #     event_handler=OnProcessExit(
         #         target_action=load_pendulum_dummy_estimator, # load_pendulum_pid_controller
-        #         on_exit=[load_pendulum_pid_controller]                 
+        #         on_exit=[load_pendulum_pid_controller]
         #     )
         # ),
-        # RegisterEventHandler( 
+        # RegisterEventHandler(
         #     event_handler=OnProcessExit(
         #         target_action=load_pendulum_dummy_estimator, # load_pendulum_pid_controller
-        #         on_exit=[load_pendulum_velocity_policy_controller]                 
+        #         on_exit=[load_pendulum_velocity_policy_controller]
         #     )
         # ),
         # pendulum_pid_controller_spawner,

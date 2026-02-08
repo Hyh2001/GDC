@@ -7,7 +7,7 @@
 
 namespace humanoid_controllers
 {
-    /* 
+    /*
         This controller simply passes through the reference positions and velocities
         to the command interfaces with optional PD gains.
     */

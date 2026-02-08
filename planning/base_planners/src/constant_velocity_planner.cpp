@@ -1,13 +1,13 @@
 #include "base_planners/constant_velocity_planner.hpp"
 
-namespace base_planners 
+namespace base_planners
 {
 controller_interface::CallbackReturn ConstantVelocityPlanner::on_init()
 {
     // configure target velocity and ignore max velocity
     velocity_cmd_[0] = auto_declare<double>("vel_cmd_x", 0.0);
     velocity_cmd_[1] = auto_declare<double>("vel_cmd_y", 0.0);
-    velocity_cmd_[2] = auto_declare<double>("yaw_rate_cmd", 0.0); 
+    velocity_cmd_[2] = auto_declare<double>("yaw_rate_cmd", 0.0);
 
     return controller_interface::CallbackReturn::SUCCESS;
 }
@@ -26,7 +26,7 @@ controller_interface::InterfaceConfiguration ConstantVelocityPlanner::command_in
     controller_interface::InterfaceConfiguration command_interface_config;
     command_interface_config.type = controller_interface::interface_configuration_type::NONE;
 
-    return command_interface_config; // command_interfaces_  
+    return command_interface_config; // command_interfaces_
 }
 
 controller_interface::CallbackReturn ConstantVelocityPlanner::on_configure(

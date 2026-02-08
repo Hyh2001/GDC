@@ -5,12 +5,12 @@
 #include "controller_interface/chainable_controller_interface.hpp"
 
 namespace humanoid_planners
-{ 
+{
     class BaseHumanoidPlanner : public controller_interface::ChainableControllerInterface
     {
     public:
         controller_interface::CallbackReturn on_init() override;
-    
+
         controller_interface::InterfaceConfiguration command_interface_configuration() const override;
 
         controller_interface::InterfaceConfiguration state_interface_configuration() const override;

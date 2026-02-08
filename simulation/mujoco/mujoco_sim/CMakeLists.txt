@@ -41,17 +41,17 @@ if(NOT TARGET mujoco_sim)
 endif()
 
 # ros2 node plugins
-file(GLOB_RECURSE plugin_source 
-        ${CMAKE_CURRENT_SOURCE_DIR}/plugins/*.cpp 
+file(GLOB_RECURSE plugin_source
+        ${CMAKE_CURRENT_SOURCE_DIR}/plugins/*.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/plugins/*.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/plugins/*.hpp
 )
 add_library(mujoco_sim_node_plugins SHARED ${plugin_source})
-ament_target_dependencies(mujoco_sim_node_plugins 
-        rclcpp 
+ament_target_dependencies(mujoco_sim_node_plugins
+        rclcpp
         pluginlib
         sensor_msgs
-        common_msgs 
+        common_msgs
         quadruped_msgs
         pend_msgs
         humanoid_msgs
@@ -79,7 +79,7 @@ ament_export_targets(
 #     DESTINATION share/${PROJECT_NAME}
 # )
 
-# mujoco plugins 
+# mujoco plugins
 file(GLOB SO_FILES "${CMAKE_CURRENT_SOURCE_DIR}/lib/mujoco_plugin/*.so")
 set (PLUGIN_LIBS "")
 foreach(SO_FILE ${SO_FILES})
@@ -119,8 +119,8 @@ list(APPEND MUJOCO_CXX_FLAGS
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-install(DIRECTORY 
-        launch 
+install(DIRECTORY
+        launch
         DESTINATION share/${PROJECT_NAME}/
 )
 

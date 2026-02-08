@@ -22,10 +22,10 @@ add_library(${PROJECT_NAME} SHARED
 target_include_directories(${PROJECT_NAME} PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include/${PROJECT_NAME}>)
-ament_target_dependencies(${PROJECT_NAME} PUBLIC 
+ament_target_dependencies(${PROJECT_NAME} PUBLIC
         controller_interface
         controller_manager_msgs
-        rclcpp 
+        rclcpp
         rclcpp_lifecycle
         pluginlib
         sensor_msgs

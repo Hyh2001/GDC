@@ -18,8 +18,8 @@ add_library(${PROJECT_NAME} SHARED
 target_include_directories(${PROJECT_NAME} PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>)
-ament_target_dependencies(${PROJECT_NAME} PUBLIC 
-        rclcpp 
+ament_target_dependencies(${PROJECT_NAME} PUBLIC
+        rclcpp
         common_msgs
 )
 install(TARGETS ${PROJECT_NAME}

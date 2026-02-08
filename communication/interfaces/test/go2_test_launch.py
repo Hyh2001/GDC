@@ -3,11 +3,11 @@ from launch_ros.actions import Node
 from launch.actions import IncludeLaunchDescription, ExecuteProcess, RegisterEventHandler
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import PathJoinSubstitution,Command
-from launch_ros.substitutions import FindPackageShare 
+from launch_ros.substitutions import FindPackageShare
 from ament_index_python.packages import get_package_share_directory
 from launch.event_handlers import OnProcessExit
 
-import os 
+import os
 
 def generate_launch_description():
     # Define the robot_description from xacro
@@ -28,7 +28,7 @@ def generate_launch_description():
         "config",
         "robot_control.yaml"
     )
-    
+
     mujoco_sim_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(
             get_package_share_directory("mujoco_sim"),
@@ -42,7 +42,7 @@ def generate_launch_description():
             'node_class_name': 'Go2SimNode'
         }.items()
     )
-    
+
     # Start robot_state_publisher
     robot_state_publisher_node = Node(
         package='robot_state_publisher',
@@ -58,7 +58,7 @@ def generate_launch_description():
         parameters=[config_file],
         output="screen"
     )
-    
+
     # load_go2_dummy_estimator = ExecuteProcess(
     #     cmd=[
     #         "ros2",
@@ -70,7 +70,7 @@ def generate_launch_description():
     #     ],
     #     output="screen",
     # )
-    
+
     # load_joint_state_broadcaster = ExecuteProcess(
     #     cmd=[
     #         "ros2",

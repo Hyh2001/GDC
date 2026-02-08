@@ -15,7 +15,7 @@ namespace pendulum_controllers
         command_interface_config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
         command_interface_config.names.push_back(
             std::string("pivot/")+"effort");
-        return command_interface_config; // command_interfaces_    
+        return command_interface_config; // command_interfaces_
     }
 
     controller_interface::InterfaceConfiguration PendulumPID::state_interface_configuration() const
@@ -90,7 +90,7 @@ namespace pendulum_controllers
 
         return controller_interface::return_type::OK;
     }
-    
+
 }; // namespace pendulum_controllers
 
 #include <pluginlib/class_list_macros.hpp>

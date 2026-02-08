@@ -12,7 +12,7 @@ namespace humanoid_estimators // estimator as a chainable controller
     {
     public:
         controller_interface::CallbackReturn on_init() override;
-    
+
         controller_interface::InterfaceConfiguration state_interface_configuration() const override;
 
         controller_interface::CallbackReturn on_configure(
@@ -24,7 +24,7 @@ namespace humanoid_estimators // estimator as a chainable controller
 
         controller_interface::return_type update_reference_from_subscribers(
             const rclcpp::Time & time, const rclcpp::Duration & period) override;
-        
+
         std::string node_name_ = "";
         std::string subscribe_topic_name_ = "";
         rclcpp::Node::SharedPtr node_ptr_ = nullptr;
@@ -34,4 +34,4 @@ namespace humanoid_estimators // estimator as a chainable controller
     };
 
 
-}; 
+};

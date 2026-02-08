@@ -15,7 +15,7 @@ namespace hardware_interfaces
 {
     class QuadrupedHardwareInterface : public hardware_interface::SystemInterface
     {
-    public: 
+    public:
         QuadrupedHardwareInterface();
 
         virtual hardware_interface::CallbackReturn on_configure(const rclcpp_lifecycle::State & previous_state) override;
@@ -28,7 +28,7 @@ namespace hardware_interfaces
         virtual std::vector<hardware_interface::CommandInterface> export_command_interfaces() override;
         virtual hardware_interface::return_type read(const rclcpp::Time & time, const rclcpp::Duration & period) override;
         virtual hardware_interface::return_type write(const rclcpp::Time & time, const rclcpp::Duration & period) override;
-    
+
     protected:
         std::string node_name_ = "quadruped_hardware_interface";
         std::string publish_topic_name_ = "/quadruped/low_cmd";
@@ -41,7 +41,7 @@ namespace hardware_interfaces
         std::array<double, 12> joint_acc_{0};
         std::array<double, 12> joint_tau_{0};
         std::array<double, 4> contact_states_{0};
-        std::array<double, 3> gyro_{0}; 
+        std::array<double, 3> gyro_{0};
         std::array<double, 3> accel_{0};
         // command interfaces
         std::array<uint8_t, 12> mode_{0};
@@ -50,15 +50,15 @@ namespace hardware_interfaces
         std::array<double, 12> joint_tau_command_{0};
         std::array<double, 12> joint_kp_{0};
         std::array<double, 12> joint_kd_{0};
-    
+
         rclcpp::Node::SharedPtr node_ptr_ = nullptr;
         rclcpp::executors::SingleThreadedExecutor executor_;
         rclcpp::Subscription<quadruped_msgs::msg::LowState>::SharedPtr LowState_subscriber_ = nullptr;
         rclcpp::Publisher<quadruped_msgs::msg::LowCmd>::SharedPtr LowCmd_publisher_ = nullptr;
         realtime_tools::RealtimePublisher<quadruped_msgs::msg::LowCmd>::SharedPtr realtime_LowCmd_publisher_ = nullptr;
-    }; 
+    };
 
-}; 
+};
 
 
 #endif // QUADRUPED_HARDWARE_INTERFACE_HPP

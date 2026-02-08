@@ -1,6 +1,6 @@
 #include "include/pendulunm_sim_node.hpp"
 
-namespace mujoco_sim{ 
+namespace mujoco_sim{
 
 PendulumSimNode::PendulumSimNode() : MujocoSimNodeBase("pendulum_sim"){
     auto qos = rclcpp::QoS(rclcpp::KeepLast(2), rmw_qos_profile_sensor_data);
@@ -14,7 +14,7 @@ PendulumSimNode::PendulumSimNode() : MujocoSimNodeBase("pendulum_sim"){
       2ms, std::bind(&PendulumSimNode::callback_low_state, this)));
 
 
-    reset_params(); 
+    reset_params();
 
 
 }
@@ -29,7 +29,7 @@ void PendulumSimNode::reset_params() {
 
     // motor commands
     cmd_torque_ = 0.0;
-    cmd_pos_ = 0.0; 
+    cmd_pos_ = 0.0;
     cmd_vel_ = 0.0;
     // motor params
     cmd_kp_ = 0.0;
@@ -54,7 +54,7 @@ void PendulumSimNode::callback_low_state() {
         double sim_time = sim_->d_->time;
         low_state_msg.header.stamp.sec = static_cast<int32_t>(sim_time);
         low_state_msg.header.stamp.nanosec = static_cast<uint32_t>((sim_time - low_state_msg.header.stamp.sec) * 1e9);
-        low_state_msg.header.frame_id = "sim_time"; 
+        low_state_msg.header.frame_id = "sim_time";
         low_state_msg.motor_state.q = sim_->d_->sensordata[idx_joint_pos];
         low_state_msg.motor_state.dq = sim_->d_->sensordata[idx_joint_vel];
         low_state_msg.motor_state.ddq = sim_->d_->sensordata[idx_joint_accel];
@@ -76,12 +76,12 @@ void PendulumSimNode::callback_low_cmd(const pend_msgs::msg::LowCmd::SharedPtr m
             break;
         case uint8_t(1): // position control
             sim_->m_->actuator_gainprm[0] = msg->motor_cmd.kp; // set kp
-            sim_->m_->actuator_biasprm[1] = -msg->motor_cmd.kp; 
+            sim_->m_->actuator_biasprm[1] = -msg->motor_cmd.kp;
             sim_->m_->actuator_biasprm[2] = -msg->motor_cmd.kd; // set kd
             sim_->d_->ctrl[0] = msg->motor_cmd.q;
             break;
         case uint8_t(2): // velocity control
-            sim_->m_->actuator_gainprm[mjNGAIN + 0] = msg->motor_cmd.kd; 
+            sim_->m_->actuator_gainprm[mjNGAIN + 0] = msg->motor_cmd.kd;
             sim_->m_->actuator_biasprm[mjNBIAS + 2] = -msg->motor_cmd.kd;
             sim_->d_->ctrl[1] = msg->motor_cmd.dq;
             break;
@@ -90,9 +90,9 @@ void PendulumSimNode::callback_low_cmd(const pend_msgs::msg::LowCmd::SharedPtr m
             break;
         case uint8_t(4): // torque + pd
             sim_->m_->actuator_gainprm[0] = msg->motor_cmd.kp; // set kp
-            sim_->m_->actuator_biasprm[1] = -msg->motor_cmd.kp; 
+            sim_->m_->actuator_biasprm[1] = -msg->motor_cmd.kp;
             sim_->m_->actuator_biasprm[2] = -msg->motor_cmd.kd; // set kd
-            sim_->m_->actuator_gainprm[mjNGAIN + 0] = msg->motor_cmd.kd; 
+            sim_->m_->actuator_gainprm[mjNGAIN + 0] = msg->motor_cmd.kd;
             sim_->m_->actuator_biasprm[mjNBIAS + 2] = 0.0;
             sim_->d_->ctrl[0] = msg->motor_cmd.q;
             sim_->d_->ctrl[1] = msg->motor_cmd.dq;
@@ -117,7 +117,7 @@ PendulumSimGroundTruth::PendulumSimGroundTruth() : PendulumSimNode(){
     timers_.emplace_back(this->create_wall_timer(
       2ms, std::bind(&PendulumSimGroundTruth::ground_truth_callback, this)));
 
-    reset_params(); 
+    reset_params();
 }
 
 void PendulumSimGroundTruth::reset_params() {
@@ -127,7 +127,7 @@ void PendulumSimGroundTruth::reset_params() {
 
 void PendulumSimGroundTruth::ground_truth_callback() {
     pend_msgs::msg::PendulumEst pendulum_est_msg = pend_msgs::msg::PendulumEst();
-    
+
     if (sim_ -> d_){
         // lock the thread
         const std::unique_lock<std::recursive_mutex> lock(sim_->mtx);
@@ -143,7 +143,7 @@ void PendulumSimGroundTruth::ground_truth_callback() {
         double sim_time = sim_->d_->time;
         pendulum_est_msg.header.stamp.sec = static_cast<int32_t>(sim_time);
         pendulum_est_msg.header.stamp.nanosec = static_cast<uint32_t>((sim_time - pendulum_est_msg.header.stamp.sec) * 1e9);
-        pendulum_est_msg.header.frame_id = "sim_time"; 
+        pendulum_est_msg.header.frame_id = "sim_time";
         pendulum_est_msg.motor_state.q = sim_->d_->sensordata[idx_joint_pos];
         pendulum_est_msg.motor_state.dq = sim_->d_->sensordata[idx_joint_vel];
         pendulum_est_msg.motor_state.ddq = sim_->d_->sensordata[idx_joint_accel];

@@ -9,9 +9,9 @@
 namespace rl_utils {
 
     inline void projected_gravity(const Eigen::Quaterniond& base_w,
-                        Eigen::Vector3d& gravity_proj) 
+                        Eigen::Vector3d& gravity_proj)
     {
-        /* 
+        /*
             Projects the gravity vector into the base frame
         */
         Eigen::Vector3d gravity_w(0.0, 0.0, -1);

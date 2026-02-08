@@ -1,0 +1,4 @@
+/*
+    MotionTrackingPlanner implements a keyframe tracking planner that pass desired joint keyframes
+    to the downstream controllers.
+*/

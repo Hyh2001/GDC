@@ -90,7 +90,7 @@ namespace mujoco_sim
             cmd_kd_.resize(14, 0.0f);
             low_state_msg_.motor_state.resize(14);
         }
-        RCLCPP_INFO(this->get_logger(), "Robot type: %s is loaded (enum value: %d)", 
+        RCLCPP_INFO(this->get_logger(), "Robot type: %s is loaded (enum value: %d)",
             robot_type_str.c_str(), static_cast<int>(robot_type_));
     }
 
@@ -226,12 +226,12 @@ namespace mujoco_sim
                     break;
                 case uint8_t(1): // position control
                     sim_->m_->actuator_gainprm[i * mjNGAIN + 0] = cmd_kp_[i]; // set kp
-                    sim_->m_->actuator_biasprm[i * mjNBIAS + 1] = -cmd_kp_[i]; 
+                    sim_->m_->actuator_biasprm[i * mjNBIAS + 1] = -cmd_kp_[i];
                     sim_->m_->actuator_biasprm[i * mjNBIAS + 2] = -cmd_kd_[i]; // set kd
                     sim_->d_->ctrl[i] = cmd_pos_[i];
                     break;
                 case uint8_t(2): // velocity control
-                    sim_->m_->actuator_gainprm[(joint_pos_.size() + i) * mjNGAIN + 0] = cmd_kd_[i]; 
+                    sim_->m_->actuator_gainprm[(joint_pos_.size() + i) * mjNGAIN + 0] = cmd_kd_[i];
                     sim_->m_->actuator_biasprm[(joint_pos_.size() + i) * mjNBIAS + 2] = -cmd_kd_[i];
                     sim_->d_->ctrl[i + joint_pos_.size()] = cmd_vel_[i];
                     break;
@@ -240,9 +240,9 @@ namespace mujoco_sim
                     break;
                 case uint8_t(4): // torque + pd
                     sim_->m_->actuator_gainprm[i * mjNGAIN + 0] = cmd_kp_[i]; // set kp
-                    sim_->m_->actuator_biasprm[i * mjNBIAS + 1] = -cmd_kp_[i]; 
+                    sim_->m_->actuator_biasprm[i * mjNBIAS + 1] = -cmd_kp_[i];
                     sim_->m_->actuator_biasprm[i * mjNBIAS + 2] = -cmd_kd_[i]; // set kd
-                    sim_->m_->actuator_gainprm[(joint_pos_.size() + i) * mjNGAIN + 0] = cmd_kd_[i]; 
+                    sim_->m_->actuator_gainprm[(joint_pos_.size() + i) * mjNGAIN + 0] = cmd_kd_[i];
                     sim_->m_->actuator_biasprm[(joint_pos_.size() + i) * mjNBIAS + 2] = 0.0;
                     sim_->d_->ctrl[i] = cmd_pos_[i];
                     sim_->d_->ctrl[i + joint_pos_.size()] = cmd_vel_[i];
@@ -267,9 +267,9 @@ namespace mujoco_sim
 
         timers_.emplace_back(this->create_wall_timer(
             2ms, std::bind(&Tron1SimGroundTruth::ground_truth_callback, this)));
-        
+
         ground_truth_msg_.motor_state.resize(8);
-        
+
         reset_params();
     }
 
@@ -302,7 +302,7 @@ namespace mujoco_sim
         {
             ground_truth_msg_.motor_state.resize(14);
         }
-        
+
     }
 
     void Tron1SimGroundTruth::build_ground_truth_msg()
@@ -423,7 +423,7 @@ namespace mujoco_sim
                     contact_[i] = false;
                 }
             }
-            
+
             // contact wrenches
             mjtNum foot_quat[2][4];
             for (size_t foot = 0; foot < contact_.size(); foot++)
@@ -437,7 +437,7 @@ namespace mujoco_sim
             mjtNum foot_force_world[2][3];
             mjtNum foot_torque_site[2][3];
             mjtNum foot_torque_world[2][3];
-            
+
             for (size_t foot = 0; foot < contact_.size(); foot++)
             {
                 // NOTE1: grf sensor senses the force exerted on the child body by the parent body

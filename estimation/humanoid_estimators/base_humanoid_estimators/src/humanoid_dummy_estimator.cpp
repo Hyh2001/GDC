@@ -5,7 +5,7 @@ namespace humanoid_estimators
     controller_interface::CallbackReturn HumanoidDummyEstimator::on_init()
     {
         BaseHumanoidEstimator::on_init();
-        
+
         // load node_name_ and subscribe_topic_name_ parameters
         node_name_ = auto_declare<std::string>("node_name", "");
         subscribe_topic_name_ = auto_declare<std::string>("subscribe_topic_name", "");
@@ -36,12 +36,12 @@ namespace humanoid_estimators
                 for (int i = 0; i < 2; i++)
                 {
                     contact_states_[i] = msg->contact_state[i].contact;
-                    contact_wrenches_[i][0] = msg->contact_wrench[i].wrench.force.x; 
+                    contact_wrenches_[i][0] = msg->contact_wrench[i].wrench.force.x;
                     contact_wrenches_[i][1] = msg->contact_wrench[i].wrench.force.y;
                     contact_wrenches_[i][2] = msg->contact_wrench[i].wrench.force.z;
                     contact_wrenches_[i][3] = msg->contact_wrench[i].wrench.torque.x;
                     contact_wrenches_[i][4] = msg->contact_wrench[i].wrench.torque.y;
-                    contact_wrenches_[i][5] = msg->contact_wrench[i].wrench.torque.z; 
+                    contact_wrenches_[i][5] = msg->contact_wrench[i].wrench.torque.z;
                 }
                 pos_[0] = msg->pose.position.x;
                 pos_[1] = msg->pose.position.y;
@@ -94,7 +94,7 @@ namespace humanoid_estimators
     {
         return controller_interface::return_type::OK;
     }
-    
+
 }; // namespace base_humanoid_estimators
 
 #include <pluginlib/class_list_macros.hpp>

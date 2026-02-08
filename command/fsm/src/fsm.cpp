@@ -6,12 +6,12 @@ namespace fsm
     {
         // Create internal node for service calls
         node_ptr_ = rclcpp::Node::make_shared("fsm_internal_node");
-        
+
         switch_client_ptr_ = node_ptr_->create_client<controller_manager_msgs::srv::SwitchController>(
             "/controller_manager/switch_controller");
         list_client_ptr_ = node_ptr_->create_client<controller_manager_msgs::srv::ListControllers>(
             "/controller_manager/list_controllers");
-        
+
         std::unordered_map<std::string, std::shared_ptr<ControllerNode>> name_to_node;
 
         // Create unique controller nodes
@@ -39,7 +39,7 @@ namespace fsm
         state_update_timer_ = node_ptr_->create_wall_timer(
             std::chrono::seconds(3),
             std::bind(&FSM::get_controller_states, this)  // Use async version
-        ); 
+        );
     }
 
     void FSM::get_controller_states()
@@ -56,7 +56,7 @@ namespace fsm
         {
             try {
                 auto response = future.get();
-                
+
                 for (auto & controller : controllers_)
                 {
                     controller->active = false;
@@ -152,7 +152,7 @@ namespace fsm
             });
     }
 
-    bool FSM::is_switchable(const std::vector<std::string> start_controllers, 
+    bool FSM::is_switchable(const std::vector<std::string> start_controllers,
         std::vector<std::string> /*stop_controllers*/)
     {
         for (const auto& chain_head : controllers_)

@@ -13,9 +13,9 @@ namespace hardware_interfaces
     }
 
     hardware_interface::CallbackReturn Tron1HardwareInterface::on_configure(const rclcpp_lifecycle::State & previous_state)
-    {           
+    {
         return HumanoidHardwareInterface::on_configure(previous_state);
-    }        
+    }
 
     hardware_interface::CallbackReturn Tron1HardwareInterface::on_shutdown(const rclcpp_lifecycle::State & previous_state)
     {
@@ -70,5 +70,5 @@ namespace hardware_interfaces
 };
 
 #include "pluginlib/class_list_macros.hpp"
-PLUGINLIB_EXPORT_CLASS(hardware_interfaces::Tron1HardwareInterface, 
+PLUGINLIB_EXPORT_CLASS(hardware_interfaces::Tron1HardwareInterface,
             hardware_interface::SystemInterface)

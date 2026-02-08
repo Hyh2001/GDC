@@ -1,6 +1,6 @@
 #include "mujoco_sim.h"
 #include "rclcpp/rclcpp.hpp"
-#include <signal.h> 
+#include <signal.h>
 #include <stdexcept>
 
 #include <pluginlib/class_loader.hpp>
@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
     rclcpp::init(argc, argv);
     signal(SIGINT, handle_ctrl_c);
 
-    // load ROS2 nodes as plugins 
+    // load ROS2 nodes as plugins
     pluginlib::ClassLoader<MujocoSimNodeBase> loader("mujoco_sim", "mujoco_sim::MujocoSimNodeBase");
     std::shared_ptr<MujocoSimNodeBase> mujoco_ros2_node_ptr;
     try {

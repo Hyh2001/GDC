@@ -15,7 +15,7 @@ namespace hardware_interfaces
 {
     class PendulumHardwareInterface : public hardware_interface::SystemInterface
     {
-    public: 
+    public:
         PendulumHardwareInterface();
 
         hardware_interface::CallbackReturn on_configure(const rclcpp_lifecycle::State & previous_state) override;
@@ -28,7 +28,7 @@ namespace hardware_interfaces
         std::vector<hardware_interface::CommandInterface> export_command_interfaces() override;
         hardware_interface::return_type read(const rclcpp::Time & time, const rclcpp::Duration & period) override;
         hardware_interface::return_type write(const rclcpp::Time & time, const rclcpp::Duration & period) override;
-    
+
     protected:
         double pivot_position_ = 0.0;
         double pivot_velocity_ = 0.0;
@@ -42,16 +42,16 @@ namespace hardware_interfaces
         double pivot_effort_command_ = 0.0;
         double kp_command_ = 0.0;
         double kd_command_ = 0.0;
-    
+
         rclcpp::Node::SharedPtr node_ptr_ = nullptr;
         rclcpp::executors::SingleThreadedExecutor executor_;
         rclcpp::Subscription<pend_msgs::msg::LowState>::SharedPtr LowState_subscriber_ = nullptr;
         rclcpp::Publisher<pend_msgs::msg::LowCmd>::SharedPtr LowCmd_publisher_ = nullptr;
         realtime_tools::RealtimePublisher<pend_msgs::msg::LowCmd>::SharedPtr realtime_LowCmd_publisher_ = nullptr;
         // rclcpp::Subscription<pendulum_msgs::msg::PendulumEst>::SharedPtr PendulumEst_subscriber_ = nullptr;
-    }; 
+    };
 
-}; 
+};
 
 
 #endif // PENDULUM_HARDWARE_INTERFACE_HPP

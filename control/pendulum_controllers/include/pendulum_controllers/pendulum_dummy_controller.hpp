@@ -13,14 +13,14 @@ namespace pendulum_controllers // controller as chained interfaces from estimato
     {
     public:
         controller_interface::CallbackReturn on_init() override;
-    
+
         controller_interface::InterfaceConfiguration command_interface_configuration() const override;
 
         controller_interface::InterfaceConfiguration state_interface_configuration() const override;
 
         controller_interface::CallbackReturn on_configure(
             const rclcpp_lifecycle::State & previous_state) override;
-        
+
         controller_interface::CallbackReturn on_activate(
             const rclcpp_lifecycle::State & previous_state) override;
 
@@ -31,7 +31,7 @@ namespace pendulum_controllers // controller as chained interfaces from estimato
             const rclcpp_lifecycle::State & previous_state) override;
     protected:
         std::vector<hardware_interface::CommandInterface> on_export_reference_interfaces() override;
-        
+
         bool on_set_chained_mode(bool chained_mode) override;
 
         controller_interface::return_type update_and_write_commands(
@@ -40,13 +40,13 @@ namespace pendulum_controllers // controller as chained interfaces from estimato
         controller_interface::return_type update_reference_from_subscribers(
             const rclcpp::Time & time, const rclcpp::Duration & period
         ) override;
-        
+
         double joint_pos_ = 0.0;
         double joint_vel_ = 0.0;
         double joint_vel_des_ = 0.0;
         double joint_new_vel_des_ = 0.0;
         std::string ref_controller_name_ = "";
-        std::string node_name_ = ""; 
+        std::string node_name_ = "";
         std::string publish_topic_name_ = "";
         std::string subscribe_topic_name_ = "";
         rclcpp::Node::SharedPtr node_ptr_ = nullptr;

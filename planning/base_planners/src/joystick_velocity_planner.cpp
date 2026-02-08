@@ -1,12 +1,12 @@
 #include "base_planners/joystick_velocity_planner.hpp"
 
-namespace base_planners 
+namespace base_planners
 {
 controller_interface::CallbackReturn JoystickVelocityPlanner::on_init()
 {
     // configure the joystick related stuffs
-    int velocity_x_button_ = auto_declare<int>("velocity_x_button", 0); 
-    int velocity_y_button_ = auto_declare<int>("velocity_y_button", 1); 
+    int velocity_x_button_ = auto_declare<int>("velocity_x_button", 0);
+    int velocity_y_button_ = auto_declare<int>("velocity_y_button", 1);
     int yaw_rate_button_ = auto_declare<int>("yaw_rate_button", 2);
     // configure the ros2 related stuffs
     node_ptr_ = rclcpp::Node::make_shared(std::string(this->get_node()->get_name()) + "_joystick_listener");
@@ -54,7 +54,7 @@ controller_interface::InterfaceConfiguration JoystickVelocityPlanner::command_in
     controller_interface::InterfaceConfiguration command_interface_config;
     command_interface_config.type = controller_interface::interface_configuration_type::NONE;
 
-    return command_interface_config; // command_interfaces_  
+    return command_interface_config; // command_interfaces_
 }
 
 controller_interface::CallbackReturn JoystickVelocityPlanner::on_configure(

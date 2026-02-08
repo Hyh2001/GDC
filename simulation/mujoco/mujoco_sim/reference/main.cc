@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
   }
 
   MujocoSim mujoco_sim(mjcf_path);
-  
+
   // thread starting sequence: physics -> render
   std::thread physicsthreadhandle(&MujocoSim::PhysicsThread, &mujoco_sim);
   mj::Simulate* sim_ptr = mujoco_sim.getSimPtr();
@@ -32,6 +32,6 @@ int main(int argc, char** argv) {
 
   // thread ending sequence: render -> physics
   physicsthreadhandle.join();
-  
+
   return 0;
 }

@@ -10,7 +10,7 @@ namespace humanoid_controllers
         if (planner_name_ != "" && ref_controller_name_ != "")
         {
             RCLCPP_ERROR(
-                this->get_node()->get_logger(), 
+                this->get_node()->get_logger(),
                 "HumanoidPDController::on_init() failed because both planner_name and ref_controller_name are set.");
             return controller_interface::CallbackReturn::ERROR;
         }
@@ -41,7 +41,7 @@ namespace humanoid_controllers
     {
         controller_interface::InterfaceConfiguration config;
         config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
-        
+
         // state estimation
         if(estimator_name_ != "")
         {
@@ -101,7 +101,7 @@ namespace humanoid_controllers
                 config.names.push_back(planner_name_ + "/" + joint_name + "_velocity_ref");
             }
         }
-        
+
         return config;
     }
 
@@ -131,7 +131,7 @@ namespace humanoid_controllers
         for (auto &cmd_iface : command_interfaces_) {
         const std::string joint_name = cmd_iface.get_prefix_name();
         const std::string interface_name = cmd_iface.get_interface_name();
-        
+
             // Find the joint index
             for (size_t i = 0; i < joint_names_.size(); ++i) {
                 if (joint_name == joint_names_[i]) {
@@ -164,23 +164,23 @@ namespace humanoid_controllers
         // Export position reference interfaces
         for (size_t i = 0; i < joint_names_.size(); ++i) {
             reference_interfaces.emplace_back(
-                controller_name, 
-                joint_names_[i] + "_position_ref", 
+                controller_name,
+                joint_names_[i] + "_position_ref",
                 &joint_pos_ref_[i]
             );
         }
         // Export velocity reference interfaces
         for (size_t i = 0; i < joint_names_.size(); ++i) {
             reference_interfaces.emplace_back(
-                controller_name, 
-                joint_names_[i] + "_velocity_ref", 
+                controller_name,
+                joint_names_[i] + "_velocity_ref",
                 &joint_vel_ref_[i]
             );
         }
-        
+
         return reference_interfaces;
     }
-}; 
+};
 
 #include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(humanoid_controllers::HumanoidPassthroughController, controller_interface::ChainableControllerInterface);

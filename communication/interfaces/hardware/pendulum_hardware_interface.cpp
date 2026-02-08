@@ -10,7 +10,7 @@ namespace hardware_interfaces
     }
 
     hardware_interface::CallbackReturn PendulumHardwareInterface::on_configure(const rclcpp_lifecycle::State & previous_state)
-    {   
+    {
         // create the node
         node_ptr_ = rclcpp::Node::make_shared("pendulum_hardware_interface");
         auto qos = rclcpp::QoS(rclcpp::KeepLast(2), rmw_qos_profile_sensor_data);
@@ -25,7 +25,7 @@ namespace hardware_interfaces
         realtime_LowCmd_publisher_ = std::make_unique<realtime_tools::RealtimePublisher<pend_msgs::msg::LowCmd>>(LowCmd_publisher_);
         executor_.add_node(node_ptr_);
         return hardware_interface::CallbackReturn::SUCCESS;
-    }        
+    }
 
     hardware_interface::CallbackReturn PendulumHardwareInterface::on_shutdown(const rclcpp_lifecycle::State & previous_state)
     {
@@ -97,5 +97,5 @@ namespace hardware_interfaces
 };
 
 #include "pluginlib/class_list_macros.hpp"
-PLUGINLIB_EXPORT_CLASS(hardware_interfaces::PendulumHardwareInterface, 
+PLUGINLIB_EXPORT_CLASS(hardware_interfaces::PendulumHardwareInterface,
             hardware_interface::SystemInterface)

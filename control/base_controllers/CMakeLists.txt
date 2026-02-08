@@ -22,11 +22,11 @@ file(GLOB_RECURSE BASE_CONTROLLER_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.c
 )
 
-add_library(${PROJECT_NAME} SHARED 
+add_library(${PROJECT_NAME} SHARED
     ${BASE_CONTROLLER_SOURCES}
 )
 
-ament_target_dependencies(${PROJECT_NAME} 
+ament_target_dependencies(${PROJECT_NAME}
     rclcpp
     control_toolbox
 )
@@ -61,23 +61,23 @@ if(BUILD_TESTING)
 
   # Add ONNX policy test executable
   add_executable(test_onnx_policy test/test_onnx_policy.cpp)
-  
+
   target_include_directories(test_onnx_policy PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${ONNXRUNTIME_INCLUDE_DIRS}
   )
-  
-  target_link_libraries(test_onnx_policy 
+
+  target_link_libraries(test_onnx_policy
     ${PROJECT_NAME}
     ${ONNXRUNTIME_LIB}
   )
-  
+
   # Set RPATH for the test executable
   set_target_properties(test_onnx_policy PROPERTIES
     INSTALL_RPATH "${ONNXRUNTIME_LIB_DIRS}"
     BUILD_RPATH "${ONNXRUNTIME_LIB_DIRS}"
   )
-  
+
   # Optionally install the test executable
   install(TARGETS test_onnx_policy
     DESTINATION lib/${PROJECT_NAME}

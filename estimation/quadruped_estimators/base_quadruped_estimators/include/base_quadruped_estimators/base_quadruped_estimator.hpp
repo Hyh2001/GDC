@@ -5,14 +5,14 @@
 #include "controller_interface/chainable_controller_interface.hpp"
 
 namespace quadruped_estimators // estimators are treated as chainable controllers
-{ 
+{
     class BaseQuadrupedEstimator : public controller_interface::ChainableControllerInterface
-    { 
+    {
     public:
         controller_interface::CallbackReturn on_init() override;
-    
+
         controller_interface::InterfaceConfiguration state_interface_configuration() const override;
-        
+
         controller_interface::InterfaceConfiguration command_interface_configuration() const override;
 
         controller_interface::CallbackReturn on_configure(
@@ -27,10 +27,10 @@ namespace quadruped_estimators // estimators are treated as chainable controller
 
     protected:
         std::vector<hardware_interface::StateInterface> on_export_state_interfaces() override;
-            
+
         controller_interface::return_type update_and_write_commands(
-            const rclcpp::Time & time, const rclcpp::Duration & period) override;    
-        
+            const rclcpp::Time & time, const rclcpp::Duration & period) override;
+
         controller_interface::return_type update_reference_from_subscribers(
             const rclcpp::Time &time, const rclcpp::Duration &period) override;
 
@@ -42,7 +42,7 @@ namespace quadruped_estimators // estimators are treated as chainable controller
         std::array<double, 4> contact_states_;
         std::array<double, 12> contact_forces_;
         std::array<double, 3> pos_;
-        std::array<double, 4> orientation_; // quaternion, w, x, y, z 
+        std::array<double, 4> orientation_; // quaternion, w, x, y, z
         std::array<double, 3> lin_vel_;
         std::array<double, 3> ang_vel_;
         std::array<double, 3> lin_acc_;

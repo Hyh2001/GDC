@@ -12,7 +12,7 @@ namespace limx_dynamics_hardware_interfaces{
         rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
             on_configure(const rclcpp_lifecycle::State & previous_state) override;
 
-        bool check_hardware(); 
+        bool check_hardware();
 
         void reset() override;
         void read() override;
@@ -29,15 +29,15 @@ namespace limx_dynamics_hardware_interfaces{
             WHEEL_FOOT_WITH_ARM = 5
         } robot_type_;
         RobotType parse_robot_type(const std::string& robot_type_str);
-        
+
         void callback_low_cmd(const humanoid_msgs::msg::LowCmd::SharedPtr msg);
-        void publish_low_state(); 
-        
+        void publish_low_state();
+
         humanoid_msgs::msg::LowState low_state_msg_;
 
         // api
         std::mutex mtx_;
-        std::string robot_ip_; 
+        std::string robot_ip_;
         limxsdk::PointFoot* robot_;
         limxsdk::RobotCmd robot_cmd_;
         limxsdk::RobotState robot_state_;

@@ -12,13 +12,13 @@ find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(controller_manager_msgs REQUIRED)
 
-set(FSM_SOURCES 
+set(FSM_SOURCES
     src/fsm.cpp
 )
-add_library(${PROJECT_NAME} SHARED 
+add_library(${PROJECT_NAME} SHARED
     ${FSM_SOURCES}
 )
-ament_target_dependencies(${PROJECT_NAME} 
+ament_target_dependencies(${PROJECT_NAME}
   rclcpp
   std_msgs
   controller_manager_msgs

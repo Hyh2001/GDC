@@ -7,7 +7,7 @@
 #include "common_msgs/msg/debug.hpp"
 
 namespace loggers
-{ 
+{
 struct ValueConfig{
     std::string source_name;
     std::vector<std::string> labels;
@@ -21,16 +21,16 @@ struct Signal{
 
 class Logger{
 public:
-    Logger(const std::string & node_name, 
-        double publish_rate_hz); 
+    Logger(const std::string & node_name,
+        double publish_rate_hz);
 
     ~Logger();
-    
+
     void register_values(ValueConfig value_config);
 
-    void start(); 
+    void start();
 
-    void pause(); 
+    void pause();
 
     void stop();
 protected:
@@ -45,7 +45,7 @@ protected:
     bool is_running_ = false;
     std::thread exec_thread_;
 
-}; 
+};
 
 
 

@@ -9,7 +9,7 @@ namespace humanoid_planners
         estimator_name_ = auto_declare<std::string>("estimator_name", estimator_name_);
         ref_planner_name_ = auto_declare<std::string>(
             "ref_planner_name", ref_planner_name_);
-        
+
         // interface names for parameters
         joint_names_ = auto_declare<std::vector<std::string>>("joint_names", joint_names_);
         num_joints_ = joint_names_.size();
@@ -27,7 +27,7 @@ namespace humanoid_planners
         ang_vel_name_ = auto_declare<std::string>("ang_vel_name", ang_vel_name_);
         lin_acc_name_ = auto_declare<std::string>("lin_acc_name", lin_acc_name_);
         ang_acc_name_ = auto_declare<std::string>("ang_acc_name", ang_acc_name_);
-        
+
         joint_pos_.resize(num_joints_, 0.0);
         joint_vel_.resize(num_joints_, 0.0);
         joint_acc_.resize(num_joints_, 0.0);
@@ -45,7 +45,7 @@ namespace humanoid_planners
     controller_interface::InterfaceConfiguration BaseHumanoidPlanner::state_interface_configuration() const
     {
         controller_interface::InterfaceConfiguration config;
-        config.type = controller_interface::interface_configuration_type::NONE; 
+        config.type = controller_interface::interface_configuration_type::NONE;
         return config;
     }
 
@@ -77,4 +77,4 @@ namespace humanoid_planners
     {
         return controller_interface::return_type::OK;
     }
-}; 
+};

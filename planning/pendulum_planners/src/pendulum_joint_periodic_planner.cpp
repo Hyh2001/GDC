@@ -13,7 +13,7 @@ namespace pendulum_planners
         // export command interfaces for reference traj
         controller_interface::InterfaceConfiguration command_interface_config;
         command_interface_config.type = controller_interface::interface_configuration_type::NONE;
-        return command_interface_config; // command_interfaces_    
+        return command_interface_config; // command_interfaces_
     }
 
     controller_interface::InterfaceConfiguration PendulumJointPeriodicPlanner::state_interface_configuration() const
@@ -36,7 +36,7 @@ namespace pendulum_planners
     }
 
     controller_interface::CallbackReturn PendulumJointPeriodicPlanner::on_cleanup(const rclcpp_lifecycle::State &)
-    {   
+    {
         sinusoid_planner_ptr_ = nullptr;
         return controller_interface::CallbackReturn::SUCCESS;
     }
@@ -78,8 +78,8 @@ namespace pendulum_planners
         return controller_interface::return_type::OK;
     }
 
-    
-}; // namespace pendulum_planners 
+
+}; // namespace pendulum_planners
 
 #include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(pendulum_planners::PendulumJointPeriodicPlanner, controller_interface::ChainableControllerInterface);

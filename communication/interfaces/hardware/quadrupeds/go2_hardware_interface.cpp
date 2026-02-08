@@ -15,9 +15,9 @@ namespace hardware_interfaces
     }
 
     hardware_interface::CallbackReturn Go2HardwareInterface::on_configure(const rclcpp_lifecycle::State & previous_state)
-    {   
+    {
         return QuadrupedHardwareInterface::on_configure(previous_state);
-    }        
+    }
 
     hardware_interface::CallbackReturn Go2HardwareInterface::on_shutdown(const rclcpp_lifecycle::State & previous_state)
     {
@@ -67,5 +67,5 @@ namespace hardware_interfaces
 };
 
 #include "pluginlib/class_list_macros.hpp"
-PLUGINLIB_EXPORT_CLASS(hardware_interfaces::Go2HardwareInterface, 
+PLUGINLIB_EXPORT_CLASS(hardware_interfaces::Go2HardwareInterface,
             hardware_interface::SystemInterface)

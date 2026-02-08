@@ -11,14 +11,14 @@ namespace pendulum_planners
     {
     public:
         controller_interface::CallbackReturn on_init() override;
-    
+
         controller_interface::InterfaceConfiguration command_interface_configuration() const override;
 
         controller_interface::InterfaceConfiguration state_interface_configuration() const override;
 
         controller_interface::CallbackReturn on_configure(
             const rclcpp_lifecycle::State & previous_state) override;
-        
+
         controller_interface::CallbackReturn on_activate(
             const rclcpp_lifecycle::State & previous_state) override;
 
@@ -32,7 +32,7 @@ namespace pendulum_planners
 
         controller_interface::return_type update_and_write_commands(
             const rclcpp::Time & time, const rclcpp::Duration & period) override;
-        
+
         controller_interface::return_type update_reference_from_subscribers(
             const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
@@ -43,7 +43,7 @@ namespace pendulum_planners
         double phase_ = 0.0; // rad
         std::shared_ptr<control_toolbox::Sinusoid> sinusoid_planner_ptr_ = nullptr;
         double q_;
-        double qd_; 
+        double qd_;
         double qdd_;
     };
 

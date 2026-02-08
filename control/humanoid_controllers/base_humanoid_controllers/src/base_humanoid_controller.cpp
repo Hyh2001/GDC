@@ -10,7 +10,7 @@ namespace humanoid_controllers
         planner_name_ = auto_declare<std::string>("planner_name", planner_name_);
         ref_controller_name_ = auto_declare<std::string>(
             "ref_controller_name", ref_controller_name_);
-        
+
         // interfaces
         joint_names_ = auto_declare<std::vector<std::string>>("joint_names", joint_names_);
         joint_state_interface_types_ = auto_declare<std::vector<std::string>>(
@@ -27,10 +27,10 @@ namespace humanoid_controllers
         ang_vel_name_ = auto_declare<std::string>("ang_vel_name", ang_vel_name_);
         lin_acc_name_ = auto_declare<std::string>("lin_acc_name", lin_acc_name_);
         ang_acc_name_ = auto_declare<std::string>("ang_acc_name", ang_acc_name_);
-        
+
         // debug
         debug_ = auto_declare<bool>("debug", false);
-        
+
         return controller_interface::CallbackReturn::SUCCESS;
     }
 
@@ -138,4 +138,4 @@ namespace humanoid_controllers
     //         set_command_interface_value(interface_names[i], values[i]);
     //     }
     // }
-}; 
+};

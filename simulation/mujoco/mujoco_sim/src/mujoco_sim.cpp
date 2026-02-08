@@ -384,7 +384,7 @@ void MujocoSim::PhysicsLoop(mj::Simulate& sim) {
         }
       }
     }  // release std::lock_guard<std::mutex>
-    // mju_warning("physics loop"); 
+    // mju_warning("physics loop");
   }
 }
 
@@ -396,7 +396,7 @@ void MujocoSim::PhysicsThread() {
   if (!mjcf_path_.empty()) {
     filename = mjcf_path_.c_str();
   }
-  
+
   // request loadmodel if file given (otherwise drag-and-drop)
   if (filename != nullptr) {
     sim->LoadMessage(filename);

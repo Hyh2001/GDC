@@ -77,7 +77,7 @@ namespace base_controllers {
         return out;
     }
 
-    std::vector<double> MultiJointPID::compute(const std::vector<double> &errors, 
+    std::vector<double> MultiJointPID::compute(const std::vector<double> &errors,
         const std::vector<double> &errors_dot,
         const rclcpp::Duration &dt)
     {
@@ -111,4 +111,4 @@ namespace base_controllers {
     }
 
 
-}; 
+};

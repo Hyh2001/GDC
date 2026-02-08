@@ -14,8 +14,8 @@
 
 namespace base_planners
 {
-/* 
-    JoystickVelocityPlanner implements a velocity planner taking velocity commands from joystick signals and 
+/*
+    JoystickVelocityPlanner implements a velocity planner taking velocity commands from joystick signals and
     applying a low-pass filter to smooth the commands.
 */
 
@@ -23,7 +23,7 @@ class JoystickVelocityPlanner : public VelocityPlanner
 {
 public:
     controller_interface::CallbackReturn on_init() override;
-    
+
     controller_interface::InterfaceConfiguration state_interface_configuration() const override;
 
     controller_interface::InterfaceConfiguration command_interface_configuration() const override;
@@ -42,7 +42,7 @@ protected:
         const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
     controller_interface::return_type update_reference_from_subscribers(
-        const rclcpp::Time & time, const rclcpp::Duration & period) override; 
+        const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
     std::vector<hardware_interface::StateInterface> on_export_state_interfaces() override;
 
@@ -52,8 +52,8 @@ protected:
     double sampling_frequency_{50.0}; // Hz
     double damping_frequency_{1.0}; // Hz
     double damping_intensity_{0.0}; // dB
-    
-    std::array<double, 3> velocity_cmd_raw_{0.0, 0.0, 0.0}; // vx, vy, yaw rate    
+
+    std::array<double, 3> velocity_cmd_raw_{0.0, 0.0, 0.0}; // vx, vy, yaw rate
     rclcpp::Node::SharedPtr node_ptr_ = nullptr;
     rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_subscriber_ = nullptr;
     rclcpp::executors::SingleThreadedExecutor executor_;

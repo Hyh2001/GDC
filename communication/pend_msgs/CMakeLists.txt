@@ -13,7 +13,7 @@ find_package(geometry_msgs REQUIRED)
 find_package(common_msgs REQUIRED)
 
 find_package(rosidl_default_generators REQUIRED)
-rosidl_generate_interfaces(${PROJECT_NAME}  
+rosidl_generate_interfaces(${PROJECT_NAME}
   msg/LowCmd.msg
   msg/LowState.msg
   msg/PendulumEst.msg

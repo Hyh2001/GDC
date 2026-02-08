@@ -31,7 +31,7 @@ namespace limx_dynamics_hardware_interfaces{
             joint_kp_gains_.resize(8, 0.0);
             joint_kd_gains_.resize(8, 0.0);
             low_state_msg_.motor_state.resize(8);
-        } 
+        }
         else if(robot_type_ == POINT_FOOT){
             joint_positions_.resize(6, 0.0);
             joint_velocities_.resize(6, 0.0);
@@ -76,7 +76,7 @@ namespace limx_dynamics_hardware_interfaces{
         // timer
         timers_.emplace_back(this->create_wall_timer(
             std::chrono::milliseconds(2), std::bind(&Tron1HardwareInterface::publish_low_state, this)));
-        
+
         // API related
         this->declare_parameter<std::string>("robot_ip", "127.0.0.1");
         this->get_parameter("robot_ip", robot_ip_);
@@ -97,7 +97,7 @@ namespace limx_dynamics_hardware_interfaces{
         {
             // mtx_.lock();
             robot_state_ = *msg;
-            // mtx_.unlock(); 
+            // mtx_.unlock();
         });
         robot_->subscribeImuData([&](const limxsdk::ImuDataConstPtr &msg)
         {
@@ -106,7 +106,7 @@ namespace limx_dynamics_hardware_interfaces{
         robot_->subscribeDiagnosticValue([&](const limxsdk::DiagnosticValueConstPtr &msg)
         {
             diagnostic_value_ = *msg;
-            
+
             // Set persistent flags
             if (diagnostic_value_.name == "imu" && diagnostic_value_.code == 0) {
                 imu_diagnostic_received_ = true;
@@ -130,29 +130,29 @@ namespace limx_dynamics_hardware_interfaces{
     bool Tron1HardwareInterface::check_hardware()
     {
         RCLCPP_INFO(this->get_logger(), "Checking hardware diagnostics...");
-        
+
         auto start_time = std::chrono::steady_clock::now();
         auto timeout = std::chrono::seconds(10);
-        
+
         while (std::chrono::steady_clock::now() - start_time < timeout)
         {
-            if (imu_diagnostic_received_ && 
-                ethercat_diagnostic_received_ && 
+            if (imu_diagnostic_received_ &&
+                ethercat_diagnostic_received_ &&
                 calibration_diagnostic_received_)
             {
                 RCLCPP_INFO(this->get_logger(), "All hardware diagnostics passed!");
                 return true;
             }
-            
+
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
-        
+
         // timeout
         RCLCPP_ERROR(this->get_logger(), "Hardware diagnostic check timeout!");
         if (!imu_diagnostic_received_) RCLCPP_ERROR(this->get_logger(), "IMU diagnostic failed");
         if (!ethercat_diagnostic_received_) RCLCPP_ERROR(this->get_logger(), "EtherCAT diagnostic failed");
         if (!calibration_diagnostic_received_) RCLCPP_ERROR(this->get_logger(), "Calibration diagnostic failed");
-        
+
         return false;
     }
 
@@ -214,7 +214,7 @@ namespace limx_dynamics_hardware_interfaces{
         low_state_msg_.imu.orientation.x = quat_[1];
         low_state_msg_.imu.orientation.y = quat_[2];
         low_state_msg_.imu.orientation.z = quat_[3];
-        
+
         low_state_pub_ptr_->publish(low_state_msg_);
     }
 
@@ -270,7 +270,7 @@ namespace limx_dynamics_hardware_interfaces{
         }
     }
 
-}; 
+};
 
 int main(int argc, char * argv[])
 {

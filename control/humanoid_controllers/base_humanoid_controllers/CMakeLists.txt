@@ -23,8 +23,8 @@ add_library(${PROJECT_NAME} SHARED
 target_include_directories(${PROJECT_NAME} PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include/${PROJECT_NAME}>)
-ament_target_dependencies(${PROJECT_NAME} PUBLIC 
-        rclcpp 
+ament_target_dependencies(${PROJECT_NAME} PUBLIC
+        rclcpp
         rclcpp_lifecycle
         controller_interface
         pluginlib

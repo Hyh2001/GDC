@@ -13,10 +13,10 @@ find_package(geometry_msgs REQUIRED)
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
-rosidl_generate_interfaces(${PROJECT_NAME}  
-  # "your custom interfaces will be here"  
-  # "one per line"  
-  # "no comma for separating lines" 
+rosidl_generate_interfaces(${PROJECT_NAME}
+  # "your custom interfaces will be here"
+  # "one per line"
+  # "no comma for separating lines"
   msg/MotorCmd.msg
   msg/MotorState.msg
   msg/ContactSensor.msg

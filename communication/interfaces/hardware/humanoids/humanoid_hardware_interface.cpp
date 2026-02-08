@@ -10,7 +10,7 @@ namespace hardware_interfaces
     }
 
     hardware_interface::CallbackReturn HumanoidHardwareInterface::on_configure(const rclcpp_lifecycle::State & previous_state)
-    {   
+    {
         // create the node
         node_ptr_ = rclcpp::Node::make_shared(node_name_);
         auto qos = rclcpp::QoS(rclcpp::KeepLast(2), rmw_qos_profile_sensor_data);
@@ -25,7 +25,7 @@ namespace hardware_interfaces
                     }
                     for(int i = 0; i < 2; i++){
                         contact_states_[i] = msg->contact_state[i].contact;
-                    } 
+                    }
                     gyro_[0] = msg->imu.angular_velocity.x;
                     gyro_[1] = msg->imu.angular_velocity.y;
                     gyro_[2] = msg->imu.angular_velocity.z;
@@ -37,7 +37,7 @@ namespace hardware_interfaces
         realtime_LowCmd_publisher_ = std::make_unique<realtime_tools::RealtimePublisher<humanoid_msgs::msg::LowCmd>>(LowCmd_publisher_);
         executor_.add_node(node_ptr_);
         return hardware_interface::CallbackReturn::SUCCESS;
-    }        
+    }
 
     hardware_interface::CallbackReturn HumanoidHardwareInterface::on_shutdown(const rclcpp_lifecycle::State & previous_state)
     {

@@ -1,6 +1,6 @@
 #include "quadrupeds/go2_sim_node.hpp"
 
-namespace mujoco_sim{ 
+namespace mujoco_sim{
 
 Go2SimNode::Go2SimNode() : MujocoSimNodeBase("go2_sim"){
     auto qos = rclcpp::QoS(rclcpp::KeepLast(2), rmw_qos_profile_sensor_data);
@@ -14,7 +14,7 @@ Go2SimNode::Go2SimNode() : MujocoSimNodeBase("go2_sim"){
       2ms, std::bind(&Go2SimNode::callback_low_state, this)));
 
 
-    reset_params(); 
+    reset_params();
 
 
 }
@@ -52,7 +52,7 @@ void Go2SimNode::callback_low_state() {
         const int idx_joint_vel = sim_->m_->sensor_adr[mj_name2id(sim_->m_, mjOBJ_SENSOR, "FR_hip_vel")];
         const int idx_joint_torque = sim_->m_->sensor_adr[mj_name2id(sim_->m_, mjOBJ_SENSOR, "FR_hip_torque")];
         const int idx_contact = sim_->m_->sensor_adr[mj_name2id(sim_->m_, mjOBJ_SENSOR, "FR_contact_sensor")];
-        
+
         low_state_msg.imu.linear_acceleration.x = sim_->d_->sensordata[idx_imu_accele + 0];
         low_state_msg.imu.linear_acceleration.y = sim_->d_->sensordata[idx_imu_accele + 1];
         low_state_msg.imu.linear_acceleration.z = sim_->d_->sensordata[idx_imu_accele + 2];
@@ -65,13 +65,13 @@ void Go2SimNode::callback_low_state() {
             low_state_msg.motor_state[i].dq = sim_->d_->sensordata[idx_joint_vel + i];
             low_state_msg.motor_state[i].tau = sim_->d_->sensordata[idx_joint_torque + i];
         }
-        bool contact; 
+        bool contact;
         for (int i = 0; i < 4; i++){
             if(sim_->d_->sensordata[idx_contact + i] > 0.0) {
-                contact = true; 
+                contact = true;
             }
             else {
-                contact = false;     
+                contact = false;
             }
             low_state_msg.contact_state[i].contact = contact;
         }
@@ -80,7 +80,7 @@ void Go2SimNode::callback_low_state() {
         double sim_time = sim_->d_->time;
         low_state_msg.header.stamp.sec = static_cast<int32_t>(sim_time);
         low_state_msg.header.stamp.nanosec = static_cast<uint32_t>((sim_time - low_state_msg.header.stamp.sec) * 1e9);
-        low_state_msg.header.frame_id = "sim_time"; 
+        low_state_msg.header.frame_id = "sim_time";
 
         low_state_pub_ptr_->publish(low_state_msg);
     }
@@ -101,12 +101,12 @@ void Go2SimNode::callback_low_cmd(const quadruped_msgs::msg::LowCmd::SharedPtr m
                 break;
             case uint8_t(1): // position control
                 sim_->m_->actuator_gainprm[i * mjNGAIN + 0] = msg->motor_cmd[i].kp; // set kp
-                sim_->m_->actuator_biasprm[i * mjNBIAS + 1] = -msg->motor_cmd[i].kp; 
+                sim_->m_->actuator_biasprm[i * mjNBIAS + 1] = -msg->motor_cmd[i].kp;
                 sim_->m_->actuator_biasprm[i * mjNBIAS + 2] = -msg->motor_cmd[i].kd; // set kd
                 sim_->d_->ctrl[i] = msg->motor_cmd[i].q;
                 break;
             case uint8_t(2): // velocity control
-                sim_->m_->actuator_gainprm[(joint_pos_.size() + i) * mjNGAIN + 0] = msg->motor_cmd[i].kd; 
+                sim_->m_->actuator_gainprm[(joint_pos_.size() + i) * mjNGAIN + 0] = msg->motor_cmd[i].kd;
                 sim_->m_->actuator_biasprm[(joint_pos_.size() + i) * mjNBIAS + 2] = -msg->motor_cmd[i].kd;
                 sim_->d_->ctrl[i + joint_pos_.size()] = msg->motor_cmd[i].dq;
                 break;
@@ -115,9 +115,9 @@ void Go2SimNode::callback_low_cmd(const quadruped_msgs::msg::LowCmd::SharedPtr m
                 break;
             case uint8_t(4): // torque + pd
                 sim_->m_->actuator_gainprm[i * mjNGAIN + 0] = msg->motor_cmd[i].kp; // set kp
-                sim_->m_->actuator_biasprm[i * mjNBIAS + 1] = -msg->motor_cmd[i].kp; 
+                sim_->m_->actuator_biasprm[i * mjNBIAS + 1] = -msg->motor_cmd[i].kp;
                 sim_->m_->actuator_biasprm[i * mjNBIAS + 2] = -msg->motor_cmd[i].kd; // set kd
-                sim_->m_->actuator_gainprm[(joint_pos_.size() + i) * mjNGAIN + 0] = msg->motor_cmd[i].kd; 
+                sim_->m_->actuator_gainprm[(joint_pos_.size() + i) * mjNGAIN + 0] = msg->motor_cmd[i].kd;
                 sim_->m_->actuator_biasprm[(joint_pos_.size() + i) * mjNBIAS + 2] = 0.0;
                 sim_->d_->ctrl[i] = msg->motor_cmd[i].q;
                 sim_->d_->ctrl[i + joint_pos_.size()] = msg->motor_cmd[i].dq;
@@ -210,13 +210,13 @@ void Go2SimGroundTruth::ground_truth_callback() {
             quad_est_msg.motor_state[i].tau = sim_->d_->sensordata[idx_joint_torque + i];
         }
         // contact states
-        bool contact; 
+        bool contact;
         for (int i = 0; i < 4; i++){
             if(sim_->d_->sensordata[idx_contact + i] > 0.0) {
-                contact = true; 
+                contact = true;
             }
             else {
-                contact = false;     
+                contact = false;
             }
             quad_est_msg.contact_state[i].contact = contact;
         }
@@ -237,14 +237,14 @@ void Go2SimGroundTruth::ground_truth_callback() {
             foot_force_site[foot][1] = -sim_->d_->sensordata[idx_contact_force + foot * 3 + 1];
             foot_force_site[foot][2] = -sim_->d_->sensordata[idx_contact_force + foot * 3 + 2];
             mju_rotVecQuat(foot_force_world[foot], foot_force_site[foot], foot_quat[foot]);
-            quad_est_msg.contact_force[foot].force.x = foot_force_world[foot][0]; 
+            quad_est_msg.contact_force[foot].force.x = foot_force_world[foot][0];
             quad_est_msg.contact_force[foot].force.y = foot_force_world[foot][1];
             quad_est_msg.contact_force[foot].force.z = foot_force_world[foot][2];
         }
         double sim_time = sim_->d_->time;
         quad_est_msg.header.stamp.sec = static_cast<int32_t>(sim_time);
         quad_est_msg.header.stamp.nanosec = static_cast<uint32_t>((sim_time - quad_est_msg.header.stamp.sec) * 1e9);
-        quad_est_msg.header.frame_id = "sim_time"; 
+        quad_est_msg.header.frame_id = "sim_time";
 
         ground_truth_pub_ptr_->publish(quad_est_msg);
     }

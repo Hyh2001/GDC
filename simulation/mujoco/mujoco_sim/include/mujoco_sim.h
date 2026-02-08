@@ -85,7 +85,7 @@ private:
   mjvCamera cam_;
   mjvOption opt_;
   mjvPerturb pert_;
-  
+
   // ptr to mj::Simulate object
   std::unique_ptr<mj::Simulate> sim_ptr;
 

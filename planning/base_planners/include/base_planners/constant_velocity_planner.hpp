@@ -16,7 +16,7 @@ class ConstantVelocityPlanner : public VelocityPlanner
 {
 public:
     controller_interface::CallbackReturn on_init() override;
-    
+
     controller_interface::InterfaceConfiguration state_interface_configuration() const override;
 
     controller_interface::InterfaceConfiguration command_interface_configuration() const override;
@@ -35,7 +35,7 @@ protected:
         const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
     controller_interface::return_type update_reference_from_subscribers(
-        const rclcpp::Time & time, const rclcpp::Duration & period) override; 
+        const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
     std::vector<hardware_interface::StateInterface> on_export_state_interfaces() override;
 

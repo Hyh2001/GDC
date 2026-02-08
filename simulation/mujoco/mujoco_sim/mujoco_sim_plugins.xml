@@ -2,11 +2,11 @@
   <class name="mujoco_sim::Go2SimNode"
          type="mujoco_sim::Go2SimNode"
          base_class_type="mujoco_sim::MujocoSimNodeBase"/>
-  
+
   <class name="mujoco_sim::Go2SimGroundTruth"
          type="mujoco_sim::Go2SimGroundTruth"
          base_class_type="mujoco_sim::MujocoSimNodeBase"/>
-  
+
   <class name="mujoco_sim::PendulumSimNode"
          type="mujoco_sim::PendulumSimNode"
          base_class_type="mujoco_sim::MujocoSimNodeBase"/>
@@ -17,9 +17,9 @@
 
   <class name="mujoco_sim::Tron1SimNode"
          type="mujoco_sim::Tron1SimNode"
-         base_class_type="mujoco_sim::MujocoSimNodeBase"/>   
-         
+         base_class_type="mujoco_sim::MujocoSimNodeBase"/>
+
   <class name="mujoco_sim::Tron1SimGroundTruth"
          type="mujoco_sim::Tron1SimGroundTruth"
-         base_class_type="mujoco_sim::MujocoSimNodeBase"/>     
+         base_class_type="mujoco_sim::MujocoSimNodeBase"/>
 </library>
