@@ -15,20 +15,24 @@
 #ifndef MUJOCO_SIMULATE_GLFW_ADAPTER_H_
 #define MUJOCO_SIMULATE_GLFW_ADAPTER_H_
 
-#include <utility>
-
 #include <GLFW/glfw3.h>
 #include <mujoco/mujoco.h>
+
+#include <utility>
+
 #include "platform_ui_adapter.h"
 
 #ifdef __APPLE__
 #include <optional>
+
 #include "glfw_corevideo.h"
 #endif
 
-namespace mujoco {
-class GlfwAdapter : public PlatformUIAdapter {
- public:
+namespace mujoco
+{
+class GlfwAdapter : public PlatformUIAdapter
+{
+  public:
   GlfwAdapter();
   ~GlfwAdapter() override;
 
@@ -59,7 +63,7 @@ class GlfwAdapter : public PlatformUIAdapter {
   int TranslateKeyCode(int key) const override;
   mjtButton TranslateMouseButton(int button) const override;
 
- private:
+  private:
   GLFWvidmode vidmode_;
   GLFWwindow* window_;
 

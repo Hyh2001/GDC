@@ -20,14 +20,14 @@
 #include <mujoco/mjtnum.h>
 #include <mujoco/mjvisualize.h>
 
-
 //---------------------------------- Resource Provider ---------------------------------------------
 
-struct mjResource_ {
-  char* name;                                   // name of resource (filename, etc)
-  void* data;                                   // opaque data pointer
-  char timestamp[512];                          // timestamp of the resource
-  const struct mjpResourceProvider* provider;   // pointer to the provider
+struct mjResource_
+{
+  char* name;                                  // name of resource (filename, etc)
+  void* data;                                  // opaque data pointer
+  char timestamp[512];                         // timestamp of the resource
+  const struct mjpResourceProvider* provider;  // pointer to the provider
 };
 typedef struct mjResource_ mjResource;
 
@@ -53,35 +53,37 @@ typedef void (*mjfGetResourceDir)(mjResource* resource, const char** dir, int* n
 typedef int (*mjfResourceModified)(const mjResource* resource, const char* timestamp);
 
 // struct describing a single resource provider
-struct mjpResourceProvider {
-  const char* prefix;               // prefix for match against a resource name
-  mjfOpenResource open;             // opening callback
-  mjfReadResource read;             // reading callback
-  mjfCloseResource close;           // closing callback
-  mjfGetResourceDir getdir;         // get directory callback (optional)
-  mjfResourceModified modified;     // resource modified callback (optional)
-  void* data;                       // opaque data pointer (resource invariant)
+struct mjpResourceProvider
+{
+  const char* prefix;            // prefix for match against a resource name
+  mjfOpenResource open;          // opening callback
+  mjfReadResource read;          // reading callback
+  mjfCloseResource close;        // closing callback
+  mjfGetResourceDir getdir;      // get directory callback (optional)
+  mjfResourceModified modified;  // resource modified callback (optional)
+  void* data;                    // opaque data pointer (resource invariant)
 };
 typedef struct mjpResourceProvider mjpResourceProvider;
 
-
 //---------------------------------- Plugins -------------------------------------------------------
 
-typedef enum mjtPluginCapabilityBit_ {
-  mjPLUGIN_ACTUATOR = 1<<0,       // actuator forces
-  mjPLUGIN_SENSOR   = 1<<1,       // sensor measurements
-  mjPLUGIN_PASSIVE  = 1<<2,       // passive forces
-  mjPLUGIN_SDF      = 1<<3,       // signed distance fields
+typedef enum mjtPluginCapabilityBit_
+{
+  mjPLUGIN_ACTUATOR = 1 << 0,  // actuator forces
+  mjPLUGIN_SENSOR = 1 << 1,    // sensor measurements
+  mjPLUGIN_PASSIVE = 1 << 2,   // passive forces
+  mjPLUGIN_SDF = 1 << 3,       // signed distance fields
 } mjtPluginCapabilityBit;
 
-struct mjpPlugin_ {
-  const char* name;               // globally unique name identifying the plugin
+struct mjpPlugin_
+{
+  const char* name;  // globally unique name identifying the plugin
 
   int nattribute;                 // number of configuration attributes
   const char* const* attributes;  // name of configuration attributes
 
-  int capabilityflags;            // plugin capabilities: bitfield of mjtPluginCapabilityBit
-  int needstage;                  // sensor computation stage (mjtStage)
+  int capabilityflags;  // plugin capabilities: bitfield of mjtPluginCapabilityBit
+  int needstage;        // sensor computation stage (mjtStage)
 
   // number of mjtNums needed to store the state of a plugin instance (required)
   int (*nstate)(const mjModel* m, int instance);
@@ -108,7 +110,7 @@ struct mjpPlugin_ {
   void (*advance)(const mjModel* m, mjData* d, int instance);
 
   // called by mjv_updateScene (optional)
-  void (*visualize)(const mjModel*m, mjData* d, const mjvOption* opt, mjvScene* scn, int instance);
+  void (*visualize)(const mjModel* m, mjData* d, const mjvOption* opt, mjvScene* scn, int instance);
 
   // methods specific to actuators (optional)
 
@@ -135,7 +137,8 @@ struct mjpPlugin_ {
 };
 typedef struct mjpPlugin_ mjpPlugin;
 
-struct mjSDF_ {
+struct mjSDF_
+{
   const mjpPlugin** plugin;
   int* id;
   mjtSDFType type;
@@ -147,35 +150,37 @@ typedef struct mjSDF_ mjSDF;
 
 #if defined(__has_attribute)
 
-  #if __has_attribute(constructor)
-    #define mjPLUGIN_LIB_INIT __attribute__((constructor)) static void _mjplugin_init(void)
-  #endif  // __has_attribute(constructor)
+#if __has_attribute(constructor)
+#define mjPLUGIN_LIB_INIT __attribute__((constructor)) static void _mjplugin_init(void)
+#endif  // __has_attribute(constructor)
 
 #elif defined(_MSC_VER)
 
-  #ifndef mjDLLMAIN
-    #define mjDLLMAIN DllMain
-  #endif
+#ifndef mjDLLMAIN
+#define mjDLLMAIN DllMain
+#endif
 
-  #if !defined(mjEXTERNC)
-    #if defined(__cplusplus)
-      #define mjEXTERNC extern "C"
-    #else
-      #define mjEXTERNC
-    #endif  // defined(__cplusplus)
-  #endif  // !defined(mjEXTERNC)
+#if !defined(mjEXTERNC)
+#if defined(__cplusplus)
+#define mjEXTERNC extern "C"
+#else
+#define mjEXTERNC
+#endif  // defined(__cplusplus)
+#endif  // !defined(mjEXTERNC)
 
-  // NOLINTBEGIN(runtime/int)
-  #define mjPLUGIN_LIB_INIT                                                                 \
-    static void _mjplugin_dllmain(void);                                                    \
-    mjEXTERNC int __stdcall mjDLLMAIN(void* hinst, unsigned long reason, void* reserved) {  \
-      if (reason == 1) {                                                                    \
-        _mjplugin_dllmain();                                                                \
-      }                                                                                     \
-      return 1;                                                                             \
-    }                                                                                       \
-    static void _mjplugin_dllmain(void)
-  // NOLINTEND(runtime/int)
+// NOLINTBEGIN(runtime/int)
+#define mjPLUGIN_LIB_INIT                                                              \
+  static void _mjplugin_dllmain(void);                                                 \
+  mjEXTERNC int __stdcall mjDLLMAIN(void* hinst, unsigned long reason, void* reserved) \
+  {                                                                                    \
+    if (reason == 1)                                                                   \
+    {                                                                                  \
+      _mjplugin_dllmain();                                                             \
+    }                                                                                  \
+    return 1;                                                                          \
+  }                                                                                    \
+  static void _mjplugin_dllmain(void)
+// NOLINTEND(runtime/int)
 
 #endif  // defined(_MSC_VER)
 

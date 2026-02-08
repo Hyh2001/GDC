@@ -1,6 +1,8 @@
 // Translated from mujoco/simulate/main.cc
 // Reformulate it as a class exposing access to the "sim" object for external use
 
+#include <mujoco/mujoco.h>
+
 #include <cerrno>
 #include <chrono>
 #include <cstdint>
@@ -14,27 +16,28 @@
 #include <string>
 #include <thread>
 
-#include <mujoco/mujoco.h>
+#include "array_safety.h"
 #include "glfw_adapter.h"
 #include "simulate.h"
-#include "array_safety.h"
 
 #ifndef MUJOCO_SIMULATE_MUJOCO_PREBUILT_GUI_H_
 #define MUJOCO_SIMULATE_MUJOCO_PREBUILT_GUI_H_
 
-namespace mujoco_sim{
+namespace mujoco_sim
+{
 
 #define MUJOCO_PLUGIN_DIR "mujoco_plugin"
 
-extern "C" {
+extern "C"
+{
 #if defined(_WIN32) || defined(__CYGWIN__)
-  #include <windows.h>
+#include <windows.h>
 #else
-  #if defined(__APPLE__)
-    #include <mach-o/dyld.h>
-  #endif
-  #include <sys/errno.h>
-  #include <unistd.h>
+#if defined(__APPLE__)
+#include <mach-o/dyld.h>
+#endif
+#include <sys/errno.h>
+#include <unistd.h>
 #endif
 }
 
@@ -52,20 +55,25 @@ const int kErrorLength = 1024;          // load error string length
 #if defined(__APPLE__) && defined(__AVX__)
 extern void DisplayErrorDialogBox(const char* title, const char* msg);
 static const char* rosetta_error_msg = nullptr;
-__attribute__((used, visibility("default"))) extern "C" void _mj_rosettaError(const char* msg) {
+__attribute__((used, visibility("default"))) extern "C" void _mj_rosettaError(const char* msg)
+{
   rosetta_error_msg = msg;
 }
 #endif
 
-class MujocoSim{
-public:
-  MujocoSim(const std::string& mjcf_path="");
+class MujocoSim
+{
+  public:
+  MujocoSim(const std::string& mjcf_path = "");
   // expose sim ptr for external use (eg: control IO)
-  mj::Simulate* getSimPtr() { return sim_ptr.get(); };
+  mj::Simulate* getSimPtr()
+  {
+    return sim_ptr.get();
+  };
   // this function runs physics simulation
   void PhysicsThread();
 
-private:
+  private:
   // plugin handling
   std::string getExecutableDir();
   void scanPluginLibraries();
@@ -88,7 +96,6 @@ private:
 
   // ptr to mj::Simulate object
   std::unique_ptr<mj::Simulate> sim_ptr;
-
 };
 }  // namespace mujoco_sim
 

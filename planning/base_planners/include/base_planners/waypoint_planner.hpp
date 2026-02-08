@@ -4,11 +4,10 @@
 
 #include <vector>
 
+#include "Eigen/Dense"
+#include "controller_interface/chainable_controller_interface.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/joy.hpp"
-#include "Eigen/Dense"
-
-#include "controller_interface/chainable_controller_interface.hpp"
 
 namespace base_planners
 {
@@ -25,7 +24,7 @@ struct Waypoint
 
 class WaypointPlanner : public controller_interface::ChainableControllerInterface
 {
-public:
+  public:
   controller_interface::CallbackReturn on_init() override;
 
   controller_interface::InterfaceConfiguration state_interface_configuration() const override;
@@ -38,7 +37,7 @@ public:
 
   controller_interface::CallbackReturn on_deactivate(const rclcpp_lifecycle::State& previous_state) override;
 
-protected:
+  protected:
   controller_interface::return_type update_and_write_commands(const rclcpp::Time& time,
                                                               const rclcpp::Duration& period) override;
 
@@ -48,9 +47,7 @@ protected:
   std::vector<hardware_interface::StateInterface> on_export_state_interfaces() override;
 
   std::vector<Waypoint> waypoints_ = {};
-  std::vector<std::string> entry_names_ = {
-    "pos_x", "pos_y", "pos_z", "quat_w", "quat_x", "quat_y", "quat_z"
-  };  // wxyz
+  std::vector<std::string> entry_names_ = {"pos_x", "pos_y", "pos_z", "quat_w", "quat_x", "quat_y", "quat_z"};  // wxyz
 };
 
 };  // namespace base_planners

@@ -17,13 +17,13 @@
 
 // Include asan interface header, or provide stubs for poison/unpoison macros when not using asan.
 #ifdef ADDRESS_SANITIZER
-  #include <sanitizer/asan_interface.h>
+#include <sanitizer/asan_interface.h>
 #elif defined(_MSC_VER)
-  #define ASAN_POISON_MEMORY_REGION(addr, size)
-  #define ASAN_UNPOISON_MEMORY_REGION(addr, size)
+#define ASAN_POISON_MEMORY_REGION(addr, size)
+#define ASAN_UNPOISON_MEMORY_REGION(addr, size)
 #else
-  #define ASAN_POISON_MEMORY_REGION(addr, size) ((void)(addr), (void)(size))
-  #define ASAN_UNPOISON_MEMORY_REGION(addr, size) ((void)(addr), (void)(size))
+#define ASAN_POISON_MEMORY_REGION(addr, size) ((void)(addr), (void)(size))
+#define ASAN_UNPOISON_MEMORY_REGION(addr, size) ((void)(addr), (void)(size))
 #endif
 
 // When built and run under address sanitizer (asan), mj_markStack and mj_freeStack are instrumented
@@ -33,22 +33,25 @@
 // barrier to prevent mark/free calls from being combined under optimization.
 #ifdef ADDRESS_SANITIZER
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-void mj__markStack(mjData*) __attribute__((noinline));
-static inline void mj_markStack(mjData* d) __attribute__((always_inline)) {
-  asm volatile("" ::: "memory");
-  mj__markStack(d);
-  asm volatile("" ::: "memory");
-}
+  void mj__markStack(mjData*) __attribute__((noinline));
+  static inline void mj_markStack(mjData* d) __attribute__((always_inline))
+  {
+    asm volatile("" ::: "memory");
+    mj__markStack(d);
+    asm volatile("" ::: "memory");
+  }
 
-void mj__freeStack(mjData*) __attribute__((noinline));
-static inline void mj_freeStack(mjData* d) __attribute__((always_inline)) {
-  asm volatile("" ::: "memory");
-  mj__freeStack(d);
-  asm volatile("" ::: "memory");
-}
+  void mj__freeStack(mjData*) __attribute__((noinline));
+  static inline void mj_freeStack(mjData* d) __attribute__((always_inline))
+  {
+    asm volatile("" ::: "memory");
+    mj__freeStack(d);
+    asm volatile("" ::: "memory");
+  }
 
 #ifdef __cplusplus
 }

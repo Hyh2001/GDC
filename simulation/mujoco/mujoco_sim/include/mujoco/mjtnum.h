@@ -21,25 +21,19 @@
 
 // floating point data type and minval
 #ifndef mjUSESINGLE
-  typedef double mjtNum;
-  #define mjMINVAL    1E-15       // minimum value in any denominator
+typedef double mjtNum;
+#define mjMINVAL 1E-15  // minimum value in any denominator
 #else
-  typedef float mjtNum;
-  #define mjMINVAL    1E-15f
+typedef float mjtNum;
+#define mjMINVAL 1E-15f
 #endif
-
-
 
 //-------------------------------------- byte definition -------------------------------------------
 
-typedef unsigned char mjtByte;    // used for true/false
-
-
+typedef unsigned char mjtByte;  // used for true/false
 
 //-------------------------------------- size definition -------------------------------------------
 
-typedef uint64_t mjtSize;         // used for buffer sizes
-
-
+typedef uint64_t mjtSize;  // used for buffer sizes
 
 #endif  // MUJOCO_INCLUDE_MJTNUM_H_

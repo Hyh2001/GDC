@@ -21,18 +21,18 @@
 
 // return current value of mjOption enable/disable flags
 #define mjDISABLED(x) (m->opt.disableflags & (x))
-#define mjENABLED(x)  (m->opt.enableflags & (x))
+#define mjENABLED(x) (m->opt.enableflags & (x))
 
 // is actuator disabled
 #define mjACTUATORDISABLED(i) (m->opt.disableactuator & (1 << m->actuator_group[i]))
 
 // annotation for functions that accept printf-like variadic arguments
 #ifndef mjPRINTFLIKE
-  #if defined(__GNUC__)
-    #define mjPRINTFLIKE(n, m) __attribute__((format(printf, n, m)))
-  #else
-    #define mjPRINTFLIKE(n, m)
-  #endif
+#if defined(__GNUC__)
+#define mjPRINTFLIKE(n, m) __attribute__((format(printf, n, m)))
+#else
+#define mjPRINTFLIKE(n, m)
+#endif
 #endif
 
 #endif  // MUJOCO_MJMACRO_H_

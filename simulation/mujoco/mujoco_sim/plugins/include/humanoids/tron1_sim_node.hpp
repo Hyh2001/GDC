@@ -2,15 +2,16 @@
 #ifndef TRON1_SIM_NODE_HPP
 #define TRON1_SIM_NODE_HPP
 
-#include <rclcpp/rclcpp.hpp>
 #include <rmw/types.h>
-#include "humanoid_msgs/msg/low_state.hpp"
-#include "humanoid_msgs/msg/low_cmd.hpp"
-#include "humanoid_msgs/msg/humanoid_est.hpp"
+
+#include <rclcpp/rclcpp.hpp>
 
 #include "array_safety.h"
-#include "simulate.h"
+#include "humanoid_msgs/msg/humanoid_est.hpp"
+#include "humanoid_msgs/msg/low_cmd.hpp"
+#include "humanoid_msgs/msg/low_state.hpp"
 #include "mujoco_sim_node_base.hpp"
+#include "simulate.h"
 
 using namespace std::chrono_literals;
 
@@ -21,7 +22,7 @@ namespace mj = mujoco;
 
 class Tron1SimNode : public MujocoSimNodeBase
 {
-public:
+  public:
   // constructor of the node
   Tron1SimNode();
 
@@ -29,7 +30,7 @@ public:
 
   virtual void load_ros2_params() override;
 
-protected:
+  protected:
   // robot_type
   enum RobotType
   {
@@ -75,14 +76,14 @@ protected:
 
 class Tron1SimGroundTruth : public Tron1SimNode
 {
-public:
+  public:
   Tron1SimGroundTruth();
 
   void reset_params();
 
   void load_ros2_params() override;
 
-protected:
+  protected:
   void build_ground_truth_msg();
 
   void ground_truth_callback();
@@ -90,16 +91,16 @@ protected:
 
   // ground truth
   humanoid_msgs::msg::HumanoidEst ground_truth_msg_;
-  std::array<float, 3> pos_truth_{ 0.0, 0.0, 0.0 };        // x, y, z in the world frame
-  std::array<float, 4> ori_truth_{ 1.0, 0.0, 0.0, 0.0 };   // w, x, y, z
-  std::array<float, 3> lin_vel_truth_{ 0.0, 0.0, 0.0 };    // vx, vy, vz in the world frame
-  std::array<float, 3> lin_accel_truth_{ 0.0, 0.0, 0.0 };  // ax, ay, az  in the world frame
-  std::array<float, 3> ang_vel_truth_{ 0.0, 0.0, 0.0 };    // wx, wy, wz in the world frame
-  std::array<float, 3> ang_acc_truth_{ 0.0, 0.0, 0.0 };    // alphax, alphay, alphaz in the world frame
-  std::array<std::array<float, 6>, 2> contact_wrenches_{ {
-      { { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f } },
-      { { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f } },
-  } };  // fx, fy, fz, mx, my, mz in the world frame
+  std::array<float, 3> pos_truth_{0.0, 0.0, 0.0};        // x, y, z in the world frame
+  std::array<float, 4> ori_truth_{1.0, 0.0, 0.0, 0.0};   // w, x, y, z
+  std::array<float, 3> lin_vel_truth_{0.0, 0.0, 0.0};    // vx, vy, vz in the world frame
+  std::array<float, 3> lin_accel_truth_{0.0, 0.0, 0.0};  // ax, ay, az  in the world frame
+  std::array<float, 3> ang_vel_truth_{0.0, 0.0, 0.0};    // wx, wy, wz in the world frame
+  std::array<float, 3> ang_acc_truth_{0.0, 0.0, 0.0};    // alphax, alphay, alphaz in the world frame
+  std::array<std::array<float, 6>, 2> contact_wrenches_{{
+      {{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}},
+      {{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}},
+  }};  // fx, fy, fz, mx, my, mz in the world frame
 };
 
 }  // namespace mujoco_sim

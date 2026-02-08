@@ -1,15 +1,16 @@
 #ifndef PENDULUM_SIM_NODE_HPP
 #define PENDULUM_SIM_NODE_HPP
 
-#include <rclcpp/rclcpp.hpp>
 #include <rmw/types.h>
-#include "pend_msgs/msg/low_state.hpp"
-#include "pend_msgs/msg/low_cmd.hpp"
-#include "pend_msgs/msg/pendulum_est.hpp"
+
+#include <rclcpp/rclcpp.hpp>
 
 #include "array_safety.h"
-#include "simulate.h"
 #include "mujoco_sim_node_base.hpp"
+#include "pend_msgs/msg/low_cmd.hpp"
+#include "pend_msgs/msg/low_state.hpp"
+#include "pend_msgs/msg/pendulum_est.hpp"
+#include "simulate.h"
 
 using namespace std::chrono_literals;
 
@@ -20,13 +21,13 @@ namespace mj = mujoco;
 
 class PendulumSimNode : public MujocoSimNodeBase
 {
-public:
+  public:
   // constructor of the node
   PendulumSimNode();
 
   void reset_params();
 
-protected:
+  protected:
   void callback_low_state();
   void callback_low_cmd(const pend_msgs::msg::LowCmd::SharedPtr msg);
 
@@ -51,17 +52,17 @@ protected:
 
 class PendulumSimGroundTruth : public PendulumSimNode
 {
-public:
+  public:
   PendulumSimGroundTruth();
 
   void reset_params();
 
-protected:
+  protected:
   void ground_truth_callback();
   rclcpp::Publisher<pend_msgs::msg::PendulumEst>::SharedPtr pendulum_est_pub_ptr_;
 
   // ground truth
-  std::array<float, 4> tip_state_{ 0.0, 0.0, 0.0, 0.0 };  // y, vy, z, vz
+  std::array<float, 4> tip_state_{0.0, 0.0, 0.0, 0.0};  // y, vy, z, vz
 };
 
 }  // namespace mujoco_sim

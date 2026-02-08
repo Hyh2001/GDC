@@ -33,9 +33,11 @@ typedef void* CVDisplayLinkRef;
 
 // Workaround for perpertually broken OpenGL VSync on macOS,
 // most recently https://github.com/glfw/glfw/issues/2249.
-namespace mujoco {
-class GlfwCoreVideo {
- public:
+namespace mujoco
+{
+class GlfwCoreVideo
+{
+  public:
   GlfwCoreVideo(GLFWwindow* window);
   ~GlfwCoreVideo();
 
@@ -43,7 +45,7 @@ class GlfwCoreVideo {
   int DisplayLinkCallback();
   void UpdateDisplayLink();
 
- private:
+  private:
   GLFWwindow* window_;
   CVDisplayLinkRef display_link_;
 
@@ -52,6 +54,5 @@ class GlfwCoreVideo {
   std::condition_variable cond_;
 };
 }  // namespace mujoco
-
 
 #endif  // MUJOCO_SIMULATE_GLFW_COREVIDEO_H_

@@ -4,9 +4,9 @@
 
 #include <vector>
 
-#include "rclcpp/rclcpp.hpp"
 #include "Eigen/Dense"
 #include "controller_interface/chainable_controller_interface.hpp"
+#include "rclcpp/rclcpp.hpp"
 
 namespace base_planners
 {
@@ -17,7 +17,7 @@ namespace base_planners
 
 class VelocityPlanner : public controller_interface::ChainableControllerInterface
 {
-public:
+  public:
   controller_interface::CallbackReturn on_init() override;
 
   controller_interface::InterfaceConfiguration state_interface_configuration() const override;
@@ -30,7 +30,7 @@ public:
 
   controller_interface::CallbackReturn on_deactivate(const rclcpp_lifecycle::State& previous_state) override;
 
-protected:
+  protected:
   controller_interface::return_type update_and_write_commands(const rclcpp::Time& time,
                                                               const rclcpp::Duration& period) override;
 
@@ -42,8 +42,8 @@ protected:
   // reference
   std::string ref_planner_ = "";  // upper level planner
 
-  std::array<double, 3> max_velocity_{ 1.0, 1.0, 0.5 };  // vx, vy, yaw rate
-  std::array<double, 3> velocity_cmd_{ 0.0, 0.0, 0.0 };  // vx, vy, yaw rate
+  std::array<double, 3> max_velocity_{1.0, 1.0, 0.5};  // vx, vy, yaw rate
+  std::array<double, 3> velocity_cmd_{0.0, 0.0, 0.0};  // vx, vy, yaw rate
 };
 
 };  // namespace base_planners

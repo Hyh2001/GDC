@@ -22,11 +22,13 @@
 #include <GLFW/glfw3native.h>
 #endif
 
-namespace mujoco {
+namespace mujoco
+{
 // Dynamic dispatch table for GLFW functions required by Simulate.
 // This allows us to use GLFW without introducing a link-time dependency on the
 // library, which is useful e.g. when using GLFW via Python.
-struct Glfw {
+struct Glfw
+{
 #define mjGLFW_DECLARE_SYMBOL(func) decltype(&::func) func
   // go/keep-sorted start
   mjGLFW_DECLARE_SYMBOL(glfwCreateWindow);

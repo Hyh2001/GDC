@@ -15,26 +15,42 @@
 #ifndef MUJOCO_SIMULATE_PLATFORM_UI_ADAPTER_H_
 #define MUJOCO_SIMULATE_PLATFORM_UI_ADAPTER_H_
 
-#include <utility>
-
 #include <mujoco/mujoco.h>
 
-namespace mujoco {
-class PlatformUIAdapter {
- public:
+#include <utility>
+
+namespace mujoco
+{
+class PlatformUIAdapter
+{
+  public:
   virtual ~PlatformUIAdapter() = default;
 
-  inline mjuiState& state() { return state_; }
-  inline const mjuiState& state() const { return state_; }
+  inline mjuiState& state()
+  {
+    return state_;
+  }
+  inline const mjuiState& state() const
+  {
+    return state_;
+  }
 
-  inline mjrContext& mjr_context() { return con_; }
-  inline const mjrContext& mjr_context() const { return con_; }
+  inline mjrContext& mjr_context()
+  {
+    return con_;
+  }
+  inline const mjrContext& mjr_context() const
+  {
+    return con_;
+  }
 
-  inline void SetEventCallback(void (*event_callback)(mjuiState*)) {
+  inline void SetEventCallback(void (*event_callback)(mjuiState*))
+  {
     event_callback_ = event_callback;
   }
 
-  inline void SetLayoutCallback(void (*layout_callback)(mjuiState*)) {
+  inline void SetLayoutCallback(void (*layout_callback)(mjuiState*))
+  {
     layout_callback_ = layout_callback;
   }
 
@@ -71,7 +87,7 @@ class PlatformUIAdapter {
   virtual int TranslateKeyCode(int key) const = 0;
   virtual mjtButton TranslateMouseButton(int button) const = 0;
 
- protected:
+  protected:
   PlatformUIAdapter();
   void FreeMjrContext();
 
@@ -93,7 +109,7 @@ class PlatformUIAdapter {
   const mjModel* last_model_ = nullptr;
   int last_fontscale_ = -1;
 
- private:
+  private:
   void UpdateMjuiState();
 };
 }  // namespace mujoco
