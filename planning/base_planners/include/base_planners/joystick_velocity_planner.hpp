@@ -17,7 +17,7 @@ namespace base_planners
     applying a low-pass filter to smooth the commands.
 */
 
-class JoystickVelocityPlanner : public VelocityPlanner
+class JoystickVelocityPlanner : public controller_interface::ChainableControllerInterface
 {
   public:
   controller_interface::CallbackReturn on_init() override;
@@ -41,6 +41,9 @@ class JoystickVelocityPlanner : public VelocityPlanner
 
   std::vector<hardware_interface::StateInterface> on_export_state_interfaces() override;
 
+  double max_linear_velocity_x_{0};
+  double max_linear_velocity_y_{0};
+  double max_angular_velocity_yaw_{0};
   int velocity_x_button_{0};
   int velocity_y_button_{1};
   int yaw_rate_button_{2};
@@ -48,7 +51,9 @@ class JoystickVelocityPlanner : public VelocityPlanner
   double damping_frequency_{1.0};    // Hz
   double damping_intensity_{0.0};    // dB
 
+  base_planners::VelocityPlanner velocity_planner_;
   std::array<double, 3> velocity_cmd_raw_{0.0, 0.0, 0.0};  // vx, vy, yaw rate
+  std::array<double, 3> velocity_cmd_{0.0, 0.0, 0.0};      // vx, vy, yaw rate after low-pass filter
   rclcpp::Node::SharedPtr node_ptr_ = nullptr;
   rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_subscriber_ = nullptr;
   rclcpp::executors::SingleThreadedExecutor executor_;

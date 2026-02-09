@@ -59,7 +59,12 @@ controller_interface::return_type ConstantVelocityPlanner::update_reference_from
 
 std::vector<hardware_interface::StateInterface> ConstantVelocityPlanner::on_export_state_interfaces()
 {
-  return VelocityPlanner::on_export_state_interfaces();
+  std::vector<hardware_interface::StateInterface> state_interfaces;
+  std::string planner_name = this->get_name();
+  state_interfaces.emplace_back(hardware_interface::StateInterface(planner_name, "lin_x_vel_ref", &velocity_cmd_[0]));
+  state_interfaces.emplace_back(hardware_interface::StateInterface(planner_name, "lin_y_vel_ref", &velocity_cmd_[1]));
+  state_interfaces.emplace_back(hardware_interface::StateInterface(planner_name, "yaw_rate_ref", &velocity_cmd_[2]));
+  return state_interfaces;
 }
 
 };  // namespace base_planners

@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "Eigen/Dense"
+#include "controller_interface/chainable_controller_interface.hpp"
 #include "base_planners/velocity_planner.hpp"
 #include "rclcpp/rclcpp.hpp"
 
@@ -12,7 +13,7 @@ namespace base_planners
 /*
     ConstantVelocityPlanner implements a velocity planner that maintains constant velocity commands.
 */
-class ConstantVelocityPlanner : public VelocityPlanner
+class ConstantVelocityPlanner : public controller_interface::ChainableControllerInterface
 {
   public:
   controller_interface::CallbackReturn on_init() override;
@@ -35,6 +36,8 @@ class ConstantVelocityPlanner : public VelocityPlanner
                                                                       const rclcpp::Duration& period) override;
 
   std::vector<hardware_interface::StateInterface> on_export_state_interfaces() override;
+
+  std::array<double, 3> velocity_cmd_{0.0, 0.0, 0.0};  // vx, vy, yaw rate
 };
 
 }  // namespace base_planners
