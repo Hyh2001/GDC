@@ -13,6 +13,7 @@ find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(base_planners REQUIRED)
 
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.cc)
 add_library(${PROJECT_NAME} SHARED
@@ -28,6 +29,7 @@ ament_target_dependencies(${PROJECT_NAME} PUBLIC
         rclcpp_lifecycle
         pluginlib
         sensor_msgs
+        base_planners
 )
 install(TARGETS ${PROJECT_NAME}
   EXPORT export_${PROJECT_NAME}
@@ -43,7 +45,7 @@ ament_export_libraries(${PROJECT_NAME})
 ament_export_targets(
   export_${PROJECT_NAME} HAS_LIBRARY_TARGET
 )
-ament_export_dependencies(controller_manager_msgs)
+ament_export_dependencies(controller_manager_msgs base_planners)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

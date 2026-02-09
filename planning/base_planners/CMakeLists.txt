@@ -46,7 +46,7 @@ ament_export_targets(
 )
 ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
-ament_export_dependencies(controller_manager_msgs)
+ament_export_dependencies(controller_manager_msgs control_toolbox)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
