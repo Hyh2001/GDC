@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "Eigen/Dense"
-#include "controller_interface/chainable_controller_interface.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/joy.hpp"
 
@@ -22,30 +21,20 @@ struct Waypoint
   Eigen::Quaterniond orientation;
 };  // representation of pose
 
-class WaypointPlanner : public controller_interface::ChainableControllerInterface
+class WaypointPlanner
 {
   public:
-  controller_interface::CallbackReturn on_init() override;
+  WaypointPlanner() = default;
 
-  controller_interface::InterfaceConfiguration state_interface_configuration() const override;
+  WaypointPlanner(const std::vector<std::string>& waypoint_names);
 
-  controller_interface::InterfaceConfiguration command_interface_configuration() const override;
+  const std::vector<Waypoint>& get_waypoints() const { return waypoints_; }
 
-  controller_interface::CallbackReturn on_configure(const rclcpp_lifecycle::State& previous_state) override;
+  std::vector<Waypoint>& get_waypoints() { return waypoints_; }
 
-  controller_interface::CallbackReturn on_activate(const rclcpp_lifecycle::State& previous_state) override;
-
-  controller_interface::CallbackReturn on_deactivate(const rclcpp_lifecycle::State& previous_state) override;
+  const std::vector<std::string>& get_entry_names() { return entry_names_; }
 
   protected:
-  controller_interface::return_type update_and_write_commands(const rclcpp::Time& time,
-                                                              const rclcpp::Duration& period) override;
-
-  controller_interface::return_type update_reference_from_subscribers(const rclcpp::Time& time,
-                                                                      const rclcpp::Duration& period) override;
-
-  std::vector<hardware_interface::StateInterface> on_export_state_interfaces() override;
-
   std::vector<Waypoint> waypoints_ = {};
   std::vector<std::string> entry_names_ = {"pos_x", "pos_y", "pos_z", "quat_w", "quat_x", "quat_y", "quat_z"};  // wxyz
 };

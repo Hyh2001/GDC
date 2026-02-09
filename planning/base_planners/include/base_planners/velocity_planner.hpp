@@ -23,7 +23,9 @@ class VelocityPlanner
 
   std::array<double,3> compute(std::array<double, 3> velocity_cmd_raw);
 
-  const std::array<double,3>& get_velocity_cmd() { return velocity_cmd_; }
+  const std::array<double,3>& get_velocity_cmd() const { return velocity_cmd_; }
+
+  std::array<double,3> get_velocity_cmd() { return velocity_cmd_;}
 
   protected:
   std::array<double, 3> max_velocity_{1.0, 1.0, 0.5};  // vx, vy, yaw rate
