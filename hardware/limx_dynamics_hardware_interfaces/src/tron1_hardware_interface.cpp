@@ -86,6 +86,10 @@ rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn Tron1H
   robot_ = limxsdk::PointFoot::getInstance();
   robot_->init(robot_ip_);
   robot_cmd_ = limxsdk::RobotCmd(robot_->getMotorNumber());
+  for (size_t i = 0; i < robot_cmd_.mode.size(); ++i)
+  {
+    robot_cmd_.mode[i] = 2;
+  }
   robot_state_ = limxsdk::RobotState(robot_->getMotorNumber());
   if (robot_->getMotorNumber() != joint_positions_.size())
   {
