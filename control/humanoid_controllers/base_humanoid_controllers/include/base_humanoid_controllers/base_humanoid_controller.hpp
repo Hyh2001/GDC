@@ -32,23 +32,7 @@ class BaseHumanoidController : public controller_interface::ChainableControllerI
   controller_interface::return_type update_reference_from_subscribers(const rclcpp::Time& time,
                                                                       const rclcpp::Duration& period) override;
 
-  // void get_state_interface_value(
-  //     const std::string & interface_name, double & value
-  // );
-
-  // void set_command_interface_value(
-  //     const std::string & interface_name, const double & value
-  // );
-
-  // void get_state_interface_values(
-  //     const std::vector<std::string> & interface_names,
-  //     std::vector<double> & values
-  // );
-
-  // void set_command_interface_values(
-  //     const std::vector<std::string> & interface_names,
-  //     const std::vector<double> & values
-  // );
+  controller_interface::InterfaceConfiguration get_joint_command_interface_configuration() const;
 
   // predecessors
   std::string estimator_name_ = "";
