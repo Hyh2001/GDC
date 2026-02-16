@@ -17,6 +17,10 @@ This method is recommended for Python users who need to implement modules that d
 
 To install using this method, checkout the installation guideline of [RoboStack](https://robostack.github.io/GettingStarted.html).
 
+## Docker
+Because host-environment dependencies are difficult to maintain, Docker is recommended for full installation and hardware interfacing.
+To simplify installation, here we provide a ROS2 workspace template for easy setting up the environments. See [ROS2 Jazzy Workspace](https://github.com/Hyh2001/ROS2-Jazzy-workspace-template) for details.
+
 ## Install This Project
 To install this project, set up a standard ROS2 workspace:
 ```bash
