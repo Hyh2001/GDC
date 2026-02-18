@@ -189,4 +189,91 @@ controller_interface::return_type BaseHumanoidEstimator::update_and_write_comman
 {
   return controller_interface::return_type::OK;
 }
+
+controller_interface::InterfaceConfiguration BaseHumanoidEstimator::get_imu_state_interface_configuration() const
+{
+  controller_interface::InterfaceConfiguration config;
+  config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
+
+  config.names.push_back("imu/angular_velocity.x");
+  config.names.push_back("imu/angular_velocity.y");
+  config.names.push_back("imu/angular_velocity.z");
+  config.names.push_back("imu/linear_acceleration.x");
+  config.names.push_back("imu/linear_acceleration.y");
+  config.names.push_back("imu/linear_acceleration.z");
+  config.names.push_back("imu/orientation.w");
+  config.names.push_back("imu/orientation.x");
+  config.names.push_back("imu/orientation.y");
+  config.names.push_back("imu/orientation.z");
+
+  return config;
+}
+
+controller_interface::InterfaceConfiguration BaseHumanoidEstimator::get_joint_state_interface_configuration() const
+{
+  controller_interface::InterfaceConfiguration config;
+  config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
+
+  for (const auto& joint_name : joint_names_)
+  {
+    for (const auto& interface_type : joint_state_interface_types_)
+    {
+      config.names.push_back(joint_name + "/" + interface_type);
+    }
+  }
+
+  return config;
+}
+
+controller_interface::InterfaceConfiguration BaseHumanoidEstimator::get_contact_state_interface_configuration() const
+{
+  controller_interface::InterfaceConfiguration config;
+  config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
+
+  config.names.push_back("contact_sensor/L");
+  config.names.push_back("contact_sensor/R");
+
+  return config;
+}
+
+void BaseHumanoidEstimator::read_imu_from_state_interfaces(std::array<double, 3>& acc,
+                                                           std::array<double, 3>& gyro,
+                                                           std::array<double, 4>& ori) const
+{
+  base_utils::get_state_interface_value(state_interfaces_, "imu/linear_acceleration.x", acc[0]);
+  base_utils::get_state_interface_value(state_interfaces_, "imu/linear_acceleration.y", acc[1]);
+  base_utils::get_state_interface_value(state_interfaces_, "imu/linear_acceleration.z", acc[2]);
+
+  base_utils::get_state_interface_value(state_interfaces_, "imu/angular_velocity.x", gyro[0]);
+  base_utils::get_state_interface_value(state_interfaces_, "imu/angular_velocity.y", gyro[1]);
+  base_utils::get_state_interface_value(state_interfaces_, "imu/angular_velocity.z", gyro[2]);
+
+  base_utils::get_state_interface_value(state_interfaces_, "imu/orientation.w", ori[0]);
+  base_utils::get_state_interface_value(state_interfaces_, "imu/orientation.x", ori[1]);
+  base_utils::get_state_interface_value(state_interfaces_, "imu/orientation.y", ori[2]);
+  base_utils::get_state_interface_value(state_interfaces_, "imu/orientation.z", ori[3]);
+}
+
+void BaseHumanoidEstimator::read_joint_states_from_state_interfaces(std::vector<double>& pos, std::vector<double>& vel,
+                                                                    std::vector<double>& tau) const
+{
+  pos.resize(num_joints_, 0.0);
+  vel.resize(num_joints_, 0.0);
+  tau.resize(num_joints_, 0.0);
+
+  for (size_t i = 0; i < joint_names_.size(); ++i)
+  {
+    const auto& joint = joint_names_[i];
+    base_utils::get_state_interface_value(state_interfaces_, joint + "/position", pos[i]);
+    base_utils::get_state_interface_value(state_interfaces_, joint + "/velocity", vel[i]);
+    base_utils::get_state_interface_value(state_interfaces_, joint + "/effort", tau[i]);
+  }
+}
+
+void BaseHumanoidEstimator::read_contact_states_from_state_interfaces(std::array<double, 2>& contact_states) const
+{
+  base_utils::get_state_interface_value(state_interfaces_, "contact_sensor/L", contact_states[0]);
+  base_utils::get_state_interface_value(state_interfaces_, "contact_sensor/R", contact_states[1]);
+}
+
 };  // namespace humanoid_estimators

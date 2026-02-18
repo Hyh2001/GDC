@@ -3,6 +3,7 @@
 
 #include "controller_interface/chainable_controller_interface.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "base_utils/ros2_control_utils.hpp"
 
 namespace humanoid_estimators  // estimator as a chainable controller
 {
@@ -26,6 +27,19 @@ class BaseHumanoidEstimator : public controller_interface::ChainableControllerIn
 
   controller_interface::return_type update_and_write_commands(const rclcpp::Time& time,
                                                               const rclcpp::Duration& period) override;
+
+  controller_interface::InterfaceConfiguration get_imu_state_interface_configuration() const;
+
+  controller_interface::InterfaceConfiguration get_joint_state_interface_configuration() const;
+
+  controller_interface::InterfaceConfiguration get_contact_state_interface_configuration() const;
+
+  void read_imu_from_state_interfaces(std::array<double, 3>& acc, std::array<double, 3>& gyro, std::array<double, 4>& ori) const;
+
+  void read_joint_states_from_state_interfaces(std::vector<double>& pos, std::vector<double>& vel,
+                                              std::vector<double>& tau) const;
+
+  void read_contact_states_from_state_interfaces(std::array<double, 2>& contact_states) const;
 
   // sensor reading fields
   std::vector<std::string> joint_names_ = {};

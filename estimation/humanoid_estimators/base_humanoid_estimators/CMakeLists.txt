@@ -13,6 +13,7 @@ find_package(controller_interface REQUIRED)
 find_package(hardware_interface REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(realtime_tools REQUIRED)
+find_package(base_estimators REQUIRED)
 
 find_package(humanoid_msgs REQUIRED)
 
@@ -31,6 +32,7 @@ ament_target_dependencies(humanoid_estimators PUBLIC
         pluginlib
         realtime_tools
         humanoid_msgs
+        base_estimators
 )
 pluginlib_export_plugin_description_file(controller_interface base_humanoid_estimators_config.xml)
 install(TARGETS humanoid_estimators
@@ -43,6 +45,7 @@ ament_export_libraries(humanoid_estimators)
 ament_export_targets(
   export_${PROJECT_NAME} HAS_LIBRARY_TARGET
 )
+ament_export_dependencies(humanoid_msgs)
 # message(WARNING "CMake PROJECT_NAME='${PROJECT_NAME}'")
 
 install(
