@@ -35,6 +35,10 @@ hardware_interface::CallbackReturn HumanoidHardwareInterface::on_configure(
         accel_[0] = msg->imu.linear_acceleration.x;
         accel_[1] = msg->imu.linear_acceleration.y;
         accel_[2] = msg->imu.linear_acceleration.z;
+        ori_[0] = msg->imu.orientation.w;
+        ori_[1] = msg->imu.orientation.x;
+        ori_[2] = msg->imu.orientation.y;
+        ori_[3] = msg->imu.orientation.z;
       });
   LowCmd_publisher_ = node_ptr_->create_publisher<humanoid_msgs::msg::LowCmd>(publish_topic_name_, qos);
   realtime_LowCmd_publisher_ =
@@ -132,6 +136,22 @@ std::vector<hardware_interface::StateInterface> HumanoidHardwareInterface::expor
         else if (iface.name == "linear_acceleration.z")
         {
           state_interfaces.emplace_back(info_.sensors[i].name, iface.name, &accel_[2]);
+        }
+        else if (iface.name == "orientation.w")
+        {
+          state_interfaces.emplace_back(info_.sensors[i].name, iface.name, &ori_[0]);
+        }
+        else if (iface.name == "orientation.x")
+        {
+          state_interfaces.emplace_back(info_.sensors[i].name, iface.name, &ori_[1]);
+        }
+        else if (iface.name == "orientation.y")
+        {
+          state_interfaces.emplace_back(info_.sensors[i].name, iface.name, &ori_[2]);
+        }
+        else if (iface.name == "orientation.z")
+        {
+          state_interfaces.emplace_back(info_.sensors[i].name, iface.name, &ori_[3]);
         }
       }
     }

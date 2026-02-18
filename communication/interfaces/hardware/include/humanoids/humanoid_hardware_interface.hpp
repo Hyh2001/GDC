@@ -42,6 +42,7 @@ class HumanoidHardwareInterface : public hardware_interface::SystemInterface
   std::vector<double> joint_acc_{0};
   std::vector<double> joint_tau_{0};
   std::array<double, 2> contact_states_{0};
+  std::array<double, 4> ori_{0};  // wxyz
   std::array<double, 3> gyro_{0};
   std::array<double, 3> accel_{0};
   // command interfaces
