@@ -28,11 +28,6 @@
   <depend>manipulator_msgs</depend>
   <depend>end_effector_msgs</depend>
 
-  <depend>go2_description</depend>
-  <depend>terrain_description</depend>
-  <depend>pendulum_description</depend>
-
-
   <export>
     <build_type>ament_cmake</build_type>
   </export>
