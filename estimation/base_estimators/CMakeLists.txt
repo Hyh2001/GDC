@@ -7,9 +7,42 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(Eigen3 REQUIRED)
+
+file(GLOB_RECURSE BASE_ESTIMATOR_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.c
+)
+add_library(${PROJECT_NAME} SHARED
+    ${BASE_ESTIMATOR_SOURCES}
+)
+ament_target_dependencies(${PROJECT_NAME}
+    rclcpp
+)
+target_include_directories(${PROJECT_NAME} PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+    ${EIGEN3_INCLUDE_DIRS}
+)
+target_link_libraries(${PROJECT_NAME}
+    Eigen3::Eigen
+)
+
+install(TARGETS ${PROJECT_NAME}
+  EXPORT export_${PROJECT_NAME}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+# Install header files
+install(DIRECTORY include/
+  DESTINATION include
+)
+ament_export_include_directories(include)
+ament_export_libraries(${PROJECT_NAME})
+ament_export_dependencies(rclcpp Eigen3)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
