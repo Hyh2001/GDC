@@ -1,3 +1,0 @@
-simulation:
-    ros__parameters:
-        robot_type: "flat_foot"
