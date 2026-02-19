@@ -16,7 +16,7 @@ namespace hardware_interfaces
 class ManipulatorHardwareInterface : public hardware_interface::SystemInterface
 {
   public:
-  ManipulatorHardwareInterface();
+  ManipulatorHardwareInterface() = default;
 
   virtual hardware_interface::CallbackReturn on_configure(const rclcpp_lifecycle::State& previous_state) override;
   virtual hardware_interface::CallbackReturn on_cleanup(const rclcpp_lifecycle::State& previous_state) override;
@@ -41,7 +41,7 @@ class ManipulatorHardwareInterface : public hardware_interface::SystemInterface
   std::vector<double> joint_tau_{0};
   // command interfaces
   // NOTE: unlike locomotion, not all manipulators support torque control
-  std::vector<uint8_t> mode_{0};
+  std::vector<double> mode_{0};
   std::vector<double> joint_pos_command_{0};
   std::vector<double> joint_vel_command_{0};
   std::vector<double> joint_tau_command_{0};
@@ -52,7 +52,7 @@ class ManipulatorHardwareInterface : public hardware_interface::SystemInterface
   rclcpp::executors::SingleThreadedExecutor executor_;
   rclcpp::Subscription<manipulator_msgs::msg::LowState>::SharedPtr LowState_subscriber_ = nullptr;
   rclcpp::Publisher<manipulator_msgs::msg::LowCmd>::SharedPtr LowCmd_publisher_ = nullptr;
-  realtime_tools::RealtimePublisher<manipulator_msgs::msg::LowCmd>::SharedPtr
+  realtime_tools::RealtimePublisher<manipulator_msgs::msg::LowCmd>::SharedPtr realtime_LowCmd_publisher_ = nullptr;
 };
 
 };  // namespace hardware_interfaces

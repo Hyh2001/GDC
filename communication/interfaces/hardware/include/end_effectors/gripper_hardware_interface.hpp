@@ -1,19 +1,17 @@
 #pragma once
-#ifndef END_EFFECTOR_HARDWARE_INTERFACE_HPP
-#define END_EFFECTOR_HARDWARE_INTERFACE_HPP
+#ifndef GRIPPER_HARDWARE_INTERFACE_HPP
+#define GRIPPER_HARDWARE_INTERFACE_HPP
 
-#include <thread>
-
-#include "hardware_interface/system_interface.hpp"
-#include "rclcpp/rclcpp.hpp"
-#include "realtime_tools/realtime_publisher.hpp"
+#include "end_effector_msgs/msg/gripper_cmd.hpp"
+#include "end_effector_msgs/msg/gripper_state.hpp"
+#include "interfaces/hardware/include/end_effectors/end_effector_hardware_interface.hpp"
 
 namespace hardware_interfaces
 {
-class EndEffectorHardwareInterface : public hardware_interface::SystemInterface
+class GripperHardwareInterface : public EndEffectorHardwareInterface
 {
   public:
-  EndEffectorHardwareInterface() = default;
+  GripperHardwareInterface();
 
   virtual hardware_interface::CallbackReturn on_configure(const rclcpp_lifecycle::State& previous_state) override;
   virtual hardware_interface::CallbackReturn on_cleanup(const rclcpp_lifecycle::State& previous_state) override;
@@ -27,27 +25,18 @@ class EndEffectorHardwareInterface : public hardware_interface::SystemInterface
   virtual hardware_interface::return_type write(const rclcpp::Time& time, const rclcpp::Duration& period) override;
 
   protected:
-  std::string node_name_ = "end_effector_hardware_interface";
-  std::string publish_topic_name_ = "/end_effector/low_cmd";
-  std::string subscribe_topic_name_ = "/end_effector/low_state";
-  hardware_interface::HardwareInfo info_;
-  // state interfaces
-  std::vector<double> joint_pos_{0};
-  std::vector<double> joint_vel_{0};
-  std::vector<double> joint_acc_{0};
-  std::vector<double> joint_tau_{0};
-  // command interfaces
-  std::vector<double> mode_{0};
-  std::vector<double> joint_pos_command_{0};
-  std::vector<double> joint_vel_command_{0};
-  std::vector<double> joint_tau_command_{0};
-  std::vector<double> joint_kp_{0};
-  std::vector<double> joint_kd_{0};
+  std::string node_name_ = "gripper_hardware_interface";
+  std::string publish_topic_name_ = "/gripper/gripper_cmd";
+  std::string subscribe_topic_name_ = "/gripper/gripper_state";
 
   rclcpp::Node::SharedPtr node_ptr_ = nullptr;
   rclcpp::executors::SingleThreadedExecutor executor_;
+  rclcpp::Subscription<end_effector_msgs::msg::GripperState>::SharedPtr GripperState_subscriber_ = nullptr;
+  rclcpp::Publisher<end_effector_msgs::msg::GripperCmd>::SharedPtr GripperCmd_publisher_ = nullptr;
+  realtime_tools::RealtimePublisher<end_effector_msgs::msg::GripperCmd>::SharedPtr realtime_GripperCmd_publisher_ = nullptr;
 };
 
 };  // namespace hardware_interfaces
 
-#endif  // END_EFFECTOR_HARDWARE_INTERFACE_HPP
+
+#endif  // GRIPPER_HARDWARE_INTERFACE_HPP
