@@ -184,6 +184,7 @@ hardware_interface::return_type QuadrupedHardwareInterface::write(const rclcpp::
   msg.header.stamp = node_ptr_->now();
   for (int i = 0; i < 12; i++)
   {
+    msg.motor_cmd[i].mode = mode_[i];
     msg.motor_cmd[i].q = joint_pos_command_[i];
     msg.motor_cmd[i].dq = joint_vel_command_[i];
     msg.motor_cmd[i].tau = joint_tau_command_[i];
