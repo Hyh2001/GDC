@@ -78,6 +78,22 @@ controller_interface::return_type BaseHumanoidController::update_reference_from_
   return controller_interface::return_type::OK;
 }
 
+controller_interface::InterfaceConfiguration BaseHumanoidController::get_joint_command_interface_configuration() const
+{
+   controller_interface::InterfaceConfiguration config;
+   config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
+
+   for (const auto& joint : joint_names_)
+   {
+     for (const auto& iface_type : joint_command_interface_types_)
+     {
+       config.names.push_back(joint + "/" + iface_type);
+     }
+   }
+
+   return config;
+}
+
 // void BaseHumanoidController::get_state_interface_value(
 //     const std::string & interface_name, double & value)
 // {
