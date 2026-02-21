@@ -7,8 +7,10 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(Boost REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(pinocchio REQUIRED)
 
 file(GLOB_RECURSE BASE_ESTIMATOR_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
@@ -25,9 +27,12 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
     ${EIGEN3_INCLUDE_DIRS}
+    ${PINOCCHIO_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIRS}
 )
 target_link_libraries(${PROJECT_NAME}
     Eigen3::Eigen
+    pinocchio::pinocchio
 )
 
 install(TARGETS ${PROJECT_NAME}
