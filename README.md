@@ -23,7 +23,7 @@ Because host-environment dependencies are difficult to maintain, Docker is recom
 To simplify installation, here we provide a ROS2 workspace template for easy setting up the environments. See [ROS2 Jazzy Workspace](https://github.com/Hyh2001/ROS2-Jazzy-workspace-template) for details.
 
 ## Install This Project
-To install this project, set up a standard ROS2 workspace:
+To install this project, use the template workspace or set up a standard ROS2 workspace:
 ```bash
 mkdir -p ~/<workspace_name>_ws/src
 ```
@@ -33,7 +33,7 @@ Then clone the project and initialize only the required submodules:
 cd ~/<workspace_name>_ws/src
 git clone https://github.com/Hyh2001/deployment_code_base.git
 cd deployment_code_base
-git submodule update --init --recursive descriptions command/keyboard_joy
+git submodule update --init --recursive descriptions command/keyboard_joy <other_submodules>
 cd ../../
 ```
 
