@@ -186,6 +186,8 @@ void robot_IEKF::GetMeasurement(int T)
         std::cout << "--------------------" << std::endl;
         std::cout << "[robot_IEKF] contact: " << contact_.transpose() << std::endl;
         std::cout << "[robot_IEKF] contact_torque: " << contact_torque_.transpose() << std::endl;
+        std::cout << "[robot_IEKF] residual: " << residual.segment(6, params_ptr_->num_legs_ * params_ptr_->joint_names_.size()).transpose() << std::endl;
+        // std::cout << "[robot_IEKF] quaternion (w, x, y, z): " << store_ptr_->quaternion_ << std::endl;
     }
 
     discrete_time_stack.push_back(T);
@@ -320,6 +322,8 @@ void robot_IEKF::CorrectKinematicsLO()
         G_meas_pos_i.block(0, 3, 3, dim_legs_) = J_imu_2_foot_stack.back().block(i * 3, 0, 3, dim_legs_);
 
         covariance_i.block<3, 3>(3, 3) = G_meas_pos_i * C_meas_input * G_meas_pos_i.transpose();
+        // NOTE: for testing, set a fixed cov
+        // covariance_i.block<3, 3>(3, 3) = 0.01 * Matrix3d::Identity();
         // covariance_i.block<3, 3>(3, 3) = C_meas_input.block(0, 0, dim_legs_, dim_legs_);
 
         measured_kinematics.emplace_back(i, pose_i, covariance_i);
