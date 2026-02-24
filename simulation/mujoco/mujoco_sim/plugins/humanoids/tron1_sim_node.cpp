@@ -150,6 +150,10 @@ void Tron1SimNode::build_low_state_msg()
   low_state_msg_.imu.angular_velocity.x = gyro_[0];
   low_state_msg_.imu.angular_velocity.y = gyro_[1];
   low_state_msg_.imu.angular_velocity.z = gyro_[2];
+  low_state_msg_.imu.orientation.w = quat_[0];
+  low_state_msg_.imu.orientation.x = quat_[1];
+  low_state_msg_.imu.orientation.y = quat_[2];
+  low_state_msg_.imu.orientation.z = quat_[3];
 }
 
 void Tron1SimNode::callback_low_state()
@@ -158,6 +162,7 @@ void Tron1SimNode::callback_low_state()
   if (sim_->d_)
   {
     // get the data
+    const int idx_imu_quat = sim_->m_->sensor_adr[mj_name2id(sim_->m_, mjOBJ_SENSOR, "imu_quat")];
     const int idx_imu_gyro = sim_->m_->sensor_adr[mj_name2id(sim_->m_, mjOBJ_SENSOR, "imu_gyro")];
     const int idx_imu_accele = sim_->m_->sensor_adr[mj_name2id(sim_->m_, mjOBJ_SENSOR, "imu_acc")];
     const int idx_joint_pos = sim_->m_->sensor_adr[mj_name2id(sim_->m_, mjOBJ_SENSOR, "abad_L_pos")];
@@ -165,6 +170,10 @@ void Tron1SimNode::callback_low_state()
     const int idx_joint_torque = sim_->m_->sensor_adr[mj_name2id(sim_->m_, mjOBJ_SENSOR, "abad_L_tau")];
     const int idx_contact = sim_->m_->sensor_adr[mj_name2id(sim_->m_, mjOBJ_SENSOR, "L_contact_sensor")];
 
+    quat_[0] = sim_->d_->sensordata[idx_imu_quat + 0];  // w
+    quat_[1] = sim_->d_->sensordata[idx_imu_quat + 1];  // x
+    quat_[2] = sim_->d_->sensordata[idx_imu_quat + 2];  // y
+    quat_[3] = sim_->d_->sensordata[idx_imu_quat + 3];  // z
     accelerom_[0] = sim_->d_->sensordata[idx_imu_accele + 0];
     accelerom_[1] = sim_->d_->sensordata[idx_imu_accele + 1];
     accelerom_[2] = sim_->d_->sensordata[idx_imu_accele + 2];

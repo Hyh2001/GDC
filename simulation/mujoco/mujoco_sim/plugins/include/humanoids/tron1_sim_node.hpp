@@ -57,6 +57,7 @@ class Tron1SimNode : public MujocoSimNodeBase
   std::vector<float> joint_pos_;  // abad, hip, knee, maybe ankle or wheel
   std::vector<float> joint_vel_;
   std::vector<float> joint_torque_;
+  std::array<float, 4> quat_; // w, x, y, z
   std::array<float, 3> gyro_;
   std::array<float, 3> accelerom_;
   std::array<bool, 2> contact_;
