@@ -4,7 +4,7 @@
 
 #include <memory>
 #include <Eigen/Dense>
-#include "base_humanoid_estimators/LIP/biped_constants.hpp"
+#include "base_humanoid_controllers/LIP/planner_types.hpp"
 
 
 namespace base_humanoid_controllers

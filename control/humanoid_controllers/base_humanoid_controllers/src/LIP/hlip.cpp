@@ -120,6 +120,7 @@ double HLIP::SolveDesiredStepSizeDCMP1(Eigen::Vector2d x_preimpact)
     double stepLength = p1.klqr_DCM * (DCM_now - p1.DCM_des) + p1.Udes;
     return stepLength;
 }
+
 double HLIP::SolveDesiredStepSizeDCMP2(Eigen::Vector2d x_preimpact, StanceStatus stanceLeg)
 {
     double DCM_now = x_preimpact(0) + x_preimpact(1) / lambda() / z0_;
