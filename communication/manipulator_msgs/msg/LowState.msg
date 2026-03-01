@@ -1,3 +1,3 @@
 std_msgs/Header header
 
-common_msgs/MotorState[<=7] motor_state # Dynamic size for different robot morphologies
+common_msgs/MotorState[] motor_state # consider adding <=7 but not well supported

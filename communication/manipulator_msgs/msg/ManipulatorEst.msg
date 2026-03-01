@@ -1,4 +1,4 @@
 std_msgs/Header header
 
-common_msgs/MotorState[<=7] motor_state # Dynamic size for different robot morphologies
-common_msgs/FTSensor ft_sensor # Maybe an end-effector ft sensor
+common_msgs/MotorState[] motor_state # consider adding <=7 but not well supported
+common_msgs/FTSensor ft_sensor # end-effector ft sensor
