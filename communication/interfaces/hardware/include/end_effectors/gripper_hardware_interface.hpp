@@ -4,7 +4,7 @@
 
 #include "end_effector_msgs/msg/gripper_cmd.hpp"
 #include "end_effector_msgs/msg/gripper_state.hpp"
-#include "interfaces/hardware/include/end_effectors/end_effector_hardware_interface.hpp"
+#include "end_effector_hardware_interface.hpp"
 
 namespace hardware_interfaces
 {

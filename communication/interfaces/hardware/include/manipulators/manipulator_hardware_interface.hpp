@@ -16,7 +16,7 @@ namespace hardware_interfaces
 class ManipulatorHardwareInterface : public hardware_interface::SystemInterface
 {
   public:
-  ManipulatorHardwareInterface() = default;
+  ManipulatorHardwareInterface();
 
   virtual hardware_interface::CallbackReturn on_configure(const rclcpp_lifecycle::State& previous_state) override;
   virtual hardware_interface::CallbackReturn on_cleanup(const rclcpp_lifecycle::State& previous_state) override;
@@ -41,7 +41,7 @@ class ManipulatorHardwareInterface : public hardware_interface::SystemInterface
   std::vector<double> joint_tau_{0};
   // command interfaces
   // NOTE: unlike locomotion, not all manipulators support torque control
-  std::vector<double> mode_{0};
+  std::vector<uint8_t> mode_{0};
   std::vector<double> joint_pos_command_{0};
   std::vector<double> joint_vel_command_{0};
   std::vector<double> joint_tau_command_{0};

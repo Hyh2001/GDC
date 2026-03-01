@@ -4,6 +4,9 @@
 
 namespace hardware_interfaces
 {
+EndEffectorHardwareInterface::EndEffectorHardwareInterface() : hardware_interface::SystemInterface()
+{
+}
 hardware_interface::CallbackReturn EndEffectorHardwareInterface::on_configure(const rclcpp_lifecycle::State& previous_state)
 {
   // create the node
@@ -83,11 +86,7 @@ std::vector<hardware_interface::CommandInterface> EndEffectorHardwareInterface::
   {
     for (const auto& iface : info_.joints[i].command_interfaces)
     {
-      if (iface.name == "mode")
-      {
-        command_interfaces.emplace_back(info_.joints[i].name, iface.name, &mode_[i]);
-      }
-      else if (iface.name == "position")
+      if (iface.name == "position")
       {
         command_interfaces.emplace_back(info_.joints[i].name, iface.name, &joint_pos_command_[i]);
       }

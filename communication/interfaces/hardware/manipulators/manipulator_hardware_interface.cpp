@@ -4,6 +4,9 @@
 
 namespace hardware_interfaces
 {
+ManipulatorHardwareInterface::ManipulatorHardwareInterface() : hardware_interface::SystemInterface()
+{
+}
 hardware_interface::CallbackReturn ManipulatorHardwareInterface::on_configure(const rclcpp_lifecycle::State& previous_state)
 {
   // create the node
@@ -52,6 +55,7 @@ hardware_interface::CallbackReturn ManipulatorHardwareInterface::on_init(const h
 {
   info_ = info;
   size_t num_joints = info_.joints.size();
+  std::cout << num_joints << " joints found in hardware info." << std::endl;
   joint_pos_.resize(num_joints, 0.0);
   joint_vel_.resize(num_joints, 0.0);
   joint_acc_.resize(num_joints, 0.0);
@@ -100,11 +104,7 @@ std::vector<hardware_interface::CommandInterface> ManipulatorHardwareInterface::
   {
     for (const auto& iface : info_.joints[i].command_interfaces)
     {
-      if (iface.name == "mode")
-      {
-        command_interfaces.emplace_back(info_.joints[i].name, iface.name, &mode_[i]);
-      }
-      else if (iface.name == "position")
+      if (iface.name == "position")
       {
         command_interfaces.emplace_back(info_.joints[i].name, iface.name, &joint_pos_command_[i]);
       }
@@ -140,9 +140,10 @@ hardware_interface::return_type ManipulatorHardwareInterface::write(const rclcpp
   if (realtime_LowCmd_publisher_ && realtime_LowCmd_publisher_->trylock())
   {
     auto& msg = realtime_LowCmd_publisher_->msg_;
+    msg.motor_cmd.resize(joint_pos_command_.size());
     for (size_t i = 0; i < joint_pos_command_.size(); ++i)
     {
-      msg.motor_cmd[i].mode = static_cast<uint8_t>(mode_[i]);
+      msg.motor_cmd[i].mode = mode_[i];
       msg.motor_cmd[i].q = joint_pos_command_[i];
       msg.motor_cmd[i].dq = joint_vel_command_[i];
       msg.motor_cmd[i].tau = joint_tau_command_[i];

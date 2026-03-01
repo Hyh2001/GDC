@@ -14,4 +14,14 @@
         type="hardware_interfaces::Tron1HardwareInterface"
         base_class_type="hardware_interface::SystemInterface">
   </class>
+  <class
+        name="hardware_interfaces/AirbotPlayHardwareInterface"
+        type="hardware_interfaces::AirbotPlayHardwareInterface"
+        base_class_type="hardware_interface::SystemInterface">
+  </class>
+  <class
+        name="hardware_interfaces/AirbotPlayGripperHardwareInterface"
+        type="hardware_interfaces::AirbotPlayGripperHardwareInterface"
+        base_class_type="hardware_interface::SystemInterface">
+  </class>
 </library>
