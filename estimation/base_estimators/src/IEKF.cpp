@@ -154,27 +154,27 @@ void robot_IEKF::GetMeasurement(int T)
         Eigen::VectorXd r_leg =
             residual.segment(6 + i * dim_legs_, dim_legs_);
 
-        // J is 3 x nv
-        Eigen::MatrixXd JT = J_linear.transpose(); // nv x 3
+        // J is 3 x nv (nv for DOF of one leg)
+        Eigen::MatrixXd JT = J_linear.block(0, 6 + i * dim_legs_, 3, dim_legs_).transpose(); // nv x 3
 
         // Compute A = J J^T + λ² I   (3 x 3)
         double lambda = 1e-2; // try 1e-2, increase if still unstable
 
         Eigen::MatrixXd A =
-            J_linear * JT +
+            J_linear.block(0, 6 + i * dim_legs_, 3, dim_legs_) * JT +
             lambda * lambda *
-                Eigen::MatrixXd::Identity(J_linear.rows(), J_linear.rows());
+                Eigen::MatrixXd::Identity(J_linear.block(0, 6 + i * dim_legs_, 3, dim_legs_).rows(), J_linear.block(0, 6 + i * dim_legs_, 3, dim_legs_).rows());
 
         // Solve (J J^T + λ²I) y = r
-        Eigen::VectorXd y =
-            A.ldlt().solve(r_leg);
-
-        // Final force estimate
         Eigen::VectorXd f =
-            JT * y;
+            A.ldlt().solve(J_linear.block(0, 6 + i * dim_legs_, 3, dim_legs_) * r_leg);
 
-        contact_torque_(i) = (-f(2) > params_ptr_->contact_theshold_) ? 1.0 : 0.0;
-    }
+        contact_torque_(i) = (f(2) > params_ptr_->contact_theshold_) ? 1.0 : 0.0;
+        // std::cout << "[robot_IEKF] leg " << i << " contact torque: " << f(2) << ", contact flag: " << contact_torque_(i) << std::endl;
+        // std::cout << "[robot_IEKF] residual: " << residual.segment(6, params_ptr_->joint_names_.size()).transpose() << std::endl;
+        // std::cout << "[robot_IEKF] r_leg: " << r_leg.transpose() << std::endl;
+        // std::cout << "[robot_IEKF] J_linear transpose size: " << JT.rows() << " x " << JT.cols() << std::endl;
+      }
     // std::cout << "[robot_IEKF] residual: " << residual.segment(6, 12).transpose() << std::endl;
     contact_ = store_ptr_->contact_;
     if (params_ptr_->using_mob_)
@@ -186,8 +186,8 @@ void robot_IEKF::GetMeasurement(int T)
         std::cout << "--------------------" << std::endl;
         std::cout << "[robot_IEKF] contact: " << contact_.transpose() << std::endl;
         std::cout << "[robot_IEKF] contact_torque: " << contact_torque_.transpose() << std::endl;
-        std::cout << "[robot_IEKF] residual: " << residual.segment(6, params_ptr_->num_legs_ * params_ptr_->joint_names_.size()).transpose() << std::endl;
-        // std::cout << "[robot_IEKF] quaternion (w, x, y, z): " << store_ptr_->quaternion_ << std::endl;
+        std::cout << "[robot_IEKF] residual: " << residual.segment(6, params_ptr_->joint_names_.size()).transpose() << std::endl;
+        std::cout << "[robot_IEKF] residual size: " << residual.size() << std::endl;
     }
 
     discrete_time_stack.push_back(T);
