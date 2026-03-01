@@ -70,6 +70,8 @@ class BaseHumanoidEstimator : public controller_interface::ChainableControllerIn
       {0.0, 0.0, 0.0, 0.0, 0.0, 0.0},  // left
       {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}   // right
   }};
+
+  bool debug_; // debug flag
 };
 
 };  // namespace humanoid_estimators
