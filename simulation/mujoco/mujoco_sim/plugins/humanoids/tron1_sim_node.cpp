@@ -72,21 +72,59 @@ void Tron1SimNode::load_ros2_params()
     cmd_kd_.resize(6, 0.0f);
     low_state_msg_.motor_state.resize(6);
   }
+  else if(robot_type_ == RobotType::POINT_FOOT_WITH_ARM)
+  {
+    std::cout << "Loading point foot with arm." << std::endl;
+    joint_pos_.resize(13, 0.0f);
+    joint_vel_.resize(13, 0.0f);
+    joint_torque_.resize(13, 0.0f);
+    mode_.resize(13, 0);
+    cmd_torque_.resize(13, 0.0f);
+    cmd_pos_.resize(13, 0.0f);
+    cmd_vel_.resize(13, 0.0f);
+    cmd_kp_.resize(13, 0.0f);
+    cmd_kd_.resize(13, 0.0f);
+    low_state_msg_.motor_state.resize(6);
+    // initialize sub and pub
+    auto qos = rclcpp::QoS(rclcpp::KeepLast(2), rmw_qos_profile_sensor_data);
+
+    manipulator_cmd_sub_ptr_ = this->create_subscription<manipulator_msgs::msg::LowCmd>(
+      "/airbot_play/low_cmd", qos, std::bind(&Tron1SimNode::callback_manipulator_low_cmd, this, std::placeholders::_1));
+    manipulator_state_pub_ptr_ = this->create_publisher<manipulator_msgs::msg::LowState>("/airbot_play/low_state", qos);
+
+    gripper_cmd_sub_ptr_ = this->create_subscription<end_effector_msgs::msg::GripperCmd>(
+      "/airbot_play_gripper/gripper_cmd", qos, std::bind(&Tron1SimNode::callback_gripper_low_cmd, this, std::placeholders::_1));
+    gripper_state_pub_ptr_ = this->create_publisher<end_effector_msgs::msg::GripperState>("/airbot_play_gripper/gripper_state", qos);
+    // resize manipulator msg
+    manipulator_low_state_msg_.motor_state.resize(6);
+  }
   // if type is with arm then add 6 to joint related number
-  else if (robot_type_ == RobotType::POINT_FOOT_WITH_ARM || robot_type_ == RobotType::FLAT_FOOT_WITH_ARM ||
+  else if (robot_type_ == RobotType::FLAT_FOOT_WITH_ARM ||
            robot_type_ == RobotType::WHEEL_FOOT_WITH_ARM)
   {
-    std::cout << "Loading robot type with arm." << std::endl;
-    joint_pos_.resize(14, 0.0f);
-    joint_vel_.resize(14, 0.0f);
-    joint_torque_.resize(14, 0.0f);
-    mode_.resize(14, 0);
-    cmd_torque_.resize(14, 0.0f);
-    cmd_pos_.resize(14, 0.0f);
-    cmd_vel_.resize(14, 0.0f);
-    cmd_kp_.resize(14, 0.0f);
-    cmd_kd_.resize(14, 0.0f);
-    low_state_msg_.motor_state.resize(14);
+    std::cout << "Loading flat foot or wheel foot with arm." << std::endl;
+    joint_pos_.resize(15, 0.0f);
+    joint_vel_.resize(15, 0.0f);
+    joint_torque_.resize(15, 0.0f);
+    mode_.resize(15, 0);
+    cmd_torque_.resize(15, 0.0f);
+    cmd_pos_.resize(15, 0.0f);
+    cmd_vel_.resize(15, 0.0f);
+    cmd_kp_.resize(15, 0.0f);
+    cmd_kd_.resize(15, 0.0f);
+    low_state_msg_.motor_state.resize(8);
+    // initialize sub and pub
+    auto qos = rclcpp::QoS(rclcpp::KeepLast(2), rmw_qos_profile_sensor_data);
+
+    manipulator_cmd_sub_ptr_ = this->create_subscription<manipulator_msgs::msg::LowCmd>(
+      "/airbot_play/low_cmd", qos, std::bind(&Tron1SimNode::callback_manipulator_low_cmd, this, std::placeholders::_1));
+    manipulator_state_pub_ptr_ = this->create_publisher<manipulator_msgs::msg::LowState>("/airbot_play/low_state", qos);
+
+    gripper_cmd_sub_ptr_ = this->create_subscription<end_effector_msgs::msg::GripperCmd>(
+      "/airbot_play_gripper/gripper_cmd", qos, std::bind(&Tron1SimNode::callback_gripper_low_cmd, this, std::placeholders::_1));
+    gripper_state_pub_ptr_ = this->create_publisher<end_effector_msgs::msg::GripperState>("/airbot_play_gripper/gripper_state", qos);
+    // resize manipulator msg
+    manipulator_low_state_msg_.motor_state.resize(6);
   }
   RCLCPP_INFO(this->get_logger(), "Robot type: %s is loaded (enum value: %d)", robot_type_str.c_str(),
               static_cast<int>(robot_type_));
@@ -132,11 +170,62 @@ void Tron1SimNode::build_low_state_msg()
   low_state_msg_.header.stamp.nanosec = static_cast<uint32_t>((sim_time - low_state_msg_.header.stamp.sec) * 1e9);
   low_state_msg_.header.frame_id = "sim_time";
 
-  for (size_t i = 0; i < joint_pos_.size(); i++)
+  if (robot_type_ == RobotType::POINT_FOOT ||
+      robot_type_ == RobotType::POINT_FOOT_WITH_ARM)
   {
-    low_state_msg_.motor_state[i].q = joint_pos_[i];
-    low_state_msg_.motor_state[i].dq = joint_vel_[i];
-    low_state_msg_.motor_state[i].tau = joint_torque_[i];
+    for (size_t i = 0; i < 6; i++)
+    {
+      low_state_msg_.motor_state[i].q = joint_pos_[i];
+      low_state_msg_.motor_state[i].dq = joint_vel_[i];
+      low_state_msg_.motor_state[i].tau = joint_torque_[i];
+    }
+  }
+  else{
+    for (size_t i = 0; i < 8; i++)
+    {
+      low_state_msg_.motor_state[i].q = joint_pos_[i];
+      low_state_msg_.motor_state[i].dq = joint_vel_[i];
+      low_state_msg_.motor_state[i].tau = joint_torque_[i];
+    }
+  }
+
+  // manipulator and gripper
+  if (robot_type_ == RobotType::POINT_FOOT_WITH_ARM)
+  {
+    manipulator_low_state_msg_.header.stamp.sec = static_cast<int32_t>(sim_time);
+    manipulator_low_state_msg_.header.stamp.nanosec = static_cast<uint32_t>((sim_time - low_state_msg_.header.stamp.sec) * 1e9);
+    manipulator_low_state_msg_.header.frame_id = "sim_time";
+    gripper_state_msg_.header.stamp.sec = static_cast<int32_t>(sim_time);
+    gripper_state_msg_.header.stamp.nanosec = static_cast<uint32_t>((sim_time - low_state_msg_.header.stamp.sec) * 1e9);
+    gripper_state_msg_.header.frame_id = "sim_time";
+    for (size_t i = 0; i < 6; i++)
+    {
+      manipulator_low_state_msg_.motor_state[i].q = joint_pos_[6 + i];
+      manipulator_low_state_msg_.motor_state[i].dq = joint_vel_[6 + i];
+      manipulator_low_state_msg_.motor_state[i].tau = joint_torque_[6 + i];
+    }
+    gripper_state_msg_.gripper_state.q = joint_pos_[12];
+    gripper_state_msg_.gripper_state.dq = joint_vel_[12];
+    gripper_state_msg_.gripper_state.tau = joint_torque_[12];
+  }
+  else if (robot_type_ == RobotType::FLAT_FOOT_WITH_ARM ||
+           robot_type_ == RobotType::WHEEL_FOOT_WITH_ARM)
+  {
+    manipulator_low_state_msg_.header.stamp.sec = static_cast<int32_t>(sim_time);
+    manipulator_low_state_msg_.header.stamp.nanosec = static_cast<uint32_t>((sim_time - low_state_msg_.header.stamp.sec) * 1e9);
+    manipulator_low_state_msg_.header.frame_id = "sim_time";
+    gripper_state_msg_.header.stamp.sec = static_cast<int32_t>(sim_time);
+    gripper_state_msg_.header.stamp.nanosec = static_cast<uint32_t>((sim_time - low_state_msg_.header.stamp.sec) * 1e9);
+    gripper_state_msg_.header.frame_id = "sim_time";
+    for (size_t i = 0; i < 6; i++)
+    {
+      manipulator_low_state_msg_.motor_state[i].q = joint_pos_[8 + i];
+      manipulator_low_state_msg_.motor_state[i].dq = joint_vel_[8 + i];
+      manipulator_low_state_msg_.motor_state[i].tau = joint_torque_[8 + i];
+    }
+    gripper_state_msg_.gripper_state.q = joint_pos_[14];
+    gripper_state_msg_.gripper_state.dq = joint_vel_[14];
+    gripper_state_msg_.gripper_state.tau = joint_torque_[14];
   }
 
   for (int i = 0; i < 2; i++)
@@ -204,6 +293,13 @@ void Tron1SimNode::callback_low_state()
     this->build_low_state_msg();
 
     low_state_pub_ptr_->publish(low_state_msg_);
+    if (robot_type_ == RobotType::POINT_FOOT_WITH_ARM ||
+        robot_type_ == RobotType::FLAT_FOOT_WITH_ARM ||
+        robot_type_ == RobotType::WHEEL_FOOT_WITH_ARM)
+    {
+      manipulator_state_pub_ptr_->publish(manipulator_low_state_msg_);
+      gripper_state_pub_ptr_->publish(gripper_state_msg_);
+    }
   }
 }
 
@@ -212,21 +308,38 @@ void Tron1SimNode::callback_low_cmd(const humanoid_msgs::msg::LowCmd::SharedPtr 
   if (sim_->d_)
   {
     const std::unique_lock<std::recursive_mutex> lock(sim_->mtx);
-    // store the values for checking
-    for (size_t i = 0; i < joint_pos_.size(); i++)
+    // store values
+    if (robot_type_ == RobotType::POINT_FOOT ||
+        robot_type_ == RobotType::POINT_FOOT_WITH_ARM)
     {
-      cmd_torque_[i] = msg->motor_cmd[i].tau;
-      cmd_pos_[i] = msg->motor_cmd[i].q;
-      cmd_vel_[i] = msg->motor_cmd[i].dq;
-      cmd_kp_[i] = msg->motor_cmd[i].kp;
-      cmd_kd_[i] = msg->motor_cmd[i].kd;
+      for (size_t i = 0; i < 6; i++)
+      {
+        mode_[i] = msg->motor_cmd[i].mode;
+        cmd_torque_[i] = msg->motor_cmd[i].tau;
+        cmd_pos_[i] = msg->motor_cmd[i].q;
+        cmd_vel_[i] = msg->motor_cmd[i].dq;
+        cmd_kp_[i] = msg->motor_cmd[i].kp;
+        cmd_kd_[i] = msg->motor_cmd[i].kd;
+      }
+    }
+    else
+    {
+      for (size_t i = 0; i < 8; i++)
+      {
+        mode_[i] = msg->motor_cmd[i].mode;
+        cmd_torque_[i] = msg->motor_cmd[i].tau;
+        cmd_pos_[i] = msg->motor_cmd[i].q;
+        cmd_vel_[i] = msg->motor_cmd[i].dq;
+        cmd_kp_[i] = msg->motor_cmd[i].kp;
+        cmd_kd_[i] = msg->motor_cmd[i].kd;
+      }
     }
 
     // apply the motor commands
     // assume actuator orders of position -> velocity -> torque
     for (size_t i = 0; i < joint_pos_.size(); i++)
     {
-      switch (msg->motor_cmd[i].mode)
+      switch (mode_[i])
       {
         case uint8_t(0):  // no control
           // sim_->d_->ctrl[i] = 0.0;
@@ -266,6 +379,75 @@ void Tron1SimNode::callback_low_cmd(const humanoid_msgs::msg::LowCmd::SharedPtr 
   }
 }
 
+void Tron1SimNode::callback_manipulator_low_cmd(const manipulator_msgs::msg::LowCmd::SharedPtr msg)
+{
+  if (robot_type_ == RobotType::POINT_FOOT ||
+      robot_type_ == RobotType::FLAT_FOOT ||
+      robot_type_ == RobotType::WHEEL_FOOT)
+  {
+    RCLCPP_ERROR(this->get_logger(), "Received manipulator command for robot type without arm.");
+    return;
+  }
+
+  if (robot_type_ == RobotType::POINT_FOOT_WITH_ARM)
+  {
+    const std::unique_lock<std::recursive_mutex> lock(sim_->mtx);
+    for (size_t i = 0; i < 6; i++)
+    {
+      mode_[6 + i] = msg->motor_cmd[i].mode;
+      cmd_torque_[6 + i] = msg->motor_cmd[i].tau;
+      cmd_pos_[6 + i] = msg->motor_cmd[i].q;
+      cmd_vel_[6 + i] = msg->motor_cmd[i].dq;
+      cmd_kp_[6 + i] = msg->motor_cmd[i].kp;
+      cmd_kd_[6 + i] = msg->motor_cmd[i].kd;
+    }
+  }
+  else if (robot_type_ == RobotType::FLAT_FOOT_WITH_ARM || robot_type_ == RobotType::WHEEL_FOOT_WITH_ARM)
+  {
+    const std::unique_lock<std::recursive_mutex> lock(sim_->mtx);
+    for (size_t i = 0; i < 6; i++)
+    {
+      mode_[8 + i] = msg->motor_cmd[i].mode;
+      cmd_torque_[8 + i] = msg->motor_cmd[i].tau;
+      cmd_pos_[8 + i] = msg->motor_cmd[i].q;
+      cmd_vel_[8 + i] = msg->motor_cmd[i].dq;
+      cmd_kp_[8 + i] = msg->motor_cmd[i].kp;
+      cmd_kd_[8 + i] = msg->motor_cmd[i].kd;
+    }
+  }
+}
+
+void Tron1SimNode::callback_gripper_low_cmd(const end_effector_msgs::msg::GripperCmd::SharedPtr msg)
+{
+  if (robot_type_ == RobotType::POINT_FOOT ||
+      robot_type_ == RobotType::FLAT_FOOT ||
+      robot_type_ == RobotType::WHEEL_FOOT)
+  {
+    RCLCPP_ERROR(this->get_logger(), "Received manipulator command for robot type without arm.");
+    return;
+  }
+  if (robot_type_ == RobotType::POINT_FOOT_WITH_ARM)
+  {
+    const std::unique_lock<std::recursive_mutex> lock(sim_->mtx);
+    mode_[12] = msg->gripper_cmd.mode;
+    cmd_torque_[12] = msg->gripper_cmd.tau;
+    cmd_pos_[12] = msg->gripper_cmd.q;
+    cmd_vel_[12] = msg->gripper_cmd.dq;
+    cmd_kp_[12] = msg->gripper_cmd.kp;
+    cmd_kd_[12] = msg->gripper_cmd.kd;
+  }
+  else if (robot_type_ == RobotType::FLAT_FOOT_WITH_ARM || robot_type_ == RobotType::WHEEL_FOOT_WITH_ARM)
+  {
+    const std::unique_lock<std::recursive_mutex> lock(sim_->mtx);
+    mode_[14] = msg->gripper_cmd.mode;
+    cmd_torque_[14] = msg->gripper_cmd.tau;
+    cmd_pos_[14] = msg->gripper_cmd.q;
+    cmd_vel_[14] = msg->gripper_cmd.dq;
+    cmd_kp_[14] = msg->gripper_cmd.kp;
+    cmd_kd_[14] = msg->gripper_cmd.kd;
+  }
+}
+
 Tron1SimGroundTruth::Tron1SimGroundTruth()
 {
   auto qos = rclcpp::QoS(rclcpp::KeepLast(2), rmw_qos_profile_sensor_data);
@@ -301,11 +483,23 @@ void Tron1SimGroundTruth::load_ros2_params()
   {
     ground_truth_msg_.motor_state.resize(6);
   }
-  // if type is with arm then add 6 to joint related number
-  else if (robot_type_ == RobotType::POINT_FOOT_WITH_ARM || robot_type_ == RobotType::FLAT_FOOT_WITH_ARM ||
+  // if type is with arm then add 7 joint for manipulator and gripper
+  else if (robot_type_ == RobotType::POINT_FOOT_WITH_ARM)
+  {
+    ground_truth_msg_.motor_state.resize(13);
+
+    auto qos = rclcpp::QoS(rclcpp::KeepLast(2), rmw_qos_profile_sensor_data);
+    manipulator_ground_truth_pub_ptr_ = this->create_publisher<manipulator_msgs::msg::ManipulatorEst>("/airbot_play/manipulator_est", qos);
+    manipulator_ground_truth_msg_.motor_state.resize(6);
+  }
+  else if (robot_type_ == RobotType::FLAT_FOOT_WITH_ARM ||
            robot_type_ == RobotType::WHEEL_FOOT_WITH_ARM)
   {
-    ground_truth_msg_.motor_state.resize(14);
+    ground_truth_msg_.motor_state.resize(15);
+
+    auto qos = rclcpp::QoS(rclcpp::KeepLast(2), rmw_qos_profile_sensor_data);
+    manipulator_ground_truth_pub_ptr_ = this->create_publisher<manipulator_msgs::msg::ManipulatorEst>("/airbot_play/manipulator_est", qos);
+    manipulator_ground_truth_msg_.motor_state.resize(6);
   }
 }
 
@@ -316,11 +510,50 @@ void Tron1SimGroundTruth::build_ground_truth_msg()
   ground_truth_msg_.header.stamp.nanosec = static_cast<uint32_t>((sim_time - ground_truth_msg_.header.stamp.sec) * 1e9);
   ground_truth_msg_.header.frame_id = "sim_time";
 
-  for (size_t i = 0; i < joint_pos_.size(); i++)
+  if (robot_type_ == RobotType::POINT_FOOT ||
+      robot_type_ == RobotType::POINT_FOOT_WITH_ARM)
   {
-    ground_truth_msg_.motor_state[i].q = joint_pos_[i];
-    ground_truth_msg_.motor_state[i].dq = joint_vel_[i];
-    ground_truth_msg_.motor_state[i].tau = joint_torque_[i];
+    for (size_t i = 0; i < 6; i++)
+    {
+      ground_truth_msg_.motor_state[i].q = joint_pos_[i];
+      ground_truth_msg_.motor_state[i].dq = joint_vel_[i];
+      ground_truth_msg_.motor_state[i].tau = joint_torque_[i];
+    }
+  }
+  else
+  {
+    for (size_t i = 0; i < 8; i++)
+    {
+      ground_truth_msg_.motor_state[i].q = joint_pos_[i];
+      ground_truth_msg_.motor_state[i].dq = joint_vel_[i];
+      ground_truth_msg_.motor_state[i].tau = joint_torque_[i];
+    }
+  }
+
+  if (robot_type_ == RobotType::POINT_FOOT_WITH_ARM)
+  {
+    manipulator_ground_truth_msg_.header.stamp.sec = static_cast<int32_t>(sim_time);
+    manipulator_ground_truth_msg_.header.stamp.nanosec = static_cast<uint32_t>((sim_time - low_state_msg_.header.stamp.sec) * 1e9);
+    manipulator_ground_truth_msg_.header.frame_id = "sim_time";
+    for (size_t i = 0; i < 6; i++)
+    {
+      manipulator_ground_truth_msg_.motor_state[i].q = joint_pos_[6 + i];
+      manipulator_ground_truth_msg_.motor_state[i].dq = joint_vel_[6 + i];
+      manipulator_ground_truth_msg_.motor_state[i].tau = joint_torque_[6 + i];
+    }
+  }
+  else if (robot_type_ == RobotType::FLAT_FOOT_WITH_ARM ||
+           robot_type_ == RobotType::WHEEL_FOOT_WITH_ARM)
+  {
+    manipulator_ground_truth_msg_.header.stamp.sec = static_cast<int32_t>(sim_time);
+    manipulator_ground_truth_msg_.header.stamp.nanosec = static_cast<uint32_t>((sim_time - low_state_msg_.header.stamp.sec) * 1e9);
+    manipulator_ground_truth_msg_.header.frame_id = "sim_time";
+    for (size_t i = 0; i < 6; i++)
+    {
+      manipulator_ground_truth_msg_.motor_state[i].q = joint_pos_[8 + i];
+      manipulator_ground_truth_msg_.motor_state[i].dq = joint_vel_[8 + i];
+      manipulator_ground_truth_msg_.motor_state[i].tau = joint_torque_[8 + i];
+    }
   }
 
   for (int i = 0; i < 2; i++)
@@ -508,6 +741,12 @@ void Tron1SimGroundTruth::ground_truth_callback()
     this->build_ground_truth_msg();
 
     ground_truth_pub_ptr_->publish(ground_truth_msg_);
+    if (robot_type_ == RobotType::POINT_FOOT_WITH_ARM ||
+        robot_type_ == RobotType::FLAT_FOOT_WITH_ARM ||
+        robot_type_ == RobotType::WHEEL_FOOT_WITH_ARM)
+    {
+      manipulator_ground_truth_pub_ptr_->publish(manipulator_ground_truth_msg_);
+    }
   }
 }
 

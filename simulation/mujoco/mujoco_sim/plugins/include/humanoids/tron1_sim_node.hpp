@@ -10,6 +10,12 @@
 #include "humanoid_msgs/msg/humanoid_est.hpp"
 #include "humanoid_msgs/msg/low_cmd.hpp"
 #include "humanoid_msgs/msg/low_state.hpp"
+#include "manipulator_msgs/msg/manipulator_est.hpp"
+#include "manipulator_msgs/msg/low_cmd.hpp"
+#include "manipulator_msgs/msg/low_state.hpp"
+#include "end_effector_msgs/msg/gripper_state.hpp"
+#include "end_effector_msgs/msg/gripper_cmd.hpp"
+
 #include "mujoco_sim_node_base.hpp"
 #include "simulate.h"
 
@@ -52,6 +58,15 @@ class Tron1SimNode : public MujocoSimNodeBase
   rclcpp::Subscription<humanoid_msgs::msg::LowCmd>::SharedPtr cmd_sub_ptr_;
   rclcpp::Publisher<humanoid_msgs::msg::LowState>::SharedPtr low_state_pub_ptr_;
 
+  // for arm and gripper
+  void callback_manipulator_low_cmd(const manipulator_msgs::msg::LowCmd::SharedPtr msg);
+  void callback_gripper_low_cmd(const end_effector_msgs::msg::GripperCmd::SharedPtr msg);
+
+  rclcpp::Subscription<manipulator_msgs::msg::LowCmd>::SharedPtr manipulator_cmd_sub_ptr_;
+  rclcpp::Publisher<manipulator_msgs::msg::LowState>::SharedPtr manipulator_state_pub_ptr_;
+  rclcpp::Subscription<end_effector_msgs::msg::GripperCmd>::SharedPtr gripper_cmd_sub_ptr_;
+  rclcpp::Publisher<end_effector_msgs::msg::GripperState>::SharedPtr gripper_state_pub_ptr_;
+
   // sensor readings
   // L -> R
   std::vector<float> joint_pos_;  // abad, hip, knee, maybe ankle or wheel
@@ -73,6 +88,8 @@ class Tron1SimNode : public MujocoSimNodeBase
 
   // msg
   humanoid_msgs::msg::LowState low_state_msg_;
+  manipulator_msgs::msg::LowState manipulator_low_state_msg_;
+  end_effector_msgs::msg::GripperState gripper_state_msg_;
 };
 
 class Tron1SimGroundTruth : public Tron1SimNode
@@ -90,6 +107,9 @@ class Tron1SimGroundTruth : public Tron1SimNode
   void ground_truth_callback();
   rclcpp::Publisher<humanoid_msgs::msg::HumanoidEst>::SharedPtr ground_truth_pub_ptr_;
 
+  // manipulator and grippers
+  rclcpp::Publisher<manipulator_msgs::msg::ManipulatorEst>::SharedPtr manipulator_ground_truth_pub_ptr_;
+
   // ground truth
   humanoid_msgs::msg::HumanoidEst ground_truth_msg_;
   std::array<float, 3> pos_truth_{0.0, 0.0, 0.0};        // x, y, z in the world frame
@@ -102,6 +122,8 @@ class Tron1SimGroundTruth : public Tron1SimNode
       {{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}},
       {{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}},
   }};  // fx, fy, fz, mx, my, mz in the world frame
+  // manipulator ground truth
+  manipulator_msgs::msg::ManipulatorEst manipulator_ground_truth_msg_;
 };
 
 }  // namespace mujoco_sim
