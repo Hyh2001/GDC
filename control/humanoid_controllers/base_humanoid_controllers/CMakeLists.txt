@@ -13,6 +13,7 @@ find_package(controller_interface REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(realtime_tools REQUIRED)
 find_package(base_controllers REQUIRED)
+find_package(base_utils REQUIRED)
 
 find_package(humanoid_msgs REQUIRED)
 
@@ -30,6 +31,7 @@ ament_target_dependencies(${PROJECT_NAME} PUBLIC
         pluginlib
         realtime_tools
         base_controllers
+        base_utils
         humanoid_msgs
 )
 pluginlib_export_plugin_description_file(controller_interface base_humanoid_controllers_config.xml)

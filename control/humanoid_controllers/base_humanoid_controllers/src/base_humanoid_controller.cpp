@@ -78,6 +78,125 @@ controller_interface::return_type BaseHumanoidController::update_reference_from_
   return controller_interface::return_type::OK;
 }
 
+controller_interface::InterfaceConfiguration BaseHumanoidController::get_joint_state_interface_configuration() const
+{
+   controller_interface::InterfaceConfiguration config;
+   config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
+
+   for (const auto& joint : joint_names_)
+   {
+     for (const auto& iface : joint_state_interface_types_)
+     {
+       config.names.push_back(estimator_name_ + "/" + joint + "_" + iface + "_est");
+     }
+   }
+
+   return config;
+}
+
+controller_interface::InterfaceConfiguration BaseHumanoidController::get_global_pos_interface_configuration() const
+{
+  controller_interface::InterfaceConfiguration config;
+  config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
+
+  config.names.push_back(estimator_name_ + "/" + pos_name_ + "_x_est");
+  config.names.push_back(estimator_name_ + "/" + pos_name_ + "_y_est");
+  config.names.push_back(estimator_name_ + "/" + pos_name_ + "_z_est");
+  return config;
+}
+
+controller_interface::InterfaceConfiguration BaseHumanoidController::get_ori_interface_configuration() const
+{
+  controller_interface::InterfaceConfiguration config;
+  config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
+
+  config.names.push_back(estimator_name_ + "/" + ori_name_ + "_w_est");
+  config.names.push_back(estimator_name_ + "/" + ori_name_ + "_x_est");
+  config.names.push_back(estimator_name_ + "/" + ori_name_ + "_y_est");
+  config.names.push_back(estimator_name_ + "/" + ori_name_ + "_z_est");
+  return config;
+}
+
+controller_interface::InterfaceConfiguration BaseHumanoidController::get_global_lin_vel_interface_configuration() const
+{
+  controller_interface::InterfaceConfiguration config;
+  config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
+
+  config.names.push_back(estimator_name_ + "/" + lin_vel_name_ + "_x_est");
+  config.names.push_back(estimator_name_ + "/" + lin_vel_name_ + "_y_est");
+  config.names.push_back(estimator_name_ + "/" + lin_vel_name_ + "_z_est");
+  return config;
+}
+
+controller_interface::InterfaceConfiguration BaseHumanoidController::get_global_ang_vel_interface_configuration() const
+{
+  controller_interface::InterfaceConfiguration config;
+  config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
+
+  config.names.push_back(estimator_name_ + "/" + ang_vel_name_ + "_x_est");
+  config.names.push_back(estimator_name_ + "/" + ang_vel_name_ + "_y_est");
+  config.names.push_back(estimator_name_ + "/" + ang_vel_name_ + "_z_est");
+  return config;
+}
+
+controller_interface::InterfaceConfiguration BaseHumanoidController::get_global_lin_acc_interface_configuration() const
+{
+  controller_interface::InterfaceConfiguration config;
+  config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
+
+  config.names.push_back(estimator_name_ + "/" + lin_acc_name_ + "_x_est");
+  config.names.push_back(estimator_name_ + "/" + lin_acc_name_ + "_y_est");
+  config.names.push_back(estimator_name_ + "/" + lin_acc_name_ + "_z_est");
+  return config;
+}
+
+controller_interface::InterfaceConfiguration BaseHumanoidController::get_global_ang_acc_interface_configuration() const
+{
+  controller_interface::InterfaceConfiguration config;
+  config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
+
+  config.names.push_back(estimator_name_ + "/" + ang_acc_name_ + "_x_est");
+  config.names.push_back(estimator_name_ + "/" + ang_acc_name_ + "_y_est");
+  config.names.push_back(estimator_name_ + "/" + ang_acc_name_ + "_z_est");
+  return config;
+}
+
+/*
+  @return: 2 * (contact_state)
+*/
+controller_interface::InterfaceConfiguration BaseHumanoidController::get_contact_state_interface_configuration() const
+{
+  controller_interface::InterfaceConfiguration config;
+  config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
+
+  for (const auto& foot : foot_names_)
+  {
+    for (const auto& sensor : foot_sensor_names_[0])
+    {
+      config.names.push_back(estimator_name_ + "/" + foot + "_" + sensor + "_est");
+    }
+  }
+
+  return config;
+}
+
+controller_interface::InterfaceConfiguration BaseHumanoidController::get_contact_force_torque_interface_configuration() const
+{
+  controller_interface::InterfaceConfiguration config;
+  config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
+
+  for (const auto& foot : foot_names_)
+  {
+    for (size_t i = 1; i < foot_sensor_names_.size(); ++i) // skip contact state
+    {
+      const auto& sensor = foot_sensor_names_[i];
+      config.names.push_back(estimator_name_ + "/" + foot + "_" + sensor + "_est");
+    }
+  }
+
+  return config;
+}
+
 controller_interface::InterfaceConfiguration BaseHumanoidController::get_joint_command_interface_configuration() const
 {
    controller_interface::InterfaceConfiguration config;
@@ -94,59 +213,105 @@ controller_interface::InterfaceConfiguration BaseHumanoidController::get_joint_c
    return config;
 }
 
-// void BaseHumanoidController::get_state_interface_value(
-//     const std::string & interface_name, double & value)
-// {
-//     for (const auto &state_iface : state_interfaces_) {
-//         const std::string full_name = state_iface.get_prefix_name() + "/" + state_iface.get_interface_name();
-//         if (full_name == interface_name) {
-//             auto opt_value = state_iface.get_optional();
-//             if (opt_value.has_value()) {
-//                 value = opt_value.value();
-//                 return;
-//             }
-//         }
-//     }
-//     throw std::runtime_error("State interface '" + interface_name + "' not found.");
-// }
+void BaseHumanoidController::read_global_pos_from_state_interfaces(std::array<double, 3>& pos)
+{
+  base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + pos_name_ + "_x_est", pos[0]);
+  base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + pos_name_ + "_y_est", pos[1]);
+  base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + pos_name_ + "_z_est", pos[2]);
+}
 
-// void BaseHumanoidController::set_command_interface_value(
-//     const std::string & interface_name, const double & value)
-// {
-//     for (auto &cmd_iface : command_interfaces_) {
-//         const std::string full_name = cmd_iface.get_prefix_name() + "/" + cmd_iface.get_interface_name();
-//         if (full_name == interface_name) {
-//             cmd_iface.set_value(value);
-//             return;
-//         }
-//     }
-//     throw std::runtime_error("Command interface '" + interface_name + "' not found.");
-// }
+void BaseHumanoidController::read_ori_from_state_interfaces(std::array<double, 4>& ori)
+{
+  base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + ori_name_ + "_w_est", ori[0]);
+  base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + ori_name_ + "_x_est", ori[1]);
+  base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + ori_name_ + "_y_est", ori[2]);
+  base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + ori_name_ + "_z_est", ori[3]);
+}
 
-// void BaseHumanoidController::get_state_interface_values(
-//     const std::vector<std::string> & interface_names,
-//     std::vector<double> & values)
-// {
-//     if (values.size() != interface_names.size()) {
-//         values.resize(interface_names.size());
-//         RCLCPP_WARN(
-//             this->get_node()->get_logger(),
-//             "Resized values vector to match size of interface names.");
-//     }
-//     for (std::size_t i = 0; i < interface_names.size(); ++i) {
-//         get_state_interface_value(interface_names[i], values[i]);
-//     }
-// }
+void BaseHumanoidController::read_global_lin_vel_from_state_interfaces(std::array<double, 3>& lin_vel)
+{
+  base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + lin_vel_name_ + "_x_est", lin_vel[0]);
+  base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + lin_vel_name_ + "_y_est", lin_vel[1]);
+  base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + lin_vel_name_ + "_z_est", lin_vel[2]);
+}
 
-// void BaseHumanoidController::set_command_interface_values(
-//     const std::vector<std::string> & interface_names,
-//     const std::vector<double> & values)
-// {
-//     if (values.size() != interface_names.size()) {
-//         throw std::runtime_error("Size of values does not match size of interface names.");
-//     }
-//     for (std::size_t i = 0; i < interface_names.size(); ++i) {
-//         set_command_interface_value(interface_names[i], values[i]);
-//     }
-// }
+void BaseHumanoidController::read_global_ang_vel_from_state_interfaces(std::array<double, 3>& ang_vel)
+{
+  base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + ang_vel_name_ + "_x_est", ang_vel[0]);
+  base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + ang_vel_name_ + "_y_est", ang_vel[1]);
+  base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + ang_vel_name_ + "_z_est", ang_vel[2]);
+}
+
+void BaseHumanoidController::read_global_lin_acc_from_state_interfaces(std::array<double, 3>& lin_acc)
+{
+  base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + lin_acc_name_ + "_x_est", lin_acc[0]);
+  base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + lin_acc_name_ + "_y_est", lin_acc[1]);
+  base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + lin_acc_name_ + "_z_est", lin_acc[2]);
+}
+
+void BaseHumanoidController::read_global_ang_acc_from_state_interfaces(std::array<double, 3>& ang_acc)
+{
+  base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + ang_acc_name_ + "_x_est", ang_acc[0]);
+  base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + ang_acc_name_ + "_y_est", ang_acc[1]);
+  base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + ang_acc_name_ + "_z_est", ang_acc[2]);
+}
+
+void BaseHumanoidController::read_contact_state_from_state_interfaces(std::array<bool, 2>& contact_state)
+{
+  for (size_t i = 0; i < foot_names_.size(); ++i)
+  {
+    const auto& foot = foot_names_[i];
+    const auto& sensor = foot_sensor_names_[0]; // contact state
+    double value;
+    base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + foot + "_" + sensor + "_est", value);
+    contact_state[i] = value;
+  }
+}
+
+void BaseHumanoidController::read_contact_force_torque_from_state_interfaces(std::array<std::array<double, 6>, 2>& contact_force_torque)
+{
+  for (size_t i = 0; i < foot_names_.size(); ++i)
+  {
+    const auto& foot = foot_names_[i];
+    for (size_t j = 1; j < foot_sensor_names_.size(); ++j) // skip contact state (j=0)
+    {
+      const auto& sensor = foot_sensor_names_[j];
+      double value;
+      base_utils::get_state_interface_value(state_interfaces_,
+          estimator_name_ + "/" + foot + "_" + sensor + "_est", value);
+      contact_force_torque[i][j-1] = value;  // j=1->index 0, j=2->index 1, etc.
+    }
+  }
+}
+
+void BaseHumanoidController::write_joint_commands_to_command_interfaces(const std::vector<double>& pos, const std::vector<double>& vel,
+                                                  const std::vector<double>& tau, const std::vector<double>& kp,
+                                                  const std::vector<double>& kd)
+{
+  for (size_t i = 0; i < joint_names_.size(); ++i)
+  {
+    const auto& joint = joint_names_[i];
+    for (size_t j = 0; j < joint_command_interface_types_.size(); ++j)
+    {
+      const auto& iface_type = joint_command_interface_types_[j];
+      std::string interface_name = joint + "/" + iface_type;
+      double command_value;
+      if (iface_type == "position")
+        command_value = pos[i];
+      else if (iface_type == "velocity")
+        command_value = vel[i];
+      else if (iface_type == "effort")
+        command_value = tau[i];
+      else if (iface_type == "kp")
+        command_value = kp[i];
+      else if (iface_type == "kd")
+        command_value = kd[i];
+      else
+        throw std::runtime_error("Unknown interface type: " + iface_type);
+
+      base_utils::set_command_interface_value(command_interfaces_, interface_name, command_value);
+    }
+  }
+}
+
 };  // namespace humanoid_controllers
