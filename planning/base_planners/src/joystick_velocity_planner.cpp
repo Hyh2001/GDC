@@ -5,9 +5,9 @@ namespace base_planners
 controller_interface::CallbackReturn JoystickVelocityPlanner::on_init()
 {
   // configure the joystick related stuffs
-  double max_linear_velocity_x_ = auto_declare<double>("max_linear_velocity_x", 0.0);
-  double max_linear_velocity_y_ = auto_declare<double>("max_linear_velocity_y", 0.0);
-  double max_angular_velocity_yaw_ = auto_declare<double>("max_angular_velocity_yaw", 0.0);
+  max_linear_velocity_x_ = auto_declare<double>("max_linear_velocity_x", 0.0);
+  max_linear_velocity_y_ = auto_declare<double>("max_linear_velocity_y", 0.0);
+  max_angular_velocity_yaw_ = auto_declare<double>("max_angular_velocity_yaw", 0.0);
   int velocity_x_button_ = auto_declare<int>("velocity_x_button", 0);
   int velocity_y_button_ = auto_declare<int>("velocity_y_button", 1);
   int yaw_rate_button_ = auto_declare<int>("yaw_rate_button", 2);
