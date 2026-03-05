@@ -14,6 +14,15 @@ AirbotPlaySimNode::AirbotPlaySimNode() : MujocoSimNodeBase("airbot_play_sim")
 
   timers_.emplace_back(this->create_wall_timer(2ms, std::bind(&AirbotPlaySimNode::callback_low_state, this)));
 
+  joint_pos_.resize(6, 0.0);
+  joint_vel_.resize(6, 0.0);
+  joint_torque_.resize(6, 0.0);
+  cmd_pos_.resize(6, 0.0);
+  cmd_vel_.resize(6, 0.0);
+  cmd_torque_.resize(6, 0.0);
+  cmd_kp_.resize(6, 0.0);
+  cmd_kd_.resize(6, 0.0);
+
   reset_params();
 }
 
@@ -43,16 +52,24 @@ void AirbotPlaySimNode::callback_low_state()
     // lock the thread
     const std::unique_lock<std::recursive_mutex> lock(sim_->mtx);
 
-    // TODO: get the data
+    const int idx_joint_pos = sim_->m_->sensor_adr[mj_name2id(sim_->m_, mjOBJ_SENSOR, "joint1_pos")];
+    const int idx_joint_vel = sim_->m_->sensor_adr[mj_name2id(sim_->m_, mjOBJ_SENSOR, "joint1_vel")];
+    const int idx_joint_torque = sim_->m_->sensor_adr[mj_name2id(sim_->m_, mjOBJ_SENSOR, "joint1_tau")];
+    for (int i = 0; i < joint_pos_.size(); i++)
+    {
+      low_state_msg.motor_state[i].q = sim_->d_->sensordata[idx_joint_pos + i];
+      joint_pos_[i] = low_state_msg.motor_state[i].q;
+      low_state_msg.motor_state[i].dq = sim_->d_->sensordata[idx_joint_vel + i];
+      joint_vel_[i] = low_state_msg.motor_state[i].dq;
+      low_state_msg.motor_state[i].tau = sim_->d_->sensordata[idx_joint_torque + i];
+      joint_torque_[i] = low_state_msg.motor_state[i].tau;
+    }
 
     // publish
     double sim_time = sim_->d_->time;
     low_state_msg.header.stamp.sec = static_cast<int32_t>(sim_time);
     low_state_msg.header.stamp.nanosec = static_cast<uint32_t>((sim_time - low_state_msg.header.stamp.sec) * 1e9);
     low_state_msg.header.frame_id = "sim_time";
-    // low_state_msg.joint_position = joint_pos_;
-    // low_state_msg.joint_velocity = joint_vel_;
-    // low_state_msg.joint_torque = joint_torque_;
 
     low_state_pub_ptr_->publish(low_state_msg);
   }
@@ -83,6 +100,16 @@ void AirbotPlaySimNode::callback_low_cmd(const manipulator_msgs::msg::LowCmd::Sh
           sim_->d_->ctrl[i + joint_pos_.size()] = msg->motor_cmd[i].dq;
           break;
         case uint8_t(3):  // torque control
+          sim_->d_->ctrl[i + 2 * joint_pos_.size()] = msg->motor_cmd[i].tau;
+          break;
+        case uint8_t(4):  // mit mode
+          sim_->m_->actuator_gainprm[i * mjNGAIN + 0] = msg->motor_cmd[i].kp;  // set kp
+          sim_->m_->actuator_biasprm[i * mjNBIAS + 1] = -msg->motor_cmd[i].kp;
+          sim_->m_->actuator_biasprm[i * mjNBIAS + 2] = -msg->motor_cmd[i].kd;  // set kd
+          sim_->m_->actuator_gainprm[(joint_pos_.size() + i) * mjNGAIN + 0] = msg->motor_cmd[i].kd;
+          sim_->m_->actuator_biasprm[(joint_pos_.size() + i) * mjNBIAS + 2] = 0.0;
+          sim_->d_->ctrl[i] = msg->motor_cmd[i].q;
+          sim_->d_->ctrl[i + joint_pos_.size()] = msg->motor_cmd[i].dq;
           sim_->d_->ctrl[i + 2 * joint_pos_.size()] = msg->motor_cmd[i].tau;
           break;
         default:
@@ -135,9 +162,25 @@ void AirbotPlayWithGripperSimNode::callback_gripper_low_state()
     // lock the thread
     const std::unique_lock<std::recursive_mutex> lock(sim_->mtx);
 
-    // TODO: get the data
+    AirbotPlaySimNode::callback_low_state();
 
-    // TODO: pub the data
+    // get the data and pub
+    const int idx_gripper_pos = sim_->m_->sensor_adr[mj_name2id(sim_->m_, mjOBJ_SENSOR, "gripper_joint_pos")];
+    const int idx_gripper_vel = sim_->m_->sensor_adr[mj_name2id(sim_->m_, mjOBJ_SENSOR, "gripper_joint_vel")];
+    const int idx_gripper_torque = sim_->m_->sensor_adr[mj_name2id(sim_->m_, mjOBJ_SENSOR, "gripper_joint_tau")];
+
+    gripper_state_msg.gripper_state.q = sim_->d_->sensordata[idx_gripper_pos];
+    gripper_pos_[0] = gripper_state_msg.gripper_state.q;
+    gripper_state_msg.gripper_state.dq = sim_->d_->sensordata[idx_gripper_vel];
+    gripper_vel_[0] = gripper_state_msg.gripper_state.dq;
+    gripper_state_msg.gripper_state.tau = sim_->d_->sensordata[idx_gripper_torque];
+    gripper_torque_[0] = gripper_state_msg.gripper_state.tau;
+
+    double sim_time = sim_->d_->time;
+    gripper_state_msg.header.stamp.sec = static_cast<int32_t>(sim_time);
+    gripper_state_msg.header.stamp.nanosec = static_cast<uint32_t>((sim_time - gripper_state_msg.header.stamp.sec) * 1e9);
+    gripper_state_msg.header.frame_id = "sim_time";
+    gripper_state_pub_ptr_->publish(gripper_state_msg);
   }
 }
 
@@ -164,6 +207,16 @@ void AirbotPlayWithGripperSimNode::callback_gripper_low_cmd(const end_effector_m
         sim_->d_->ctrl[0 + joint_pos_.size()] = msg->gripper_cmd.dq;
         break;
       case uint8_t(3):  // torque control
+        sim_->d_->ctrl[0 + 2 * joint_pos_.size()] = msg->gripper_cmd.tau;
+        break;
+      case uint8_t(4):  // mit mode
+        sim_->m_->actuator_gainprm[0 * mjNGAIN + 0] = msg->gripper_cmd.kp;  // set kp
+        sim_->m_->actuator_biasprm[0 * mjNBIAS + 1] = -msg->gripper_cmd.kp;
+        sim_->m_->actuator_biasprm[0 * mjNBIAS + 2] = -msg->gripper_cmd.kd;  // set kd
+        sim_->m_->actuator_gainprm[(0 + joint_pos_.size()) * mjNGAIN + 0] = msg->gripper_cmd.kd;
+        sim_->m_->actuator_biasprm[(0 + joint_pos_.size()) * mjNBIAS + 2] = 0.0;
+        sim_->d_->ctrl[0] = msg->gripper_cmd.q;
+        sim_->d_->ctrl[0 + joint_pos_.size()] = msg->gripper_cmd.dq;
         sim_->d_->ctrl[0 + 2 * joint_pos_.size()] = msg->gripper_cmd.tau;
         break;
       default:
