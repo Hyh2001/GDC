@@ -27,8 +27,8 @@
          type="mujoco_sim::AirbotPlaySimNode"
          base_class_type="mujoco_sim::MujocoSimNodeBase"/>
 
-  <class name="mujoco_sim::AirbotPlaySimGroundTruth"
-         type="mujoco_sim::AirbotPlaySimGroundTruth"
+  <class name="mujoco_sim::AirbotPlayWithGripperSimNode"
+         type="mujoco_sim::AirbotPlayWithGripperSimNode"
          base_class_type="mujoco_sim::MujocoSimNodeBase"/>
 
 </library>
