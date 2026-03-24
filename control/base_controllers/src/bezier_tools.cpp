@@ -4,7 +4,7 @@
  * @modifier Yuhao Huang (huangyuhaowork@outlook.com), Yicheng Zeng
 */
 
-#include <bezier_tools.hpp>
+#include <base_controllers/bezier_tools.hpp>
 
 namespace bezier_tools {
 
