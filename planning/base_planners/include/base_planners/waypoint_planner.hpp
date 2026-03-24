@@ -4,7 +4,9 @@
 
 #include <vector>
 
+#include "controller_interface/controller_interface_base.hpp"
 #include "Eigen/Dense"
+#include "hardware_interface/handle.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/joy.hpp"
 
@@ -24,7 +26,7 @@ struct Waypoint
   Eigen::Vector3d linear_acceleration = Eigen::Vector3d::Zero();
   Eigen::Vector3d angular_acceleration = Eigen::Vector3d::Zero();
 
-  // Static helper for full state representation (19 entries)
+  // static helper for full state representation (19 entries)
   static const std::vector<std::string>& get_entry_names()
   {
     static const std::vector<std::string> full_entry_names = {
@@ -36,6 +38,64 @@ struct Waypoint
       "ang_acc_x", "ang_acc_y", "ang_acc_z"                   // angular acceleration (16-18)
     };
     return full_entry_names;
+  }
+
+  // helper for exporting state and command interfaces for waypoints
+  static controller_interface::InterfaceConfiguration get_state_interface_configuration(
+      const std::string& planner_name,
+      const std::vector<std::string>& waypoint_names)
+  {
+    controller_interface::InterfaceConfiguration config;
+    config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
+    for (const auto& waypoint_name : waypoint_names)
+    {
+      for (const auto& entry_name : get_entry_names())
+      {
+        config.names.push_back(planner_name + "/" + waypoint_name + "/" + entry_name);
+      }
+    }
+    return config;
+  }
+
+  // helper being used with on_export_state_interfaces and on_export_reference_interfaces
+  static void append_state_interfaces(
+      const std::string& planner_name,
+      Waypoint& waypoint,
+      std::vector<hardware_interface::StateInterface>& state_interfaces)
+  {
+    for (size_t i = 0; i < get_entry_names().size(); ++i)
+    {
+      const auto& entry_name = get_entry_names()[i];
+      std::string interface_name = waypoint.name + "/" + entry_name;
+      double* data_ptr = nullptr;
+      if (i < 3)
+      {
+        data_ptr = waypoint.position.data() + i;
+      }
+      else if (i < 7)
+      {
+        const size_t qi = i - 3;
+        const size_t coeff_idx = (qi == 0) ? 3 : (qi - 1);  // w,x,y,z -> 3,0,1,2
+        data_ptr = waypoint.orientation.coeffs().data() + coeff_idx;
+      }
+      else if (i < 10)
+      {
+        data_ptr = waypoint.linear_velocity.data() + (i - 7);
+      }
+      else if (i < 13)
+      {
+        data_ptr = waypoint.angular_velocity.data() + (i - 10);
+      }
+      else if (i < 16)
+      {
+        data_ptr = waypoint.linear_acceleration.data() + (i - 13);
+      }
+      else
+      {
+        data_ptr = waypoint.angular_acceleration.data() + (i - 16);
+      }
+      state_interfaces.emplace_back(hardware_interface::StateInterface(planner_name, interface_name, data_ptr));
+    }
   }
 };  // representation of pose, twist and acceleration
 
