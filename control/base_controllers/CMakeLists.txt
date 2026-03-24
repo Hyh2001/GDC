@@ -9,6 +9,10 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(control_toolbox REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(pinocchio REQUIRED)
+find_package(base_planners REQUIRED)
+find_package(base_utils REQUIRED)
 
 # ONNX Runtine
 find_library(ONNXRUNTIME_LIB onnxruntime)
@@ -29,13 +33,19 @@ add_library(${PROJECT_NAME} SHARED
 ament_target_dependencies(${PROJECT_NAME}
     rclcpp
     control_toolbox
+    base_planners
+    base_utils
 )
 target_include_directories(${PROJECT_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
+    ${EIGEN3_INCLUDE_DIRS}
+    ${PINOCCHIO_INCLUDE_DIRS}
 )
 target_link_libraries(${PROJECT_NAME}
   ${ONNXRUNTIME_LIB}
+  Eigen3::Eigen
+  pinocchio::pinocchio
 )
 
 install(TARGETS ${PROJECT_NAME}

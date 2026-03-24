@@ -14,6 +14,7 @@ find_package(rclcpp_lifecycle REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(base_planners REQUIRED)
+find_package(base_utils REQUIRED)
 
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.cc)
 add_library(${PROJECT_NAME} SHARED
@@ -30,6 +31,7 @@ ament_target_dependencies(${PROJECT_NAME} PUBLIC
         pluginlib
         sensor_msgs
         base_planners
+        base_utils
 )
 install(TARGETS ${PROJECT_NAME}
   EXPORT export_${PROJECT_NAME}

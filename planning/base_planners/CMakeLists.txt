@@ -9,6 +9,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(controller_manager_msgs REQUIRED)
 find_package(controller_interface REQUIRED)
+find_package(hardware_interface REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(pluginlib REQUIRED)
@@ -24,6 +25,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
         $<INSTALL_INTERFACE:include/${PROJECT_NAME}>)
 ament_target_dependencies(${PROJECT_NAME} PUBLIC
         controller_interface
+        hardware_interface
         controller_manager_msgs
         rclcpp
         rclcpp_lifecycle
@@ -46,7 +48,7 @@ ament_export_targets(
 )
 ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
-ament_export_dependencies(controller_manager_msgs control_toolbox)
+ament_export_dependencies(controller_manager_msgs control_toolbox controller_interface hardware_interface)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
