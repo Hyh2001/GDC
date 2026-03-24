@@ -70,6 +70,25 @@ inline Eigen::VectorXd reorder_joint_to_pinocchio(
   return x_reordered;
 }
 
+inline Eigen::VectorXd reorder_pinocchio_to_joint(
+  const Eigen::VectorXd & x_pinocchio,
+  const std::vector<int> & map)
+{
+  if (x_pinocchio.size() != static_cast<int>(map.size()))
+  {
+      throw std::runtime_error("Vector size does not match map size");
+  }
+
+  Eigen::VectorXd x_reordered(x_pinocchio.size());
+
+  for (size_t i = 0; i < map.size(); ++i)
+  {
+      x_reordered[i] = x_pinocchio[map[i]];  // Read from Pinocchio position map[i]
+  }
+
+  return x_reordered;
+}
+
 inline std::vector<int> build_contact_reorder_map(
   std::vector<std::string>& contact_names,
   const pinocchio::Model & model)
@@ -141,6 +160,37 @@ inline Eigen::VectorXd reorder_contact_to_pinocchio(
   return x_reordered;
 }
 
+inline Eigen::VectorXd reorder_pinocchio_to_contact(
+  const Eigen::VectorXd & x_pinocchio,
+  const std::vector<int> & map)
+{
+  if (x_pinocchio.size() != static_cast<int>(map.size()))
+      throw std::runtime_error("Size mismatch in reorder_pinocchio_to_contact");
+
+  Eigen::VectorXd x_reordered(x_pinocchio.size());
+
+  for (size_t i = 0; i < map.size(); ++i)
+  {
+      x_reordered[map[i]] = x_pinocchio[i];  // Read from Pinocchio order, write to contact order
+  }
+
+  return x_reordered;
+}
+
+inline bool is_floating_base(const pinocchio::Model & model)
+{
+  if (model.njoints <= 1)
+  {
+    return false;
+  }
+
+  const auto& root_joint = model.joints[1];
+  const std::string root_joint_name = root_joint.shortname();
+  return root_joint_name == "JointModelFreeFlyer" ||
+         root_joint_name == "JointModelPlanar" ||
+         root_joint_name == "JointModelTranslation" ||
+         root_joint_name == "JointModelSpherical";
+}
 
 } // namespace pinocchio_utils
 
