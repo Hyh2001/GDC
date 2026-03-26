@@ -31,8 +31,9 @@ controller_interface::CallbackReturn HumanoidPassthroughController::on_init()
 
 controller_interface::InterfaceConfiguration HumanoidPassthroughController::command_interface_configuration() const
 {
-  controller_interface::InterfaceConfiguration config;
-  config.type = controller_interface::interface_configuration_type::ALL;
+  controller_interface::InterfaceConfiguration config =
+    humanoid_controllers::BaseHumanoidController::get_joint_command_interface_configuration();
+
   return config;
 }
 
