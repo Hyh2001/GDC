@@ -3,6 +3,7 @@
 
 #include "controller_interface/chainable_controller_interface.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "base_utils/ros2_control_utils.hpp"
 
 namespace humanoid_planners
 {
@@ -26,6 +27,51 @@ class BaseHumanoidPlanner : public controller_interface::ChainableControllerInte
 
   controller_interface::return_type update_and_write_commands(const rclcpp::Time& time,
                                                               const rclcpp::Duration& period) override;
+
+  /*
+    Interface helpers
+  */
+  controller_interface::InterfaceConfiguration get_joint_state_interface_configuration() const;
+
+  controller_interface::InterfaceConfiguration get_global_pos_interface_configuration() const;
+
+  controller_interface::InterfaceConfiguration get_ori_interface_configuration() const;
+
+  controller_interface::InterfaceConfiguration get_global_lin_vel_interface_configuration() const;
+
+  controller_interface::InterfaceConfiguration get_global_ang_vel_interface_configuration() const;
+
+  controller_interface::InterfaceConfiguration get_global_lin_acc_interface_configuration() const;
+
+  controller_interface::InterfaceConfiguration get_global_ang_acc_interface_configuration() const;
+
+  controller_interface::InterfaceConfiguration get_contact_state_interface_configuration() const; // contact state
+
+  controller_interface::InterfaceConfiguration get_contact_force_torque_interface_configuration() const; // contact force and torque
+
+  controller_interface::InterfaceConfiguration get_joint_command_interface_configuration() const;
+
+  /*
+    Data helpers
+  */
+  void read_global_pos_from_state_interfaces(std::array<double, 3>& pos);
+
+  void read_ori_from_state_interfaces(std::array<double, 4>& ori);
+
+  void read_global_lin_vel_from_state_interfaces(std::array<double, 3>& lin_vel);
+
+  void read_global_ang_vel_from_state_interfaces(std::array<double, 3>& ang_vel);
+
+  void read_global_lin_acc_from_state_interfaces(std::array<double, 3>& lin_acc);
+
+  void read_global_ang_acc_from_state_interfaces(std::array<double, 3>& ang_acc);
+
+  void read_contact_state_from_state_interfaces(std::array<bool, 2>& contact_state);
+
+  void read_contact_force_torque_from_state_interfaces(std::array<std::array<double, 6>, 2>& contact_force_torque);
+
+  void read_joint_states_from_state_interfaces(std::vector<double>& pos, std::vector<double>& vel,
+                                              std::vector<double>& tau) const;
 
   // sensor reading fields
   std::vector<std::string> joint_names_ = {};
@@ -59,6 +105,9 @@ class BaseHumanoidPlanner : public controller_interface::ChainableControllerInte
   // ros2 related
   std::string estimator_name_ = "";
   std::string ref_planner_name_ = "";
+
+  // debug
+  bool debug_;
 };
 
 };  // namespace humanoid_planners
