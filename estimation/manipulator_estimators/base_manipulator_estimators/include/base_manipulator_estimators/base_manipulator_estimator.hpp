@@ -32,6 +32,11 @@ class BaseManipulatorEstimator : public controller_interface::ChainableControlle
   controller_interface::return_type update_and_write_commands(const rclcpp::Time& time,
                                                               const rclcpp::Duration& period) override;
 
+  controller_interface::InterfaceConfiguration get_joint_state_interface_configuration() const;
+
+  void read_joint_states_from_state_interfaces(std::vector<double>& pos, std::vector<double>& vel,
+                                              std::vector<double>& tau) const;
+
   // sensor reading fields
   std::vector<std::string> joint_names_ = {};
   int num_joints_ = 0;

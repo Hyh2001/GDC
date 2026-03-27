@@ -81,4 +81,36 @@ std::vector<hardware_interface::StateInterface> BaseManipulatorEstimator::on_exp
   return state_interfaces;
 }
 
+controller_interface::InterfaceConfiguration BaseManipulatorEstimator::get_joint_state_interface_configuration() const
+{
+  controller_interface::InterfaceConfiguration config;
+  config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
+
+  for (const auto& joint_name : joint_names_)
+  {
+    for (const auto& interface_type : joint_state_interface_types_)
+    {
+      config.names.push_back(joint_name + "/" + interface_type);
+    }
+  }
+
+  return config;
+}
+
+void BaseManipulatorEstimator::read_joint_states_from_state_interfaces(std::vector<double>& pos, std::vector<double>& vel,
+                                                                    std::vector<double>& tau) const
+{
+  pos.resize(num_joints_, 0.0);
+  vel.resize(num_joints_, 0.0);
+  tau.resize(num_joints_, 0.0);
+
+  for (size_t i = 0; i < joint_names_.size(); ++i)
+  {
+    const auto& joint = joint_names_[i];
+    base_utils::get_state_interface_value(state_interfaces_, joint + "/position", pos[i]);
+    base_utils::get_state_interface_value(state_interfaces_, joint + "/velocity", vel[i]);
+    base_utils::get_state_interface_value(state_interfaces_, joint + "/effort", tau[i]);
+  }
+}
+
 }
