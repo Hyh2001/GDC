@@ -1,0 +1,6 @@
+<library path="manipulator_estimators">
+    <class name="manipulator_estimators/ManipulatorDummyEstimator"
+           type="manipulator_estimators::ManipulatorDummyEstimator"
+           base_class_type="controller_interface::ChainableControllerInterface">
+    </class>
+</library>

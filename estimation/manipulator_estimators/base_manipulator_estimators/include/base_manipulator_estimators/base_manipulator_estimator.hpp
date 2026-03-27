@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "controller_interface/chainable_controller_interface.hpp"
+#include "hardware_interface/introspection.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "base_utils/ros2_control_utils.hpp"
 
@@ -31,6 +32,19 @@ class BaseManipulatorEstimator : public controller_interface::ChainableControlle
   controller_interface::return_type update_and_write_commands(const rclcpp::Time& time,
                                                               const rclcpp::Duration& period) override;
 
+  // sensor reading fields
+  std::vector<std::string> joint_names_ = {};
+  int num_joints_ = 0;
+  std::vector<std::string> joint_state_interface_types_ = {"position", "velocity", "effort"};
+  std::vector<std::string> joint_command_interface_types_ = {"position", "velocity", "effort", "kp", "kd"};
+
+  // readings
+  std::vector<double> joint_pos_ = {};
+  std::vector<double> joint_vel_ = {};
+  std::vector<double> joint_acc_ = {};
+  std::vector<double> joint_tau_ = {};
+
+  bool debug_ = false; // debug flag
 };
 }
 #endif

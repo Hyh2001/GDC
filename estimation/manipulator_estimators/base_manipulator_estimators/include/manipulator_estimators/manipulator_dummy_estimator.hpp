@@ -1,7 +1,0 @@
-#pragma once
-#ifndef MANIPULATOR_DUMMY_ESTIMATOR_HPP__
-#define MANIPULATOR_DUMMY_ESTIMATOR_HPP__
-
-
-
-#endif
