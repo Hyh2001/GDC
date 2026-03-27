@@ -15,8 +15,6 @@ find_package(realtime_tools REQUIRED)
 find_package(base_controllers REQUIRED)
 find_package(base_utils REQUIRED)
 
-find_package(humanoid_msgs REQUIRED)
-
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.cc)
 add_library(${PROJECT_NAME} SHARED
         ${SOURCES}
@@ -32,7 +30,6 @@ ament_target_dependencies(${PROJECT_NAME} PUBLIC
         realtime_tools
         base_controllers
         base_utils
-        humanoid_msgs
 )
 pluginlib_export_plugin_description_file(controller_interface base_humanoid_controllers_config.xml)
 install(TARGETS ${PROJECT_NAME}
@@ -51,7 +48,7 @@ install(
         DESTINATION include/${PROJECT_NAME}
 )
 ament_export_include_directories(include)
-ament_export_dependencies(humanoid_msgs base_controllers)
+ament_export_dependencies(base_controllers)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
