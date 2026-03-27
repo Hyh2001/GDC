@@ -3,4 +3,8 @@
            type="manipulator_estimators::ManipulatorDummyEstimator"
            base_class_type="controller_interface::ChainableControllerInterface">
     </class>
+    <class name="manipulator_estimators/ManipulatorPassthroughEstimator"
+           type="manipulator_estimators::ManipulatorPassthroughEstimator"
+           base_class_type="controller_interface::ChainableControllerInterface">
+    </class>
 </library>
