@@ -59,21 +59,21 @@ class BaseHumanoidController : public controller_interface::ChainableControllerI
   /*
     Data helpers
   */
-  void read_global_pos_from_state_interfaces(std::array<double, 3>& pos);
+  void read_global_pos_from_state_interfaces(std::array<double, 3>& pos) const;
 
-  void read_ori_from_state_interfaces(std::array<double, 4>& ori);
+  void read_ori_from_state_interfaces(std::array<double, 4>& ori) const;
 
-  void read_global_lin_vel_from_state_interfaces(std::array<double, 3>& lin_vel);
+  void read_global_lin_vel_from_state_interfaces(std::array<double, 3>& lin_vel) const;
 
-  void read_global_ang_vel_from_state_interfaces(std::array<double, 3>& ang_vel);
+  void read_global_ang_vel_from_state_interfaces(std::array<double, 3>& ang_vel) const;
 
-  void read_global_lin_acc_from_state_interfaces(std::array<double, 3>& lin_acc);
+  void read_global_lin_acc_from_state_interfaces(std::array<double, 3>& lin_acc) const;
 
-  void read_global_ang_acc_from_state_interfaces(std::array<double, 3>& ang_acc);
+  void read_global_ang_acc_from_state_interfaces(std::array<double, 3>& ang_acc) const;
 
-  void read_contact_state_from_state_interfaces(std::array<bool, 2>& contact_state);
+  void read_contact_state_from_state_interfaces(std::array<bool, 2>& contact_state) const;
 
-  void read_contact_force_torque_from_state_interfaces(std::array<std::array<double, 6>, 2>& contact_force_torque);
+  void read_contact_force_torque_from_state_interfaces(std::array<std::array<double, 6>, 2>& contact_force_torque) const;
 
   void read_joint_states_from_state_interfaces(std::vector<double>& pos, std::vector<double>& vel,
                                               std::vector<double>& tau) const;

@@ -171,10 +171,7 @@ controller_interface::InterfaceConfiguration BaseHumanoidController::get_contact
 
   for (const auto& foot : foot_names_)
   {
-    for (const auto& sensor : foot_sensor_names_[0])
-    {
-      config.names.push_back(estimator_name_ + "/" + foot + "_" + sensor + "_est");
-    }
+    config.names.push_back(estimator_name_ + "/" + foot + "_" + foot_sensor_names_[0] + "_est");
   }
 
   return config;
@@ -213,14 +210,14 @@ controller_interface::InterfaceConfiguration BaseHumanoidController::get_joint_c
    return config;
 }
 
-void BaseHumanoidController::read_global_pos_from_state_interfaces(std::array<double, 3>& pos)
+void BaseHumanoidController::read_global_pos_from_state_interfaces(std::array<double, 3>& pos) const
 {
   base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + pos_name_ + "_x_est", pos[0]);
   base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + pos_name_ + "_y_est", pos[1]);
   base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + pos_name_ + "_z_est", pos[2]);
 }
 
-void BaseHumanoidController::read_ori_from_state_interfaces(std::array<double, 4>& ori)
+void BaseHumanoidController::read_ori_from_state_interfaces(std::array<double, 4>& ori) const
 {
   base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + ori_name_ + "_w_est", ori[0]);
   base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + ori_name_ + "_x_est", ori[1]);
@@ -228,35 +225,35 @@ void BaseHumanoidController::read_ori_from_state_interfaces(std::array<double, 4
   base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + ori_name_ + "_z_est", ori[3]);
 }
 
-void BaseHumanoidController::read_global_lin_vel_from_state_interfaces(std::array<double, 3>& lin_vel)
+void BaseHumanoidController::read_global_lin_vel_from_state_interfaces(std::array<double, 3>& lin_vel) const
 {
   base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + lin_vel_name_ + "_x_est", lin_vel[0]);
   base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + lin_vel_name_ + "_y_est", lin_vel[1]);
   base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + lin_vel_name_ + "_z_est", lin_vel[2]);
 }
 
-void BaseHumanoidController::read_global_ang_vel_from_state_interfaces(std::array<double, 3>& ang_vel)
+void BaseHumanoidController::read_global_ang_vel_from_state_interfaces(std::array<double, 3>& ang_vel) const
 {
   base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + ang_vel_name_ + "_x_est", ang_vel[0]);
   base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + ang_vel_name_ + "_y_est", ang_vel[1]);
   base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + ang_vel_name_ + "_z_est", ang_vel[2]);
 }
 
-void BaseHumanoidController::read_global_lin_acc_from_state_interfaces(std::array<double, 3>& lin_acc)
+void BaseHumanoidController::read_global_lin_acc_from_state_interfaces(std::array<double, 3>& lin_acc) const
 {
   base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + lin_acc_name_ + "_x_est", lin_acc[0]);
   base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + lin_acc_name_ + "_y_est", lin_acc[1]);
   base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + lin_acc_name_ + "_z_est", lin_acc[2]);
 }
 
-void BaseHumanoidController::read_global_ang_acc_from_state_interfaces(std::array<double, 3>& ang_acc)
+void BaseHumanoidController::read_global_ang_acc_from_state_interfaces(std::array<double, 3>& ang_acc) const
 {
   base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + ang_acc_name_ + "_x_est", ang_acc[0]);
   base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + ang_acc_name_ + "_y_est", ang_acc[1]);
   base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + ang_acc_name_ + "_z_est", ang_acc[2]);
 }
 
-void BaseHumanoidController::read_contact_state_from_state_interfaces(std::array<bool, 2>& contact_state)
+void BaseHumanoidController::read_contact_state_from_state_interfaces(std::array<bool, 2>& contact_state) const
 {
   for (size_t i = 0; i < foot_names_.size(); ++i)
   {
@@ -268,7 +265,7 @@ void BaseHumanoidController::read_contact_state_from_state_interfaces(std::array
   }
 }
 
-void BaseHumanoidController::read_contact_force_torque_from_state_interfaces(std::array<std::array<double, 6>, 2>& contact_force_torque)
+void BaseHumanoidController::read_contact_force_torque_from_state_interfaces(std::array<std::array<double, 6>, 2>& contact_force_torque) const
 {
   for (size_t i = 0; i < foot_names_.size(); ++i)
   {
@@ -281,6 +278,18 @@ void BaseHumanoidController::read_contact_force_torque_from_state_interfaces(std
           estimator_name_ + "/" + foot + "_" + sensor + "_est", value);
       contact_force_torque[i][j-1] = value;  // j=1->index 0, j=2->index 1, etc.
     }
+  }
+}
+
+void BaseHumanoidController::read_joint_states_from_state_interfaces(std::vector<double>& pos, std::vector<double>& vel,
+                                                                    std::vector<double>& tau) const
+{
+  for (size_t i = 0; i < joint_names_.size(); ++i)
+  {
+    const auto& joint = joint_names_[i];
+    base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + joint + "_position_est", pos[i]);
+    base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + joint + "_velocity_est", vel[i]);
+    base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + joint + "_effort_est", tau[i]);
   }
 }
 
