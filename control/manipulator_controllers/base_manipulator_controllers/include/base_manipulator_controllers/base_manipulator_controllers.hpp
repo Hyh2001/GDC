@@ -2,6 +2,11 @@
 #ifndef BASE_MANIPULATOR_CONTROLLERS_HPP__
 #define BASE_MANIPULATOR_CONTROLLERS_HPP__
 
+#include <unordered_map>
+#include <algorithm>
+#include <stdexcept>
+#include <limits>
+
 #include "controller_interface/chainable_controller_interface.hpp"
 #include "hardware_interface/introspection.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -34,7 +39,18 @@ class BaseManipulatorController : public controller_interface::ChainableControll
   controller_interface::return_type update_and_write_commands(const rclcpp::Time& time,
                                                               const rclcpp::Duration& period) override;
 
-  // predecessors
+  controller_interface::InterfaceConfiguration get_joint_state_interface_configuration() const;
+
+  controller_interface::InterfaceConfiguration get_joint_command_interface_configuration() const;
+
+  void read_joint_states_from_state_interfaces(std::vector<double>& pos, std::vector<double>& vel,
+                                              std::vector<double>& tau) const;
+
+  void write_joint_commands_to_command_interfaces(const std::vector<double>& pos, const std::vector<double>& vel,
+                                                  const std::vector<double>& tau, const std::vector<double>& kp,
+                                                  const std::vector<double>& kd);
+
+                                                  // predecessors
   std::string estimator_name_ = "";
   std::string planner_name_ = "";
   std::string ref_controller_name_ = "";
@@ -43,6 +59,8 @@ class BaseManipulatorController : public controller_interface::ChainableControll
   // state and command interfaces
   std::vector<std::string> joint_state_interface_types_ = {"position", "velocity", "effort"};
   std::vector<std::string> joint_command_interface_types_ = {"position", "velocity", "effort", "kp", "kd"};
+  std::unordered_map<std::string, std::vector<std::string>> disabled_cmd_ifaces_;
+  std::unordered_map<std::string, std::vector<std::string>> disabled_state_ifaces_;
 
   bool debug_ = false;
 };
