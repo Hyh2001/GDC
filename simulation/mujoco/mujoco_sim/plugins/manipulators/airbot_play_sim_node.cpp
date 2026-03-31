@@ -28,18 +28,16 @@ AirbotPlaySimNode::AirbotPlaySimNode() : MujocoSimNodeBase("airbot_play_sim")
 
 void AirbotPlaySimNode::reset_params()
 {
-  // reset all the params
-  // sensor readings
-  joint_pos_.clear();
-  joint_vel_.clear();
-  joint_torque_.clear();
+  // reset all the params while preserving the manipulator DOF sizes
+  std::fill(joint_pos_.begin(), joint_pos_.end(), 0.0);
+  std::fill(joint_vel_.begin(), joint_vel_.end(), 0.0);
+  std::fill(joint_torque_.begin(), joint_torque_.end(), 0.0);
 
-  // motor commands
-  cmd_torque_.clear();
-  cmd_pos_.clear();
-  cmd_vel_.clear();
-  cmd_kp_.clear();
-  cmd_kd_.clear();
+  std::fill(cmd_torque_.begin(), cmd_torque_.end(), 0.0);
+  std::fill(cmd_pos_.begin(), cmd_pos_.end(), 0.0);
+  std::fill(cmd_vel_.begin(), cmd_vel_.end(), 0.0);
+  std::fill(cmd_kp_.begin(), cmd_kp_.end(), 0.0);
+  std::fill(cmd_kd_.begin(), cmd_kd_.end(), 0.0);
 }
 
 void AirbotPlaySimNode::callback_low_state()
@@ -48,6 +46,7 @@ void AirbotPlaySimNode::callback_low_state()
   if (sim_->d_)
   {
     manipulator_msgs::msg::LowState low_state_msg = manipulator_msgs::msg::LowState();
+    low_state_msg.motor_state.resize(joint_pos_.size());
 
     // lock the thread
     const std::unique_lock<std::recursive_mutex> lock(sim_->mtx);
