@@ -2,6 +2,9 @@
 #ifndef BASE_MANIPULATOR_ESTIMATOR_HPP__
 #define BASE_MANIPULATOR_ESTIMATOR_HPP__
 
+#include <algorithm>
+#include <limits>
+#include <unordered_map>
 #include <vector>
 
 #include "controller_interface/chainable_controller_interface.hpp"
@@ -42,6 +45,8 @@ class BaseManipulatorEstimator : public controller_interface::ChainableControlle
   int num_joints_ = 0;
   std::vector<std::string> joint_state_interface_types_ = {"position", "velocity", "effort"};
   std::vector<std::string> joint_command_interface_types_ = {"position", "velocity", "effort", "kp", "kd"};
+  std::unordered_map<std::string, std::vector<std::string>> disabled_cmd_ifaces_;
+  std::unordered_map<std::string, std::vector<std::string>> disabled_state_ifaces_;
 
   // readings
   std::vector<double> joint_pos_ = {};

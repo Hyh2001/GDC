@@ -11,12 +11,27 @@ controller_interface::CallbackReturn BaseManipulatorEstimator::on_init()
       auto_declare<std::vector<std::string>>("joint_state_interfaces", joint_state_interface_types_);
   joint_command_interface_types_ =
       auto_declare<std::vector<std::string>>("joint_command_interfaces", joint_command_interface_types_);
+  // disable certain interfaces that does not exist
+  std::map<std::string, rclcpp::Parameter> cmd_exceptions;
+  get_node()->get_node_parameters_interface()->get_parameters_by_prefix("disable_command_interfaces", cmd_exceptions);
+  for (const auto & [joint, param] : cmd_exceptions) {
+    disabled_cmd_ifaces_[joint] = param.as_string_array();
+  }
+
+  std::map<std::string, rclcpp::Parameter> state_exceptions;
+  get_node()->get_node_parameters_interface()->get_parameters_by_prefix("disable_state_interfaces", state_exceptions);
+  for (const auto & [joint, param] : state_exceptions) {
+    disabled_state_ifaces_[joint] = param.as_string_array();
+  }
 
   joint_pos_.resize(num_joints_, 0.0);
   joint_vel_.resize(num_joints_, 0.0);
   joint_acc_.resize(num_joints_, 0.0);
   joint_tau_.resize(num_joints_, 0.0);
-  return controller_interface::CallbackReturn::SUCCESS;
+
+  // debug
+  debug_ = auto_declare<bool>("debug", false);
+
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
@@ -49,6 +64,12 @@ controller_interface::CallbackReturn BaseManipulatorEstimator::on_deactivate(con
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
+controller_interface::return_type BaseManipulatorEstimator::update_and_write_commands(const rclcpp::Time& time,
+                                                              const rclcpp::Duration& period)
+{
+  return controller_interface::return_type::OK;
+}
+
 std::vector<hardware_interface::StateInterface> BaseManipulatorEstimator::on_export_state_interfaces()
 {
   std::vector<hardware_interface::StateInterface> state_interfaces;
@@ -57,8 +78,17 @@ std::vector<hardware_interface::StateInterface> BaseManipulatorEstimator::on_exp
   // Joint interfaces
   for (const auto& joint : joint_names_)
   {
+    const auto disabled_it = disabled_state_ifaces_.find(joint);
     for (const auto& iface : joint_state_interface_types_)
     {
+      const bool disabled =
+          (disabled_it != disabled_state_ifaces_.end()) &&
+          (std::find(disabled_it->second.begin(), disabled_it->second.end(), iface) != disabled_it->second.end());
+      if (disabled)
+      {
+        continue;
+      }
+
       if (iface == "position")
       {
         state_interfaces.emplace_back(
@@ -88,9 +118,16 @@ controller_interface::InterfaceConfiguration BaseManipulatorEstimator::get_joint
 
   for (const auto& joint_name : joint_names_)
   {
+    const auto disabled_it = disabled_state_ifaces_.find(joint_name);
     for (const auto& interface_type : joint_state_interface_types_)
     {
-      config.names.push_back(joint_name + "/" + interface_type);
+      const bool disabled =
+          (disabled_it != disabled_state_ifaces_.end()) &&
+          (std::find(disabled_it->second.begin(), disabled_it->second.end(), interface_type) != disabled_it->second.end());
+      if (!disabled)
+      {
+        config.names.push_back(joint_name + "/" + interface_type);
+      }
     }
   }
 
@@ -100,16 +137,28 @@ controller_interface::InterfaceConfiguration BaseManipulatorEstimator::get_joint
 void BaseManipulatorEstimator::read_joint_states_from_state_interfaces(std::vector<double>& pos, std::vector<double>& vel,
                                                                     std::vector<double>& tau) const
 {
-  pos.resize(num_joints_, 0.0);
-  vel.resize(num_joints_, 0.0);
-  tau.resize(num_joints_, 0.0);
+  const double nan = std::numeric_limits<double>::quiet_NaN();
+  pos.assign(num_joints_, nan);
+  vel.assign(num_joints_, nan);
+  tau.assign(num_joints_, nan);
 
   for (size_t i = 0; i < joint_names_.size(); ++i)
   {
     const auto& joint = joint_names_[i];
-    base_utils::get_state_interface_value(state_interfaces_, joint + "/position", pos[i]);
-    base_utils::get_state_interface_value(state_interfaces_, joint + "/velocity", vel[i]);
-    base_utils::get_state_interface_value(state_interfaces_, joint + "/effort", tau[i]);
+    const auto disabled_it = disabled_state_ifaces_.find(joint);
+    const auto is_disabled = [&](const char* iface) {
+      return (disabled_it != disabled_state_ifaces_.end()) &&
+             (std::find(disabled_it->second.begin(), disabled_it->second.end(), iface) != disabled_it->second.end());
+    };
+
+    if (!is_disabled("position"))
+      base_utils::get_state_interface_value(state_interfaces_, joint + "/position", pos[i]);
+
+    if (!is_disabled("velocity"))
+      base_utils::get_state_interface_value(state_interfaces_, joint + "/velocity", vel[i]);
+
+    if (!is_disabled("effort"))
+      base_utils::get_state_interface_value(state_interfaces_, joint + "/effort", tau[i]);
   }
 }
 
