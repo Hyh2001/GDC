@@ -61,7 +61,7 @@ install(DIRECTORY include/
 # Export include directories for downstream packages
 ament_export_include_directories(include ${ONNXRUNTIME_INCLUDE_DIRS})
 ament_export_libraries(${PROJECT_NAME})
-ament_export_dependencies(rclcpp control_toolbox)
+ament_export_dependencies(rclcpp control_toolbox pinocchio)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
