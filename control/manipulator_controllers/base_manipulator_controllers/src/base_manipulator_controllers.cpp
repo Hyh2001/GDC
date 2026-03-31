@@ -17,12 +17,14 @@ controller_interface::CallbackReturn BaseManipulatorController::on_init()
   joint_command_interface_types_ =
       auto_declare<std::vector<std::string>>("joint_command_interfaces", joint_command_interface_types_);
   // disable certain interfaces that does not exist
-  auto cmd_exceptions = get_node()->get_parameters_by_prefix("disable_command_interfaces");
+  std::map<std::string, rclcpp::Parameter> cmd_exceptions;
+  get_node()->get_node_parameters_interface()->get_parameters_by_prefix("disable_command_interfaces", cmd_exceptions);
   for (const auto & [joint, param] : cmd_exceptions) {
     disabled_cmd_ifaces_[joint] = param.as_string_array();
   }
 
-  auto state_exceptions = get_node()->get_parameters_by_prefix("disable_state_interfaces");
+  std::map<std::string, rclcpp::Parameter> state_exceptions;
+  get_node()->get_node_parameters_interface()->get_parameters_by_prefix("disable_state_interfaces", state_exceptions);
   for (const auto & [joint, param] : state_exceptions) {
     disabled_state_ifaces_[joint] = param.as_string_array();
   }
