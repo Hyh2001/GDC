@@ -15,7 +15,11 @@ controller_interface::CallbackReturn ManipulatorPassthroughEstimator::on_init()
 controller_interface::InterfaceConfiguration ManipulatorPassthroughEstimator::state_interface_configuration() const
 {
   controller_interface::InterfaceConfiguration config;
-  config.type = controller_interface::interface_configuration_type::ALL;
+  config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
+
+  auto interface = this->get_joint_state_interface_configuration();
+  config.names.insert(config.names.end(), interface.names.begin(), interface.names.end());
+
   return config;
 }
 
