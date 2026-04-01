@@ -16,17 +16,22 @@ controller_interface::CallbackReturn BaseManipulatorController::on_init()
       auto_declare<std::vector<std::string>>("joint_state_interfaces", joint_state_interface_types_);
   joint_command_interface_types_ =
       auto_declare<std::vector<std::string>>("joint_command_interfaces", joint_command_interface_types_);
-  // disable certain interfaces that does not exist
-  std::map<std::string, rclcpp::Parameter> cmd_exceptions;
-  get_node()->get_node_parameters_interface()->get_parameters_by_prefix("disable_command_interfaces", cmd_exceptions);
-  for (const auto & [joint, param] : cmd_exceptions) {
-    disabled_cmd_ifaces_[joint] = param.as_string_array();
-  }
+  // Disable interface lists must be declared explicitly to ensure YAML overrides are visible here.
+  for (const auto & joint : joint_names_)
+  {
+    const auto disabled_cmd =
+        auto_declare<std::vector<std::string>>("disable_command_interfaces." + joint, std::vector<std::string>{});
+    if (!disabled_cmd.empty())
+    {
+      disabled_cmd_ifaces_[joint] = disabled_cmd;
+    }
 
-  std::map<std::string, rclcpp::Parameter> state_exceptions;
-  get_node()->get_node_parameters_interface()->get_parameters_by_prefix("disable_state_interfaces", state_exceptions);
-  for (const auto & [joint, param] : state_exceptions) {
-    disabled_state_ifaces_[joint] = param.as_string_array();
+    const auto disabled_state =
+        auto_declare<std::vector<std::string>>("disable_state_interfaces." + joint, std::vector<std::string>{});
+    if (!disabled_state.empty())
+    {
+      disabled_state_ifaces_[joint] = disabled_state;
+    }
   }
 
   // debug
