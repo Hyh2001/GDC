@@ -38,7 +38,7 @@ controller_interface::InterfaceConfiguration BaseHumanoidEstimator::command_inte
 controller_interface::InterfaceConfiguration BaseHumanoidEstimator::state_interface_configuration() const
 {
   controller_interface::InterfaceConfiguration config;
-  config.type = controller_interface::interface_configuration_type::ALL;
+  config.type = controller_interface::interface_configuration_type::NONE;
   return config;
 }
 

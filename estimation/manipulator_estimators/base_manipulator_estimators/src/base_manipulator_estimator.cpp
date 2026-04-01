@@ -45,7 +45,7 @@ controller_interface::InterfaceConfiguration BaseManipulatorEstimator::command_i
 controller_interface::InterfaceConfiguration BaseManipulatorEstimator::state_interface_configuration() const
 {
   controller_interface::InterfaceConfiguration config;
-  config.type = controller_interface::interface_configuration_type::ALL;
+  config.type = controller_interface::interface_configuration_type::NONE;
   return config;
 }
 
