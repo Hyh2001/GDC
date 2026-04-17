@@ -67,6 +67,38 @@ inline void set_command_interface_values(std::vector<hardware_interface::LoanedC
     set_command_interface_value(command_interfaces, interface_names[i], values[i]);
   }
 }
+
+inline std::vector<double> filter_command_values(
+    const std::vector<double>& values,
+    const std::vector<std::string>& joint_names,
+    const std::unordered_map<std::string, std::vector<std::string>>& disabled_cmd_ifaces,
+    const std::string& iface_type)
+{
+  if (values.size() != joint_names.size())
+  {
+    throw std::runtime_error("Filtering command values failed, command values and joint_names size mismatch");
+  }
+
+  std::vector<double> filtered;
+  filtered.reserve(values.size());
+
+  for (size_t i = 0; i < joint_names.size(); ++i)
+  {
+    const auto disabled_it = disabled_cmd_ifaces.find(joint_names[i]);
+    const bool disabled =
+        (disabled_it != disabled_cmd_ifaces.end()) &&
+        (std::find(disabled_it->second.begin(), disabled_it->second.end(), iface_type) != disabled_it->second.end());
+
+    if (!disabled)
+    {
+      filtered.push_back(values[i]);
+    }
+  }
+
+  return filtered;
+}
+
+
 };  // namespace base_utils
 
 #endif  // ROS2_CONTROL_UTILS_HPP
