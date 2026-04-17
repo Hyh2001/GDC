@@ -36,6 +36,8 @@ ament_export_targets(
   export_${PROJECT_NAME}
 )
 ament_export_dependencies(
+  rclcpp
+  rclcpp_lifecycle
   realtime_tools
   humanoid_msgs
   quadruped_msgs
