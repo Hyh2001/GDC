@@ -188,35 +188,39 @@ void AirbotPlayWithGripperSimNode::callback_gripper_low_cmd(const end_effector_m
   if (sim_->d_)
   {
     const std::unique_lock<std::recursive_mutex> lock(sim_->mtx);
+    const size_t gripper_pos_actuator_idx = 3 * joint_pos_.size();
+    const size_t gripper_vel_actuator_idx = gripper_pos_actuator_idx + 1;
+    const size_t gripper_tau_actuator_idx = gripper_pos_actuator_idx + 2;
+
     // apply the gripper motor commands
     switch (msg->gripper_cmd.mode)
     {
       case uint8_t(0):  // no control
         // sim_->d_->ctrl[i] = 0.0;
         break;
-      case uint8_t(1):                                                      // position control
-        sim_->m_->actuator_gainprm[0 * mjNGAIN + 0] = msg->gripper_cmd.kp;  // set kp
-        sim_->m_->actuator_biasprm[0 * mjNBIAS + 1] = -msg->gripper_cmd.kp;
-        sim_->m_->actuator_biasprm[0 * mjNBIAS + 2] = -msg->gripper_cmd.kd;  // set kd
-        sim_->d_->ctrl[0] = msg->gripper_cmd.q;
+      case uint8_t(1):  // position control
+        sim_->m_->actuator_gainprm[gripper_pos_actuator_idx * mjNGAIN + 0] = msg->gripper_cmd.kp;  // set kp
+        sim_->m_->actuator_biasprm[gripper_pos_actuator_idx * mjNBIAS + 1] = -msg->gripper_cmd.kp;
+        sim_->m_->actuator_biasprm[gripper_pos_actuator_idx * mjNBIAS + 2] = -msg->gripper_cmd.kd;  // set kd
+        sim_->d_->ctrl[gripper_pos_actuator_idx] = msg->gripper_cmd.q;
         break;
       case uint8_t(2):  // velocity control
-        sim_->m_->actuator_gainprm[(0 + joint_pos_.size()) * mjNGAIN + 0] = msg->gripper_cmd.kd;
-        sim_->m_->actuator_biasprm[(0 + joint_pos_.size()) * mjNBIAS + 2] = -msg->gripper_cmd.kd;
-        sim_->d_->ctrl[0 + joint_pos_.size()] = msg->gripper_cmd.dq;
+        sim_->m_->actuator_gainprm[gripper_vel_actuator_idx * mjNGAIN + 0] = msg->gripper_cmd.kd;
+        sim_->m_->actuator_biasprm[gripper_vel_actuator_idx * mjNBIAS + 2] = -msg->gripper_cmd.kd;
+        sim_->d_->ctrl[gripper_vel_actuator_idx] = msg->gripper_cmd.dq;
         break;
       case uint8_t(3):  // torque control
-        sim_->d_->ctrl[0 + 2 * joint_pos_.size()] = msg->gripper_cmd.tau;
+        sim_->d_->ctrl[gripper_tau_actuator_idx] = msg->gripper_cmd.tau;
         break;
       case uint8_t(4):  // mit mode
-        sim_->m_->actuator_gainprm[0 * mjNGAIN + 0] = msg->gripper_cmd.kp;  // set kp
-        sim_->m_->actuator_biasprm[0 * mjNBIAS + 1] = -msg->gripper_cmd.kp;
-        sim_->m_->actuator_biasprm[0 * mjNBIAS + 2] = -msg->gripper_cmd.kd;  // set kd
-        sim_->m_->actuator_gainprm[(0 + joint_pos_.size()) * mjNGAIN + 0] = msg->gripper_cmd.kd;
-        sim_->m_->actuator_biasprm[(0 + joint_pos_.size()) * mjNBIAS + 2] = 0.0;
-        sim_->d_->ctrl[0] = msg->gripper_cmd.q;
-        sim_->d_->ctrl[0 + joint_pos_.size()] = msg->gripper_cmd.dq;
-        sim_->d_->ctrl[0 + 2 * joint_pos_.size()] = msg->gripper_cmd.tau;
+        sim_->m_->actuator_gainprm[gripper_pos_actuator_idx * mjNGAIN + 0] = msg->gripper_cmd.kp;  // set kp
+        sim_->m_->actuator_biasprm[gripper_pos_actuator_idx * mjNBIAS + 1] = -msg->gripper_cmd.kp;
+        sim_->m_->actuator_biasprm[gripper_pos_actuator_idx * mjNBIAS + 2] = -msg->gripper_cmd.kd;  // set kd
+        sim_->m_->actuator_gainprm[gripper_vel_actuator_idx * mjNGAIN + 0] = msg->gripper_cmd.kd;
+        sim_->m_->actuator_biasprm[gripper_vel_actuator_idx * mjNBIAS + 2] = 0.0;
+        sim_->d_->ctrl[gripper_pos_actuator_idx] = msg->gripper_cmd.q;
+        sim_->d_->ctrl[gripper_vel_actuator_idx] = msg->gripper_cmd.dq;
+        sim_->d_->ctrl[gripper_tau_actuator_idx] = msg->gripper_cmd.tau;
         break;
       default:
         RCLCPP_ERROR(this->get_logger(), "Unknown control mode: %d for gripper", msg->gripper_cmd.mode);
