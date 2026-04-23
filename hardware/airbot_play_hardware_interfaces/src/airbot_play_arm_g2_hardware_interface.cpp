@@ -14,9 +14,9 @@ AirbotPlayArmG2HardwareInterface::AirbotPlayArmG2HardwareInterface()
 
 AirbotPlayArmG2HardwareInterface::~AirbotPlayArmG2HardwareInterface()
 {
-  arm_->disable();
+  // arm_->disable();
   arm_->uninit();
-  eef_->disable();
+  // eef_->disable();
   eef_->uninit();
 }
 
