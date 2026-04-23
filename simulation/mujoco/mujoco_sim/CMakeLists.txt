@@ -99,8 +99,6 @@ target_include_directories(simulation PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>)
 
-
-
 list(APPEND MUJOCO_CXX_FLAGS
 "-march=native"
 "-mtune=native"
@@ -133,5 +131,8 @@ install(TARGETS simulation
 
 install(DIRECTORY lib/mujoco_plugin
         DESTINATION lib/${PROJECT_NAME})
+
+# python related
+ament_python_install_package(${PROJECT_NAME})
 
 ament_package()
