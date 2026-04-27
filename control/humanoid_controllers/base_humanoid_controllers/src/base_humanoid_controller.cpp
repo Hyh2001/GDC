@@ -281,6 +281,25 @@ void BaseHumanoidController::read_contact_force_torque_from_state_interfaces(std
   }
 }
 
+void BaseHumanoidController::read_joint_states_from_state_interfaces(std::vector<double>& pos) const
+{
+  for (size_t i = 0; i < joint_names_.size(); ++i)
+  {
+    const auto& joint = joint_names_[i];
+    base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + joint + "_position_est", pos[i]);
+  }
+}
+
+void BaseHumanoidController::read_joint_states_from_state_interfaces(std::vector<double>& pos, std::vector<double>& vel) const
+{
+  for (size_t i = 0; i < joint_names_.size(); ++i)
+  {
+    const auto& joint = joint_names_[i];
+    base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + joint + "_position_est", pos[i]);
+    base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + joint + "_velocity_est", vel[i]);
+  }
+}
+
 void BaseHumanoidController::read_joint_states_from_state_interfaces(std::vector<double>& pos, std::vector<double>& vel,
                                                                     std::vector<double>& tau) const
 {

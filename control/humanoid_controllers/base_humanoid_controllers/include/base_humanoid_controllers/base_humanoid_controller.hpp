@@ -75,6 +75,10 @@ class BaseHumanoidController : public controller_interface::ChainableControllerI
 
   void read_contact_force_torque_from_state_interfaces(std::array<std::array<double, 6>, 2>& contact_force_torque) const;
 
+  void read_joint_states_from_state_interfaces(std::vector<double>& pos) const;
+
+  void read_joint_states_from_state_interfaces(std::vector<double>& pos, std::vector<double>& vel) const;
+
   void read_joint_states_from_state_interfaces(std::vector<double>& pos, std::vector<double>& vel,
                                               std::vector<double>& tau) const;
 
