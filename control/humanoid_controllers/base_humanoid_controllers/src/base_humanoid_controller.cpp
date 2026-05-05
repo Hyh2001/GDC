@@ -25,6 +25,24 @@ controller_interface::CallbackReturn BaseHumanoidController::on_init()
   lin_acc_name_ = auto_declare<std::string>("lin_acc_name", lin_acc_name_);
   ang_acc_name_ = auto_declare<std::string>("ang_acc_name", ang_acc_name_);
 
+  // disable interface lists must be declared explicitly to ensure YAML overrides are visible here.
+  for (const auto & joint : joint_names_)
+  {
+    const auto disabled_cmd =
+        auto_declare<std::vector<std::string>>("disable_command_interfaces." + joint, std::vector<std::string>{});
+    if (!disabled_cmd.empty())
+    {
+      disabled_cmd_ifaces_[joint] = disabled_cmd;
+    }
+
+    const auto disabled_state =
+        auto_declare<std::vector<std::string>>("disable_state_interfaces." + joint, std::vector<std::string>{});
+    if (!disabled_state.empty())
+    {
+      disabled_state_ifaces_[joint] = disabled_state;
+    }
+  }
+
   // debug
   debug_ = auto_declare<bool>("debug", false);
 
@@ -80,18 +98,25 @@ controller_interface::return_type BaseHumanoidController::update_reference_from_
 
 controller_interface::InterfaceConfiguration BaseHumanoidController::get_joint_state_interface_configuration() const
 {
-   controller_interface::InterfaceConfiguration config;
-   config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
+  controller_interface::InterfaceConfiguration config;
+  config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
 
-   for (const auto& joint : joint_names_)
-   {
-     for (const auto& iface : joint_state_interface_types_)
-     {
-       config.names.push_back(estimator_name_ + "/" + joint + "_" + iface + "_est");
-     }
-   }
+  for (const auto& joint : joint_names_)
+  {
+    const auto disabled_it = disabled_state_ifaces_.find(joint);
+    for (const auto& iface : joint_state_interface_types_)
+    {
+      const bool disabled =
+          (disabled_it != disabled_state_ifaces_.end()) &&
+          (std::find(disabled_it->second.begin(), disabled_it->second.end(), iface) != disabled_it->second.end());
+      if (!disabled)
+      {
+        config.names.push_back(estimator_name_ + "/" + joint + "_" + iface + "_est");
+      }
+    }
+  }
 
-   return config;
+  return config;
 }
 
 controller_interface::InterfaceConfiguration BaseHumanoidController::get_global_pos_interface_configuration() const
@@ -196,18 +221,25 @@ controller_interface::InterfaceConfiguration BaseHumanoidController::get_contact
 
 controller_interface::InterfaceConfiguration BaseHumanoidController::get_joint_command_interface_configuration() const
 {
-   controller_interface::InterfaceConfiguration config;
-   config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
+  controller_interface::InterfaceConfiguration config;
+  config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
 
-   for (const auto& joint : joint_names_)
-   {
-     for (const auto& iface_type : joint_command_interface_types_)
-     {
-       config.names.push_back(joint + "/" + iface_type);
-     }
-   }
+  for (const auto& joint : joint_names_)
+  {
+    const auto disabled_it = disabled_cmd_ifaces_.find(joint);
+    for (const auto& iface_type : joint_command_interface_types_)
+    {
+      const bool disabled =
+          (disabled_it != disabled_cmd_ifaces_.end()) &&
+          (std::find(disabled_it->second.begin(), disabled_it->second.end(), iface_type) != disabled_it->second.end());
+      if (!disabled)
+      {
+        config.names.push_back(joint + "/" + iface_type);
+      }
+    }
+  }
 
-   return config;
+  return config;
 }
 
 void BaseHumanoidController::read_global_pos_from_state_interfaces(std::array<double, 3>& pos) const
@@ -283,32 +315,72 @@ void BaseHumanoidController::read_contact_force_torque_from_state_interfaces(std
 
 void BaseHumanoidController::read_joint_states_from_state_interfaces(std::vector<double>& pos) const
 {
+  const double nan = std::numeric_limits<double>::quiet_NaN();
+  pos.assign(joint_names_.size(), nan);
+
   for (size_t i = 0; i < joint_names_.size(); ++i)
   {
     const auto& joint = joint_names_[i];
-    base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + joint + "_position_est", pos[i]);
+    const auto disabled_it = disabled_state_ifaces_.find(joint);
+    const auto is_disabled = [&](const char* iface) {
+      return (disabled_it != disabled_state_ifaces_.end()) &&
+             (std::find(disabled_it->second.begin(), disabled_it->second.end(), iface) != disabled_it->second.end());
+    };
+
+    if (!is_disabled("position"))
+      base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + joint + "_position_est", pos[i]);
   }
 }
 
 void BaseHumanoidController::read_joint_states_from_state_interfaces(std::vector<double>& pos, std::vector<double>& vel) const
 {
+  const double nan = std::numeric_limits<double>::quiet_NaN();
+  pos.assign(joint_names_.size(), nan);
+  vel.assign(joint_names_.size(), nan);
+
   for (size_t i = 0; i < joint_names_.size(); ++i)
   {
     const auto& joint = joint_names_[i];
-    base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + joint + "_position_est", pos[i]);
-    base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + joint + "_velocity_est", vel[i]);
+    const auto disabled_it = disabled_state_ifaces_.find(joint);
+    const auto is_disabled = [&](const char* iface) {
+      return (disabled_it != disabled_state_ifaces_.end()) &&
+             (std::find(disabled_it->second.begin(), disabled_it->second.end(), iface) != disabled_it->second.end());
+    };
+
+    if (!is_disabled("position"))
+      base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + joint + "_position_est", pos[i]);
+
+    if (!is_disabled("velocity"))
+      base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + joint + "_velocity_est", vel[i]);
   }
 }
 
 void BaseHumanoidController::read_joint_states_from_state_interfaces(std::vector<double>& pos, std::vector<double>& vel,
                                                                     std::vector<double>& tau) const
 {
+  // interfaces that are disabled will be filled with NaN
+  const double nan = std::numeric_limits<double>::quiet_NaN();
+  pos.assign(joint_names_.size(), nan);
+  vel.assign(joint_names_.size(), nan);
+  tau.assign(joint_names_.size(), nan);
+
   for (size_t i = 0; i < joint_names_.size(); ++i)
   {
     const auto& joint = joint_names_[i];
-    base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + joint + "_position_est", pos[i]);
-    base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + joint + "_velocity_est", vel[i]);
-    base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + joint + "_effort_est", tau[i]);
+    const auto disabled_it = disabled_state_ifaces_.find(joint);
+    const auto is_disabled = [&](const char* iface) {
+      return (disabled_it != disabled_state_ifaces_.end()) &&
+             (std::find(disabled_it->second.begin(), disabled_it->second.end(), iface) != disabled_it->second.end());
+    };
+
+    if (!is_disabled("position"))
+      base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + joint + "_position_est", pos[i]);
+
+    if (!is_disabled("velocity"))
+      base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + joint + "_velocity_est", vel[i]);
+
+    if (!is_disabled("effort"))
+      base_utils::get_state_interface_value(state_interfaces_, estimator_name_ + "/" + joint + "_effort_est", tau[i]);
   }
 }
 
@@ -319,25 +391,26 @@ void BaseHumanoidController::write_joint_commands_to_command_interfaces(const st
   for (size_t i = 0; i < joint_names_.size(); ++i)
   {
     const auto& joint = joint_names_[i];
-    for (size_t j = 0; j < joint_command_interface_types_.size(); ++j)
-    {
-      const auto& iface_type = joint_command_interface_types_[j];
-      std::string interface_name = joint + "/" + iface_type;
-      double command_value;
-      if (iface_type == "position")
-        command_value = pos[i];
-      else if (iface_type == "velocity")
-        command_value = vel[i];
-      else if (iface_type == "effort")
-        command_value = tau[i];
-      else if (iface_type == "kp")
-        command_value = kp[i];
-      else if (iface_type == "kd")
-        command_value = kd[i];
-      else
-        throw std::runtime_error("Unknown interface type: " + iface_type);
+    const auto disabled_it = disabled_cmd_ifaces_.find(joint);
+    const auto is_disabled = [&](const std::string& iface) {
+      return (disabled_it != disabled_cmd_ifaces_.end()) &&
+             (std::find(disabled_it->second.begin(), disabled_it->second.end(), iface) != disabled_it->second.end());
+    };
 
-      base_utils::set_command_interface_value(command_interfaces_, interface_name, command_value);
+    for (const auto& iface_type : joint_command_interface_types_)
+    {
+      if (is_disabled(iface_type))
+        continue;
+
+      double command_value = 0.0;
+      if (iface_type == "position") command_value = pos[i];
+      else if (iface_type == "velocity") command_value = vel[i];
+      else if (iface_type == "effort") command_value = tau[i];
+      else if (iface_type == "kp") command_value = kp[i];
+      else if (iface_type == "kd") command_value = kd[i];
+      else throw std::runtime_error("Unknown interface type: " + iface_type);
+
+      base_utils::set_command_interface_value(command_interfaces_, joint + "/" + iface_type, command_value);
     }
   }
 }

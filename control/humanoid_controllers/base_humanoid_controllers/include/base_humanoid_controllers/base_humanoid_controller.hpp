@@ -105,6 +105,8 @@ class BaseHumanoidController : public controller_interface::ChainableControllerI
   std::string ang_vel_name_ = "global_ang_vel";
   std::string lin_acc_name_ = "global_lin_acc";
   std::string ang_acc_name_ = "global_ang_acc";
+  std::unordered_map<std::string, std::vector<std::string>> disabled_cmd_ifaces_;
+  std::unordered_map<std::string, std::vector<std::string>> disabled_state_ifaces_;
 
   // debug
   bool debug_ = false;

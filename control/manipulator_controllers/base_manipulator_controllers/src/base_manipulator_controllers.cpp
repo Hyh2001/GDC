@@ -16,7 +16,8 @@ controller_interface::CallbackReturn BaseManipulatorController::on_init()
       auto_declare<std::vector<std::string>>("joint_state_interfaces", joint_state_interface_types_);
   joint_command_interface_types_ =
       auto_declare<std::vector<std::string>>("joint_command_interfaces", joint_command_interface_types_);
-  // Disable interface lists must be declared explicitly to ensure YAML overrides are visible here.
+
+  // disable interface lists must be declared explicitly to ensure YAML overrides are visible here.
   for (const auto & joint : joint_names_)
   {
     const auto disabled_cmd =
