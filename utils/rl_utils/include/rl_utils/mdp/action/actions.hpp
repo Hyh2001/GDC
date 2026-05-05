@@ -3,6 +3,7 @@
 #define ACTIONS_HPP_
 
 #include <stdexcept>
+
 #include "rl_utils/mdp/action/action_manager.hpp"
 
 namespace action
@@ -35,12 +36,30 @@ namespace action
       }
     }
 
-  private:
+  protected:
     std::vector<double> raw_actions_;
     std::vector<double> processed_actions_;
   };
 
-  // TODO: add joint velocity action term, joint torque action term, joint impedance action term
+  class JointVelocityActionTerm : public JointPositionActionTerm
+  {
+  public:
+    explicit JointVelocityActionTerm(const action::ActionTermCfg& cfg) : JointPositionActionTerm(cfg) {}
+  };
+
+  class JointEffortActionTerm : public JointPositionActionTerm
+  {
+  public:
+    explicit JointEffortActionTerm(const action::ActionTermCfg& cfg) : JointPositionActionTerm(cfg) {
+      cfg_.action_offset = std::vector<double>(cfg_.action_dim, 0.0);
+    }
+  };
+
+  class JointImpedanceActionTerm : public JointPositionActionTerm
+  {
+  public:
+    explicit JointImpedanceActionTerm(const action::ActionTermCfg& cfg) : JointPositionActionTerm(cfg) {}
+  };
 
 } // namespace action
 
