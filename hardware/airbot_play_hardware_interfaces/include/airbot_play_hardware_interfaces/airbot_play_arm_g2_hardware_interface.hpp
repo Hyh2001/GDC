@@ -36,6 +36,7 @@ class AirbotPlayArmG2HardwareInterface : public base_hardware_interfaces::BaseMa
   void publish_low_state();
 
   manipulator_msgs::msg::LowState low_state_msg_;
+  bool start_control_ = false;
 
   // sdk related
   std::string interface_;

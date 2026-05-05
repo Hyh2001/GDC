@@ -129,7 +129,9 @@ void AirbotPlayArmG2HardwareInterface::read()
   realtime_low_state_publisher_->msg_ = low_state_msg_;
   realtime_low_state_publisher_->unlockAndPublish();
 
-  write(); // put write here to make sure command sending and reading are synchronized
+  if (start_control_) {
+    write(); // put write here to make sure command sending and reading are synchronized
+  }
 }
 
 void AirbotPlayArmG2HardwareInterface::write()
@@ -206,6 +208,7 @@ void AirbotPlayArmG2HardwareInterface::callback_low_cmd(const manipulator_msgs::
     joint_kp_gains_[i] = msg->motor_cmd[i].kp;
     joint_kd_gains_[i] = msg->motor_cmd[i].kd;
   }
+  start_control_ = true;
 }
 
 void AirbotPlayArmG2HardwareInterface::publish_low_state()
