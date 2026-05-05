@@ -23,6 +23,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   msg/ForceSensor.msg
   msg/FTSensor.msg
   msg/Debug.msg
+  msg/Waypoint.msg
+  msg/WaypointArray.msg
 DEPENDENCIES std_msgs geometry_msgs)
 ament_export_dependencies(rosidl_default_runtime)
 
