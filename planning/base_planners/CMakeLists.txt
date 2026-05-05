@@ -17,6 +17,7 @@ find_package(sensor_msgs REQUIRED)
 find_package(control_toolbox REQUIRED)
 find_package(interactive_markers REQUIRED)
 find_package(visualization_msgs REQUIRED)
+find_package(base_utils REQUIRED)
 
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.cc)
 add_library(${PROJECT_NAME} SHARED
@@ -36,6 +37,7 @@ ament_target_dependencies(${PROJECT_NAME} PUBLIC
         control_toolbox
         interactive_markers
         visualization_msgs
+        base_utils
 )
 pluginlib_export_plugin_description_file(controller_interface base_planners_config.xml)
 install(TARGETS ${PROJECT_NAME}

@@ -9,6 +9,7 @@
 #include "hardware_interface/handle.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/joy.hpp"
+#include "base_utils/ros2_control_utils.hpp"
 
 namespace base_planners
 {
@@ -97,6 +98,59 @@ struct Waypoint
       state_interfaces.emplace_back(hardware_interface::StateInterface(planner_name, interface_name, data_ptr));
     }
   }
+
+  static void read_state_interfaces(
+    const std::string& planner_name,
+    Waypoint& waypoint,
+    const std::vector<hardware_interface::LoanedStateInterface>& state_interfaces)
+  {
+    base_utils::get_state_interface_value(
+        state_interfaces, planner_name + "/" + waypoint.name + "/pos_x", waypoint.position.x());
+    base_utils::get_state_interface_value(
+        state_interfaces, planner_name + "/" + waypoint.name + "/pos_y", waypoint.position.y());
+    base_utils::get_state_interface_value(
+        state_interfaces, planner_name + "/" + waypoint.name + "/pos_z", waypoint.position.z());
+
+    double qw, qx, qy, qz;
+    base_utils::get_state_interface_value(
+        state_interfaces, planner_name + "/" + waypoint.name + "/quat_w", qw);
+    base_utils::get_state_interface_value(
+        state_interfaces, planner_name + "/" + waypoint.name + "/quat_x", qx);
+    base_utils::get_state_interface_value(
+        state_interfaces, planner_name + "/" + waypoint.name + "/quat_y", qy);
+    base_utils::get_state_interface_value(
+        state_interfaces, planner_name + "/" + waypoint.name + "/quat_z", qz);
+    waypoint.orientation = Eigen::Quaterniond(qw, qx, qy, qz).normalized();
+
+    base_utils::get_state_interface_value(
+        state_interfaces, planner_name + "/" + waypoint.name + "/lin_vel_x", waypoint.linear_velocity.x());
+    base_utils::get_state_interface_value(
+        state_interfaces, planner_name + "/" + waypoint.name + "/lin_vel_y", waypoint.linear_velocity.y());
+    base_utils::get_state_interface_value(
+        state_interfaces, planner_name + "/" + waypoint.name + "/lin_vel_z", waypoint.linear_velocity.z());
+
+    base_utils::get_state_interface_value(
+        state_interfaces, planner_name + "/" + waypoint.name + "/ang_vel_x", waypoint.angular_velocity.x());
+    base_utils::get_state_interface_value(
+        state_interfaces, planner_name + "/" + waypoint.name + "/ang_vel_y", waypoint.angular_velocity.y());
+    base_utils::get_state_interface_value(
+        state_interfaces, planner_name + "/" + waypoint.name + "/ang_vel_z", waypoint.angular_velocity.z());
+
+    base_utils::get_state_interface_value(
+        state_interfaces, planner_name + "/" + waypoint.name + "/lin_acc_x", waypoint.linear_acceleration.x());
+    base_utils::get_state_interface_value(
+        state_interfaces, planner_name + "/" + waypoint.name + "/lin_acc_y", waypoint.linear_acceleration.y());
+    base_utils::get_state_interface_value(
+        state_interfaces, planner_name + "/" + waypoint.name + "/lin_acc_z", waypoint.linear_acceleration.z());
+
+    base_utils::get_state_interface_value(
+        state_interfaces, planner_name + "/" + waypoint.name + "/ang_acc_x", waypoint.angular_acceleration.x());
+    base_utils::get_state_interface_value(
+        state_interfaces, planner_name + "/" + waypoint.name + "/ang_acc_y", waypoint.angular_acceleration.y());
+    base_utils::get_state_interface_value(
+        state_interfaces, planner_name + "/" + waypoint.name + "/ang_acc_z", waypoint.angular_acceleration.z());
+  }
+
 };  // representation of pose, twist and acceleration
 
 class WaypointPlanner
