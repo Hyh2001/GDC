@@ -15,6 +15,8 @@ find_package(rclcpp_lifecycle REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(control_toolbox REQUIRED)
+find_package(interactive_markers REQUIRED)
+find_package(visualization_msgs REQUIRED)
 
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.cc)
 add_library(${PROJECT_NAME} SHARED
@@ -32,6 +34,8 @@ ament_target_dependencies(${PROJECT_NAME} PUBLIC
         pluginlib
         sensor_msgs
         control_toolbox
+        interactive_markers
+        visualization_msgs
 )
 pluginlib_export_plugin_description_file(controller_interface base_planners_config.xml)
 install(TARGETS ${PROJECT_NAME}
@@ -48,7 +52,14 @@ ament_export_targets(
 )
 ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
-ament_export_dependencies(controller_manager_msgs control_toolbox controller_interface hardware_interface)
+ament_export_dependencies(
+  controller_manager_msgs
+  control_toolbox
+  controller_interface
+  hardware_interface
+  interactive_markers
+  visualization_msgs
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
