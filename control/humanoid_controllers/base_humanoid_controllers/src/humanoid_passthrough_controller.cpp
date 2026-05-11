@@ -131,37 +131,16 @@ controller_interface::CallbackReturn HumanoidPassthroughController::on_deactivat
 controller_interface::return_type HumanoidPassthroughController::update_and_write_commands(
     const rclcpp::Time& time, const rclcpp::Duration& period)
 {
-  for (auto& cmd_iface : command_interfaces_)
-  {
-    const std::string joint_name = cmd_iface.get_prefix_name();
-    const std::string interface_name = cmd_iface.get_interface_name();
+  (void)time;
+  (void)period;
 
-    // Find the joint index
-    for (size_t i = 0; i < joint_names_.size(); ++i)
-    {
-      if (joint_name == joint_names_[i])
-      {
-        // Write position and velocity references directly
-        if (interface_name == "position")
-        {
-          cmd_iface.set_value(joint_pos_ref_[i]);
-        }
-        else if (interface_name == "velocity")
-        {
-          cmd_iface.set_value(joint_vel_ref_[i]);
-        }
-        else if (interface_name == "kp")
-        {
-          cmd_iface.set_value(kp_gains_[i]);
-        }
-        else if (interface_name == "kd")
-        {
-          cmd_iface.set_value(kd_gains_[i]);
-        }
-        break;
-      }
-    }
-  }
+  const std::vector<double> joint_tau_ref(joint_names_.size(), 0.0);
+  write_joint_commands_to_command_interfaces(
+      joint_pos_ref_,
+      joint_vel_ref_,
+      joint_tau_ref,
+      kp_gains_,
+      kd_gains_);
 
   return controller_interface::return_type::OK;
 }
