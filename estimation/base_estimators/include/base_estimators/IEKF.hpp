@@ -200,8 +200,8 @@ private:
     Matrix3d C_bias_accel = Matrix3d::Zero();
     Matrix3d C_bias_angular = Matrix3d::Zero();
 
-    Matrix3d C_encoder_position = Matrix3d::Zero();
-    Matrix3d C_encoder_velocity = Matrix3d::Zero();
+    MatrixXd C_encoder_position;
+    MatrixXd C_encoder_velocity;
 
 private:
     // ========================================================================

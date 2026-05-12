@@ -1,6 +1,7 @@
 #include "base_estimators/IEKF.hpp"
 #include <cstddef>
 #include <fstream>
+#include <stdexcept>
 
 robot_IEKF::robot_IEKF(pinocchio::Model &pin_model,
                        pinocchio::Data &pin_data,
@@ -33,8 +34,24 @@ robot_IEKF::robot_IEKF(pinocchio::Model &pin_model,
     x_est_ = VectorXd::Zero(dim_state);
     StdVec2CovMat(params_ptr_->accel_input_std_, C_accel_);
     StdVec2CovMat(params_ptr_->gyro_input_std_, C_gyro_);
-    StdVec2CovMat(params_ptr_->joint_position_std_, C_encoder_position);
-    StdVec2CovMat(params_ptr_->joint_velocity_std_, C_encoder_velocity);
+    auto make_leg_encoder_cov = [this](const std::vector<double> &std, const std::string &name)
+    {
+        if (std.size() != static_cast<size_t>(dim_legs_))
+        {
+            throw std::invalid_argument(
+                name + " size must match dim_legs_. Got " + std::to_string(std.size()) +
+                ", expected " + std::to_string(dim_legs_) + ".");
+        }
+
+        MatrixXd cov = MatrixXd::Zero(dim_legs_, dim_legs_);
+        for (int i = 0; i < dim_legs_; ++i)
+        {
+            cov(i, i) = std::pow(std[i], 2);
+        }
+        return cov;
+    };
+    C_encoder_position = make_leg_encoder_cov(params_ptr_->joint_position_std_, "joint_position_std");
+    C_encoder_velocity = make_leg_encoder_cov(params_ptr_->joint_velocity_std_, "joint_velocity_std");
     StdVec2CovMat(params_ptr_->foot_slide_std_, C_foot_slide);
     StdVec2CovMat(params_ptr_->foot_swing_std_, C_foot_swing);
     StdVec2CovMat(params_ptr_->accel_bias_process_std_, C_bias_accel);
