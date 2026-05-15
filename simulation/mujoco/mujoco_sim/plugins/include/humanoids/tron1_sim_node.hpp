@@ -61,6 +61,7 @@ class Tron1SimNode : public MujocoSimNodeBase
   // for arm and gripper
   void callback_manipulator_low_cmd(const manipulator_msgs::msg::LowCmd::SharedPtr msg);
   void callback_gripper_low_cmd(const end_effector_msgs::msg::GripperCmd::SharedPtr msg);
+  void load_gripper_gains_from_xml();
 
   rclcpp::Subscription<manipulator_msgs::msg::LowCmd>::SharedPtr manipulator_cmd_sub_ptr_;
   rclcpp::Publisher<manipulator_msgs::msg::LowState>::SharedPtr manipulator_state_pub_ptr_;
@@ -85,6 +86,9 @@ class Tron1SimNode : public MujocoSimNodeBase
   // motor params
   std::vector<float> cmd_kp_;
   std::vector<float> cmd_kd_;
+  float gripper_kp_from_xml_{0.0f};
+  float gripper_kd_from_xml_{0.0f};
+  bool gripper_gains_from_xml_loaded_{false};
 
   // msg
   humanoid_msgs::msg::LowState low_state_msg_;

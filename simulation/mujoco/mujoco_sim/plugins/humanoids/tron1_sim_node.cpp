@@ -49,6 +49,45 @@ void Tron1SimNode::reset_params()
   std::fill(std::begin(cmd_kd_), std::end(cmd_kd_), 0.0);
 }
 
+void Tron1SimNode::load_gripper_gains_from_xml()
+{
+  gripper_kp_from_xml_ = 0.0f;
+  gripper_kd_from_xml_ = 0.0f;
+  gripper_gains_from_xml_loaded_ = false;
+
+  if (!sim_ || !sim_->m_)
+  {
+    RCLCPP_WARN(this->get_logger(), "MuJoCo model is not loaded; gripper XML gains are unavailable.");
+    return;
+  }
+
+  const int actuator_id = mj_name2id(sim_->m_, mjOBJ_ACTUATOR, "gripper_joint_pos");
+  if (actuator_id < 0)
+  {
+    RCLCPP_WARN(this->get_logger(), "Could not find MuJoCo actuator 'gripper_joint_pos'; using gripper command kp/kd.");
+    return;
+  }
+
+  gripper_kp_from_xml_ = static_cast<float>(sim_->m_->actuator_gainprm[actuator_id * mjNGAIN + 0]);
+  gripper_kd_from_xml_ = static_cast<float>(-sim_->m_->actuator_biasprm[actuator_id * mjNBIAS + 2]);
+  gripper_gains_from_xml_loaded_ = true;
+
+  if (robot_type_ == RobotType::POINT_FOOT_WITH_ARM && cmd_kp_.size() > 12 && cmd_kd_.size() > 12)
+  {
+    cmd_kp_[12] = gripper_kp_from_xml_;
+    cmd_kd_[12] = gripper_kd_from_xml_;
+  }
+  else if ((robot_type_ == RobotType::FLAT_FOOT_WITH_ARM || robot_type_ == RobotType::WHEEL_FOOT_WITH_ARM) &&
+           cmd_kp_.size() > 14 && cmd_kd_.size() > 14)
+  {
+    cmd_kp_[14] = gripper_kp_from_xml_;
+    cmd_kd_[14] = gripper_kd_from_xml_;
+  }
+
+  RCLCPP_INFO(this->get_logger(), "Loaded gripper gains from XML: kp=%f kd=%f",
+              gripper_kp_from_xml_, gripper_kd_from_xml_);
+}
+
 void Tron1SimNode::load_ros2_params()
 {
   // load robot type
@@ -426,6 +465,15 @@ void Tron1SimNode::callback_gripper_low_cmd(const end_effector_msgs::msg::Grippe
     RCLCPP_ERROR(this->get_logger(), "Received manipulator command for robot type without arm.");
     return;
   }
+
+  if (!gripper_gains_from_xml_loaded_)
+  {
+    load_gripper_gains_from_xml();
+  }
+
+  const float gripper_kp = gripper_gains_from_xml_loaded_ ? gripper_kp_from_xml_ : msg->gripper_cmd.kp;
+  const float gripper_kd = gripper_gains_from_xml_loaded_ ? gripper_kd_from_xml_ : msg->gripper_cmd.kd;
+
   if (robot_type_ == RobotType::POINT_FOOT_WITH_ARM)
   {
     const std::unique_lock<std::recursive_mutex> lock(sim_->mtx);
@@ -433,8 +481,8 @@ void Tron1SimNode::callback_gripper_low_cmd(const end_effector_msgs::msg::Grippe
     cmd_torque_[12] = msg->gripper_cmd.tau;
     cmd_pos_[12] = msg->gripper_cmd.q;
     cmd_vel_[12] = msg->gripper_cmd.dq;
-    cmd_kp_[12] = msg->gripper_cmd.kp;
-    cmd_kd_[12] = msg->gripper_cmd.kd;
+    cmd_kp_[12] = gripper_kp;
+    cmd_kd_[12] = gripper_kd;
   }
   else if (robot_type_ == RobotType::FLAT_FOOT_WITH_ARM || robot_type_ == RobotType::WHEEL_FOOT_WITH_ARM)
   {
@@ -443,8 +491,8 @@ void Tron1SimNode::callback_gripper_low_cmd(const end_effector_msgs::msg::Grippe
     cmd_torque_[14] = msg->gripper_cmd.tau;
     cmd_pos_[14] = msg->gripper_cmd.q;
     cmd_vel_[14] = msg->gripper_cmd.dq;
-    cmd_kp_[14] = msg->gripper_cmd.kp;
-    cmd_kd_[14] = msg->gripper_cmd.kd;
+    cmd_kp_[14] = gripper_kp;
+    cmd_kd_[14] = gripper_kd;
   }
 }
 
