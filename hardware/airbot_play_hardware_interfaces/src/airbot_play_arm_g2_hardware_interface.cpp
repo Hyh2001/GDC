@@ -55,11 +55,11 @@ rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn Airbot
                                            MotorType::DM, EEFType::NA, MotorType::NA>();
   eef_ = EEF<1>::create<EEFType::G2, MotorType::DM>();
 
-  if (!arm_->init(arm_exec_->get_io_context(), interface_, 500_hz)) {
+  if (!arm_->init(arm_exec_->get_io_context(), interface_, 250_hz)) {
     RCLCPP_ERROR(this->get_logger(), "Arm Executor initialization failed.");
     return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::FAILURE;
   }
-  if (!eef_->init(eef_exec_->get_io_context(), interface_, 500_hz)) {
+  if (!eef_->init(eef_exec_->get_io_context(), interface_, 250_hz)) {
     RCLCPP_ERROR(this->get_logger(), "Gripper Executor initialization failed.");
     return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::FAILURE;
   }
