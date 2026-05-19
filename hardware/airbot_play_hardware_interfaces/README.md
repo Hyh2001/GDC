@@ -1,3 +1,3 @@
 ### Installation
-To run the hardware interfaces for airbot_play related robots, please first setup the sdk by following the [SDK version 5.1.6](https://docs.airbots.online/airbot-play/changelog.html#20260313).
-- Note: `airbot-configure` should be setup in the host machine if using docker.
+To run the hardware interfaces for airbot_play related robots, please first setup the sdk by following the [SDK version 0.2.9](https://github.com/DISCOVER-Robotics/AIRBOT-Play-Hardware).
+- Note: usb-to-can adaptation should be setup through `bash/setup_can.sh` in the main machine or host machine if using docker.
