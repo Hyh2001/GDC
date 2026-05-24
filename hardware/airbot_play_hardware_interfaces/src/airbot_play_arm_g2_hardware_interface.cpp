@@ -99,8 +99,6 @@ bool AirbotPlayArmG2HardwareInterface::check_hardware()
   arm_->pvt({pos[0], pos[1], pos[2], pos[3], pos[4], pos[5]},
             {0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
             {0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
-  arm_->set_param("arm.control_mode", static_cast<uint32_t>(MotorControlMode::MIT));
-  RCLCPP_INFO(this->get_logger(), "Arm control mode set to MIT.");
   return true;
 }
 
@@ -207,6 +205,10 @@ void AirbotPlayArmG2HardwareInterface::callback_low_cmd(const manipulator_msgs::
     joint_effort_commands_[i] = msg->motor_cmd[i].tau;
     joint_kp_gains_[i] = msg->motor_cmd[i].kp;
     joint_kd_gains_[i] = msg->motor_cmd[i].kd;
+  }
+  if (!start_control_){
+    arm_->set_param("arm.control_mode", static_cast<uint32_t>(MotorControlMode::MIT));
+    RCLCPP_INFO(this->get_logger(), "Arm control mode set to MIT.");
   }
   start_control_ = true;
 }
