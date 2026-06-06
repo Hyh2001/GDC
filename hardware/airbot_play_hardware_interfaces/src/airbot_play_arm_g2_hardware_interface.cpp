@@ -70,13 +70,6 @@ rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn Airbot
   eef_->enable();
   eef_->set_param("control_mode", static_cast<uint32_t>(MotorControlMode::PVT));
 
-  if (arm_->state().is_valid) {
-  }
-  else {
-    RCLCPP_ERROR(this->get_logger(), "Failed to start Airbot SDK");
-    return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::ERROR;
-  }
-
   if (!check_hardware())
   {
     RCLCPP_ERROR(this->get_logger(), "Hardware check failed during configuration.");
@@ -89,6 +82,12 @@ rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn Airbot
 bool AirbotPlayArmG2HardwareInterface::check_hardware()
 {
   auto state = arm_->state();
+  if (state.is_valid) {
+  }
+  else {
+    RCLCPP_ERROR(this->get_logger(), "Failed to start Airbot SDK");
+    return false;
+  }
   std::vector<double> pos(state.pos.begin(), state.pos.end());
   std::vector<double> vel(state.vel.begin(), state.vel.end());
   std::vector<double> eff(state.eff.begin(), state.eff.end());
