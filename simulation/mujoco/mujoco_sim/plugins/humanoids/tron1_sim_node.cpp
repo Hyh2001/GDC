@@ -61,6 +61,8 @@ void Tron1SimNode::load_gripper_gains_from_xml()
     return;
   }
 
+  const std::unique_lock<std::recursive_mutex> lock(sim_->mtx);
+
   const int actuator_id = mj_name2id(sim_->m_, mjOBJ_ACTUATOR, "gripper_joint_pos");
   if (actuator_id < 0)
   {
@@ -165,6 +167,13 @@ void Tron1SimNode::load_ros2_params()
     // resize manipulator msg
     manipulator_low_state_msg_.motor_state.resize(6);
   }
+  if (robot_type_ == RobotType::POINT_FOOT_WITH_ARM ||
+      robot_type_ == RobotType::FLAT_FOOT_WITH_ARM ||
+      robot_type_ == RobotType::WHEEL_FOOT_WITH_ARM)
+  {
+    load_gripper_gains_from_xml();
+  }
+
   RCLCPP_INFO(this->get_logger(), "Robot type: %s is loaded (enum value: %d)", robot_type_str.c_str(),
               static_cast<int>(robot_type_));
 }
