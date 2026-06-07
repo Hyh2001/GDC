@@ -5,15 +5,6 @@ project(mujoco_sim)
 #   add_compile_options(-Wall -Wextra -Wpedantic)
 # endif()
 
-list(APPEND ${PROJECT_NAME}_CONFIG_EXTRAS
-        cmake/CheckAvxSupport.cmake
-        cmake/FindOrFetch.cmake
-        cmake/MujocoHarden.cmake
-        cmake/MujocoLinkOptions.cmake
-        cmake/MujocoMacOS.cmake
-        cmake/SimulateDependencies.cmake
-        cmake/SimulateOptions.cmake
-        )
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
@@ -122,6 +113,10 @@ install(DIRECTORY
         DESTINATION share/${PROJECT_NAME}/
 )
 
+install(DIRECTORY include/
+        DESTINATION include/
+)
+
 install(DIRECTORY plugins/include/
         DESTINATION include/
 )
@@ -131,6 +126,18 @@ install(TARGETS simulation
 
 install(DIRECTORY lib/mujoco_plugin
         DESTINATION lib/${PROJECT_NAME})
+
+ament_export_dependencies(
+  rclcpp
+  pluginlib
+  sensor_msgs
+  common_msgs
+  quadruped_msgs
+  pend_msgs
+  humanoid_msgs
+  manipulator_msgs
+  end_effector_msgs
+)
 
 # python related
 ament_python_install_package(${PROJECT_NAME})
