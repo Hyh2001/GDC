@@ -16,6 +16,7 @@ find_package(Boost REQUIRED)
 # message(WARN "AirbotSdk_DIR = ${AirbotSdk_DIR}")
 
 set(HARDWARE_INTERFACE_TARGETS
+  airbot_play_arm_hardware_interface
   airbot_play_arm_g2_hardware_interface
 )
 
