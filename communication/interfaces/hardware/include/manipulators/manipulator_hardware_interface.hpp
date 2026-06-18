@@ -3,6 +3,8 @@
 #define MANIPULATOR_HARDWARE_INTERFACE_HPP
 
 #include <thread>
+#include <cmath>
+#include <limits>
 
 #include "hardware_interface/system_interface.hpp"
 #include "manipulator_msgs/msg/low_cmd.hpp"
@@ -28,6 +30,7 @@ class ManipulatorHardwareInterface : public hardware_interface::SystemInterface
   virtual std::vector<hardware_interface::CommandInterface> export_command_interfaces() override;
   virtual hardware_interface::return_type read(const rclcpp::Time& time, const rclcpp::Duration& period) override;
   virtual hardware_interface::return_type write(const rclcpp::Time& time, const rclcpp::Duration& period) override;
+  bool has_valid_command() const;
 
   protected:
   std::string node_name_ = "manipulator_hardware_interface";

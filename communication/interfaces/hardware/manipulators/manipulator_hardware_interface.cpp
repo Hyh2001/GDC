@@ -61,11 +61,12 @@ hardware_interface::CallbackReturn ManipulatorHardwareInterface::on_init(const h
   joint_acc_.resize(num_joints, 0.0);
   joint_tau_.resize(num_joints, 0.0);
   mode_.resize(num_joints, 0);
-  joint_pos_command_.resize(num_joints, 0.0);
-  joint_vel_command_.resize(num_joints, 0.0);
-  joint_tau_command_.resize(num_joints, 0.0);
-  joint_kp_.resize(num_joints, 0.0);
-  joint_kd_.resize(num_joints, 0.0);
+  const double unset = std::numeric_limits<double>::quiet_NaN();
+  joint_pos_command_.resize(num_joints, unset);
+  joint_vel_command_.resize(num_joints, unset);
+  joint_tau_command_.resize(num_joints, unset);
+  joint_kp_.resize(num_joints, unset);
+  joint_kd_.resize(num_joints, unset);
   return hardware_interface::CallbackReturn::SUCCESS;
 }
 
@@ -137,6 +138,10 @@ hardware_interface::return_type ManipulatorHardwareInterface::read(const rclcpp:
 
 hardware_interface::return_type ManipulatorHardwareInterface::write(const rclcpp::Time& time, const rclcpp::Duration& period)
 {
+  if (!has_valid_command())
+  {
+    return hardware_interface::return_type::OK;
+  }
   if (realtime_LowCmd_publisher_ && realtime_LowCmd_publisher_->trylock())
   {
     auto& msg = realtime_LowCmd_publisher_->msg_;
@@ -153,6 +158,22 @@ hardware_interface::return_type ManipulatorHardwareInterface::write(const rclcpp
     realtime_LowCmd_publisher_->unlockAndPublish();
   }
   return hardware_interface::return_type::OK;
+}
+
+bool ManipulatorHardwareInterface::has_valid_command() const
+{
+  for (size_t i = 0; i < joint_pos_command_.size(); ++i)
+  {
+    if (!std::isfinite(joint_pos_command_[i]) ||
+        !std::isfinite(joint_vel_command_[i]) ||
+        !std::isfinite(joint_tau_command_[i]) ||
+        !std::isfinite(joint_kp_[i]) ||
+        !std::isfinite(joint_kd_[i]))
+    {
+      return false;
+    }
+  }
+  return true;
 }
 
 }; // namespace hardware_interfaces

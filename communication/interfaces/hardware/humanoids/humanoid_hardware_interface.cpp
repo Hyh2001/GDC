@@ -78,11 +78,12 @@ hardware_interface::CallbackReturn HumanoidHardwareInterface::on_init(const hard
   joint_acc_.resize(num_joints_, 0.0);
   joint_tau_.resize(num_joints_, 0.0);
   mode_.resize(num_joints_, 0);
-  joint_pos_command_.resize(num_joints_, 0.0);
-  joint_vel_command_.resize(num_joints_, 0.0);
-  joint_tau_command_.resize(num_joints_, 0.0);
-  joint_kp_.resize(num_joints_, 0.0);
-  joint_kd_.resize(num_joints_, 0.0);
+  const double unset = std::numeric_limits<double>::quiet_NaN();
+  joint_pos_command_.resize(num_joints_, unset);
+  joint_vel_command_.resize(num_joints_, unset);
+  joint_tau_command_.resize(num_joints_, unset);
+  joint_kp_.resize(num_joints_, unset);
+  joint_kd_.resize(num_joints_, unset);
   return hardware_interface::SystemInterface::on_init(info);
 }
 
@@ -209,6 +210,10 @@ hardware_interface::return_type HumanoidHardwareInterface::read(const rclcpp::Ti
 hardware_interface::return_type HumanoidHardwareInterface::write(const rclcpp::Time& time,
                                                                  const rclcpp::Duration& period)
 {
+  if (!has_valid_command())
+  {
+    return hardware_interface::return_type::OK;
+  }
   auto msg = humanoid_msgs::msg::LowCmd();
   msg.header.stamp = node_ptr_->now();
   msg.motor_cmd.resize(num_joints_);
@@ -226,6 +231,22 @@ hardware_interface::return_type HumanoidHardwareInterface::write(const rclcpp::T
   realtime_LowCmd_publisher_->msg_ = msg;
   realtime_LowCmd_publisher_->unlockAndPublish();
   return hardware_interface::return_type::OK;
+}
+
+bool HumanoidHardwareInterface::has_valid_command() const
+{
+  for (size_t i = 0; i < joint_pos_command_.size(); ++i)
+  {
+    if (!std::isfinite(joint_pos_command_[i]) ||
+        !std::isfinite(joint_vel_command_[i]) ||
+        !std::isfinite(joint_tau_command_[i]) ||
+        !std::isfinite(joint_kp_[i]) ||
+        !std::isfinite(joint_kd_[i]))
+    {
+      return false;
+    }
+  }
+  return true;
 }
 
 };  // namespace hardware_interfaces
