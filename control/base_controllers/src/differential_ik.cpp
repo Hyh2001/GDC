@@ -1,4 +1,5 @@
 #include "base_controllers/differential_ik.hpp"
+#include "base_controllers/weighted_dls.hpp"
 
 namespace base_controllers
 {
@@ -20,7 +21,7 @@ namespace base_controllers
     frame_name_(frame_name),
     joint_names_(joint_names)
   {
-    if (q_posture_.size() != joint_names_.size() && ik_weights_.posture_weight > 0.0)
+    if (q_posture_.size() != static_cast<Eigen::Index>(joint_names_.size()) && ik_weights_.posture_weight > 0.0)
     {
       throw std::runtime_error("Posture weight is positive but posture configuration size does not match joint names size.");
     }
@@ -74,7 +75,6 @@ namespace base_controllers
 
     //////////////// damped least square
     // reorder jacobians
-    int joint_offset = floating_base_ ? 6 : 0;  // 6 DOF for floating base velocity
     Eigen::MatrixXd J_pos_compact = J_pos.rightCols(joint_names_.size());
     Eigen::MatrixXd J_ori_compact = J_ori.rightCols(joint_names_.size());
     Eigen::MatrixXd J_pos_joints(3, joint_names_.size());
@@ -85,45 +85,37 @@ namespace base_controllers
       J_ori_joints.col(i) = J_ori_compact.col(perm_[i]);
     }
 
-    // weighted JTJ, JTdx
-    double wp2 = ik_weights_.position_weight * ik_weights_.position_weight;
-    double wo2 = ik_weights_.orientation_weight * ik_weights_.orientation_weight;
-
-    Eigen::MatrixXd JTJ = wp2 * (J_pos_joints.transpose() * J_pos_joints) +
-                          wo2 * (J_ori_joints.transpose() * J_ori_joints);
-    Eigen::VectorXd JTdx = wp2 * (J_pos_joints.transpose() * pos_error) +
-                           wo2 * (J_ori_joints.transpose() * ori_error);
-
-    // joint limit penalty
     int q_joint_offset = floating_base_ ? 7 : 0;
-    Eigen::VectorXd q_joints(joint_names_.size());
+    Eigen::VectorXd q_joints(static_cast<Eigen::Index>(joint_names_.size()));
     for (size_t i = 0; i < joint_names_.size(); ++i)
     {
-      q_joints(i) = q(q_joint_offset + perm_[i]);
-    }
-    Eigen::VectorXd r_limit = (upper_limits_ - q_joints).cwiseMin(0.0) +
-                              (lower_limits_ - q_joints).cwiseMax(0.0);
-    Eigen::VectorXd violated = (r_limit.array() != 0.0).cast<double>();
-    double wl2 = ik_weights_.joint_limit_weight * ik_weights_.joint_limit_weight;
-    JTJ.diagonal() += wl2 * violated;
-    JTdx += wl2 * violated.cwiseProduct(r_limit);
-
-    // posture regularization
-    if (ik_weights_.posture_weight > 0.0){
-      Eigen::VectorXd r_posture = q_posture_ - q_joints;
-      double wpost2 = ik_weights_.posture_weight * ik_weights_.posture_weight;
-      JTJ.diagonal().array() += wpost2;
-      JTdx += wpost2 * r_posture;
+      q_joints(static_cast<Eigen::Index>(i)) = q(q_joint_offset + perm_[i]);
     }
 
-    // damping
-    JTJ.diagonal().array() += damping_ * damping_;
+    WeightedDLSParams dls_params;
+    dls_params.position_weight = ik_weights_.position_weight;
+    dls_params.orientation_weight = ik_weights_.orientation_weight;
+    dls_params.joint_limit_weight = ik_weights_.joint_limit_weight;
+    dls_params.posture_weight = ik_weights_.posture_weight;
+    dls_params.damping = damping_;
+    dls_params.lower_position_limits = lower_limits_;
+    dls_params.upper_position_limits = upper_limits_;
 
-    // solve and clamp
-    Eigen::VectorXd dq = JTJ.ldlt().solve(JTdx);
-    dq = dq.cwiseMax(-max_dq_).cwiseMin(max_dq_);
+    Eigen::VectorXd dq = solve_weighted_dls(
+        J_pos_joints,
+        J_ori_joints,
+        pos_error,
+        ori_error,
+        q_joints,
+        q_posture_,
+        dls_params);
 
-    return dq;
+    JointVelocityClampParams clamp_params;
+    clamp_params.lower_limits = Eigen::VectorXd::Constant(dq.size(), -max_dq_);
+    clamp_params.upper_limits = Eigen::VectorXd::Constant(dq.size(), max_dq_);
+    clamp_params.max_abs_velocity = 0.0;
+
+    return clamp_joint_velocity(dq, clamp_params);
   }
 
   VectorXd DifferentialIK::compute(const VectorXd & delta_pos,

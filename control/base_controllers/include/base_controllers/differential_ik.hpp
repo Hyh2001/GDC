@@ -12,6 +12,7 @@
 #include "base_planners/waypoint_planner.hpp"
 
 #include "base_utils/pinocchio_utils.hpp"
+#include "base_controllers/weighted_dls.hpp"
 
 namespace base_controllers
 {
