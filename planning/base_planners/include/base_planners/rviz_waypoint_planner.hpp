@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "Eigen/Dense"
@@ -57,6 +58,11 @@ private:
   rclcpp::Node::SharedPtr node_;
   rclcpp::executors::SingleThreadedExecutor executor_;
   std::shared_ptr<interactive_markers::InteractiveMarkerServer> marker_server_;
+
+  // velocity target calculation
+  std::unordered_map<std::string, Eigen::Vector3d> previous_marker_positions_{};
+  std::unordered_map<std::string, Eigen::Quaterniond> previous_marker_orientations_{};
+  std::unordered_map<std::string, rclcpp::Time> previous_marker_update_times_{};
 };
 
 }  // namespace base_planners

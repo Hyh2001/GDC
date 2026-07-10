@@ -1,5 +1,6 @@
 #include "base_planners/rviz_waypoint_planner.hpp"
 
+#include <algorithm>
 #include <functional>
 
 namespace base_planners
@@ -84,6 +85,9 @@ bool RvizWaypointPlanner::set_waypoint_pose(
   waypoint->angular_velocity.setZero();
   waypoint->linear_acceleration.setZero();
   waypoint->angular_acceleration.setZero();
+  previous_marker_positions_[name] = waypoint->position;
+  previous_marker_orientations_[name] = waypoint->orientation;
+  previous_marker_update_times_[name] = node_->now();
 
   refresh_markers();
   return true;
@@ -172,20 +176,50 @@ void RvizWaypointPlanner::process_feedback(
     return;
   }
 
-  waypoint->position.x() = feedback->pose.position.x;
-  waypoint->position.y() = feedback->pose.position.y;
-  waypoint->position.z() = feedback->pose.position.z;
-
-  waypoint->orientation = Eigen::Quaterniond(
+  const Eigen::Vector3d new_position{
+      feedback->pose.position.x,
+      feedback->pose.position.y,
+      feedback->pose.position.z};
+  const Eigen::Quaterniond new_orientation = Eigen::Quaterniond(
       feedback->pose.orientation.w,
       feedback->pose.orientation.x,
       feedback->pose.orientation.y,
       feedback->pose.orientation.z).normalized();
 
-  waypoint->linear_velocity.setZero();
-  waypoint->angular_velocity.setZero();
+  const rclcpp::Time now = feedback->header.stamp.sec == 0 && feedback->header.stamp.nanosec == 0
+                               ? node_->now()
+                               : rclcpp::Time(feedback->header.stamp);
+
+  const auto previous_position_it = previous_marker_positions_.find(feedback->marker_name);
+  const auto previous_orientation_it = previous_marker_orientations_.find(feedback->marker_name);
+  const auto previous_time_it = previous_marker_update_times_.find(feedback->marker_name);
+  if (previous_position_it != previous_marker_positions_.end() &&
+      previous_orientation_it != previous_marker_orientations_.end() &&
+      previous_time_it != previous_marker_update_times_.end())
+  {
+    const double dt = (now - previous_time_it->second).seconds();
+    if (dt > 1e-4)
+    {
+      waypoint->linear_velocity = (new_position - previous_position_it->second) / dt;
+
+      Eigen::Quaterniond delta_orientation = new_orientation * previous_orientation_it->second.inverse();
+      if (delta_orientation.w() < 0.0)
+      {
+        delta_orientation.coeffs() *= -1.0;
+      }
+      Eigen::AngleAxisd delta_angle_axis(delta_orientation);
+      waypoint->angular_velocity = delta_angle_axis.axis() * delta_angle_axis.angle() / dt;
+    }
+  }
+
+  waypoint->position = new_position;
+  waypoint->orientation = new_orientation;
   waypoint->linear_acceleration.setZero();
   waypoint->angular_acceleration.setZero();
+
+  previous_marker_positions_[feedback->marker_name] = waypoint->position;
+  previous_marker_orientations_[feedback->marker_name] = waypoint->orientation;
+  previous_marker_update_times_[feedback->marker_name] = now;
 
   RCLCPP_INFO_THROTTLE(
       node_->get_logger(),
