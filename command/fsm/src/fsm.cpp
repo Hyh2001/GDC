@@ -179,23 +179,23 @@ void FSM::switch_controllers(const ControllerSwitchRequest& request)
 
 bool FSM::is_switchable(const std::vector<std::string> start_controllers, std::vector<std::string> /*stop_controllers*/)
 {
-  for (const auto& chain_head : controllers_)
-  {
-    std::shared_ptr<ControllerNode> current = chain_head;
-    bool found_started_in_chain = false;
-    while (current)
-    {
-      if (std::find(start_controllers.begin(), start_controllers.end(), current->name) != start_controllers.end())
-      {
-        if (found_started_in_chain)
-        {
-          return false;
-        }
-        found_started_in_chain = true;
-      }
-      current = current->next;
-    }
-  }
+  // for (const auto& chain_head : controllers_)
+  // {
+  //   std::shared_ptr<ControllerNode> current = chain_head;
+  //   bool found_started_in_chain = false;
+  //   while (current)
+  //   {
+  //     if (std::find(start_controllers.begin(), start_controllers.end(), current->name) != start_controllers.end())
+  //     {
+  //       if (found_started_in_chain)
+  //       {
+  //         return false;
+  //       }
+  //       found_started_in_chain = true;
+  //     }
+  //     current = current->next;
+  //   }
+  // }
   auto active_controllers = get_active_controllers();
   for (const auto& controller_to_start : start_controllers)
   {
