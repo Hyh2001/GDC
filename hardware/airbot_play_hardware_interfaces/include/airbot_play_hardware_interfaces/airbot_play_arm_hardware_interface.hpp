@@ -36,6 +36,11 @@ class AirbotPlayArmHardwareInterface : public base_hardware_interfaces::BaseMani
   manipulator_msgs::msg::LowState low_state_msg_;
   bool start_control_ = false;
 
+  // mode related
+  bool use_mit_mode_{false};
+  std::array<double, 6> pvt_max_velocity_{airbot::hardware::Arm<6>::DEFAULT_MAX_VEL};
+  std::array<double, 6> pvt_max_effort_{airbot::hardware::Arm<6>::DEFAULT_MAX_EFF};
+
   // sdk related
   std::string interface_;
   std::unique_ptr<airbot::hardware::AsioExecutor> arm_exec_;

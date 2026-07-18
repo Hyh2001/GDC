@@ -46,9 +46,54 @@ rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn Airbot
   joint_kd_gains_.resize(7, 0.0);
   low_state_msg_.motor_state.resize(7); // include gripper
 
-  // sdk
   this->declare_parameter<std::string>("interface", "can0");
   this->get_parameter("interface", interface_);
+
+  // mode
+  std::string arm_control_mode = "pvt";
+  this->declare_parameter<std::string>("arm_control_mode", arm_control_mode);
+  this->get_parameter("arm_control_mode", arm_control_mode);
+  if (arm_control_mode == "mit" || arm_control_mode == "MIT")
+  {
+    use_mit_mode_ = true;
+  }
+  else if (arm_control_mode == "pvt" || arm_control_mode == "PVT")
+  {
+    use_mit_mode_ = false;
+  }
+  else
+  {
+    RCLCPP_ERROR(
+        this->get_logger(),
+        "Invalid arm_control_mode '%s'. Expected 'mit' or 'pvt'.",
+        arm_control_mode.c_str());
+    return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::FAILURE;
+  }
+
+  std::vector<double> pvt_max_velocity(
+      airbot::hardware::Arm<6>::DEFAULT_MAX_VEL.begin(),
+      airbot::hardware::Arm<6>::DEFAULT_MAX_VEL.end());
+  std::vector<double> pvt_max_effort(
+      airbot::hardware::Arm<6>::DEFAULT_MAX_EFF.begin(),
+      airbot::hardware::Arm<6>::DEFAULT_MAX_EFF.end());
+
+  this->declare_parameter<std::vector<double>>("pvt_max_velocity", pvt_max_velocity);
+  this->declare_parameter<std::vector<double>>("pvt_max_effort", pvt_max_effort);
+  this->get_parameter("pvt_max_velocity", pvt_max_velocity);
+  this->get_parameter("pvt_max_effort", pvt_max_effort);
+
+  if (pvt_max_velocity.size() != 6 || pvt_max_effort.size() != 6)
+  {
+    RCLCPP_ERROR(
+        this->get_logger(),
+        "pvt_max_velocity and pvt_max_effort must both have size 6.");
+    return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::FAILURE;
+  }
+
+  std::copy(pvt_max_velocity.begin(), pvt_max_velocity.end(), pvt_max_velocity_.begin());
+  std::copy(pvt_max_effort.begin(), pvt_max_effort.end(), pvt_max_effort_.begin());
+
+  // sdk
   arm_exec_ = airbot::hardware::AsioExecutor::create(8);
   eef_exec_ = airbot::hardware::AsioExecutor::create(1);
   arm_ = airbot::hardware::Arm<6>::create<MotorType::OD, MotorType::OD, MotorType::OD, MotorType::DM, MotorType::DM,
@@ -65,7 +110,13 @@ rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn Airbot
   }
 
   arm_->enable();
-  arm_->set_param("arm.control_mode", static_cast<uint32_t>(MotorControlMode::PVT));
+  arm_->set_param(
+      "arm.control_mode",
+      static_cast<uint32_t>(use_mit_mode_ ? MotorControlMode::MIT : MotorControlMode::PVT));
+  RCLCPP_INFO(
+      this->get_logger(),
+      "Airbot G2 arm control mode initialized to %s.",
+      use_mit_mode_ ? "MIT" : "PVT");
 
   eef_->enable();
   eef_->set_param("control_mode", static_cast<uint32_t>(MotorControlMode::PVT));
@@ -95,9 +146,7 @@ bool AirbotPlayArmG2HardwareInterface::check_hardware()
     RCLCPP_ERROR(this->get_logger(), "Failed to get joint positions from Airbot SDK. Please check the connection and SDK status.");
     return false;
   }
-  arm_->pvt({pos[0], pos[1], pos[2], pos[3], pos[4], pos[5]},
-            {0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-            {0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
+  arm_->pvt({pos[0], pos[1], pos[2], pos[3], pos[4], pos[5]});
   return true;
 }
 
@@ -146,24 +195,31 @@ void AirbotPlayArmG2HardwareInterface::write()
     arm_joint_kp_gains[i] = joint_kp_gains_[i];
     arm_joint_kd_gains[i] = joint_kd_gains_[i];
   }
-  arm_->mit(arm_joint_position_commands,
-            arm_joint_velocity_commands,
-            arm_joint_effort_commands,
-            arm_joint_kp_gains,
-            arm_joint_kd_gains);
+  if (use_mit_mode_)
+  {
+    arm_->mit(arm_joint_position_commands,
+              arm_joint_velocity_commands,
+              arm_joint_effort_commands,
+              arm_joint_kp_gains,
+              arm_joint_kd_gains);
+  }
+  else
+  {
+    // PVT uses only position command from the controller.
+    // max velocity / effort are safety limits from params or SDK defaults.
+    arm_->pvt(arm_joint_position_commands,
+              pvt_max_velocity_,
+              pvt_max_effort_);
+  }
 
   // send gripper commands
   double gripper_position_command;
   double gripper_velocity_command;
   double gripper_effort_command;
-  double gripper_kp_gain;
-  double gripper_kd_gain;
 
   gripper_position_command = joint_position_commands_[6];
   gripper_velocity_command = joint_velocity_commands_[6];
   gripper_effort_command = joint_effort_commands_[6];
-  gripper_kp_gain = joint_kp_gains_[6];
-  gripper_kd_gain = joint_kd_gains_[6];
   if(gripper_position_command < 0.0 || gripper_position_command > 0.07) {
     RCLCPP_WARN(this->get_logger(), "Gripper position command out of range: %.3f. Clamping to [0.0, 0.085]", gripper_position_command);
     gripper_position_command = std::clamp(gripper_position_command, 0.0, 0.07);
@@ -173,10 +229,7 @@ void AirbotPlayArmG2HardwareInterface::write()
   eef_cmd.pos[0] = gripper_position_command;
   eef_cmd.vel[0] = gripper_velocity_command;
   eef_cmd.eff[0] = gripper_effort_command;
-  eef_ ->pvt(eef_cmd);
-  // eef_cmd.mit_kp[0] = gripper_kp_gain;
-  // eef_cmd.mit_kd[0] = gripper_kd_gain;
-  // eef_->mit(eef_cmd);
+  eef_->pvt(eef_cmd);
 }
 
 void AirbotPlayArmG2HardwareInterface::reset()
@@ -205,9 +258,15 @@ void AirbotPlayArmG2HardwareInterface::callback_low_cmd(const manipulator_msgs::
     joint_kp_gains_[i] = msg->motor_cmd[i].kp;
     joint_kd_gains_[i] = msg->motor_cmd[i].kd;
   }
-  if (!start_control_){
-    arm_->set_param("arm.control_mode", static_cast<uint32_t>(MotorControlMode::MIT));
-    RCLCPP_INFO(this->get_logger(), "Arm control mode set to MIT.");
+  if (!start_control_)
+  {
+    arm_->set_param(
+        "arm.control_mode",
+        static_cast<uint32_t>(use_mit_mode_ ? MotorControlMode::MIT : MotorControlMode::PVT));
+    RCLCPP_INFO(
+        this->get_logger(),
+        "Airbot G2 arm control mode set to %s.",
+        use_mit_mode_ ? "MIT" : "PVT");
   }
   start_control_ = true;
 }

@@ -48,6 +48,51 @@ rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn Airbot
   this->declare_parameter<std::string>("interface", "can0");
   this->get_parameter("interface", interface_);
 
+  // mode
+  std::string arm_control_mode = "pvt";
+  this->declare_parameter<std::string>("arm_control_mode", arm_control_mode);
+  this->get_parameter("arm_control_mode", arm_control_mode);
+  if (arm_control_mode == "mit" || arm_control_mode == "MIT")
+  {
+    use_mit_mode_ = true;
+  }
+  else if (arm_control_mode == "pvt" || arm_control_mode == "PVT")
+  {
+    use_mit_mode_ = false;
+  }
+  else
+  {
+    RCLCPP_ERROR(
+        this->get_logger(),
+        "Invalid arm_control_mode '%s'. Expected 'mit' or 'pvt'.",
+        arm_control_mode.c_str());
+    return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::FAILURE;
+  }
+  std::vector<double> pvt_max_velocity(
+    airbot::hardware::Arm<6>::DEFAULT_MAX_VEL.begin(),
+    airbot::hardware::Arm<6>::DEFAULT_MAX_VEL.end());
+  std::vector<double> pvt_max_effort(
+      airbot::hardware::Arm<6>::DEFAULT_MAX_EFF.begin(),
+      airbot::hardware::Arm<6>::DEFAULT_MAX_EFF.end());
+
+  this->declare_parameter<std::vector<double>>("pvt_max_velocity", pvt_max_velocity);
+  this->declare_parameter<std::vector<double>>("pvt_max_effort", pvt_max_effort);
+
+  this->get_parameter("pvt_max_velocity", pvt_max_velocity);
+  this->get_parameter("pvt_max_effort", pvt_max_effort);
+
+  if (pvt_max_velocity.size() != 6 || pvt_max_effort.size() != 6)
+  {
+    RCLCPP_ERROR(
+        this->get_logger(),
+        "pvt_max_velocity and pvt_max_effort must both have size 6.");
+    return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::FAILURE;
+  }
+
+  std::copy(pvt_max_velocity.begin(), pvt_max_velocity.end(), pvt_max_velocity_.begin());
+  std::copy(pvt_max_effort.begin(), pvt_max_effort.end(), pvt_max_effort_.begin());
+
+  // sdk
   arm_exec_ = airbot::hardware::AsioExecutor::create(8);
   arm_ = airbot::hardware::Arm<6>::create<MotorType::OD, MotorType::OD, MotorType::OD, MotorType::DM, MotorType::DM,
                                            MotorType::DM, EEFType::NA, MotorType::NA>();
@@ -59,7 +104,13 @@ rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn Airbot
   }
 
   arm_->enable();
-  arm_->set_param("arm.control_mode", static_cast<uint32_t>(MotorControlMode::PVT));
+  arm_->set_param(
+      "arm.control_mode",
+      static_cast<uint32_t>(use_mit_mode_ ? MotorControlMode::MIT : MotorControlMode::PVT));
+  RCLCPP_INFO(
+      this->get_logger(),
+      "Airbot arm control mode initialized to %s.",
+      use_mit_mode_ ? "MIT" : "PVT");
 
   if (!check_hardware())
   {
@@ -89,9 +140,7 @@ bool AirbotPlayArmHardwareInterface::check_hardware()
     return false;
   }
 
-  arm_->pvt({pos[0], pos[1], pos[2], pos[3], pos[4], pos[5]},
-            {0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-            {0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
+  arm_->pvt({pos[0], pos[1], pos[2], pos[3], pos[4], pos[5]});
   return true;
 }
 
@@ -137,11 +186,22 @@ void AirbotPlayArmHardwareInterface::write()
     arm_joint_kd_gains[i] = joint_kd_gains_[i];
   }
 
-  arm_->mit(arm_joint_position_commands,
-            arm_joint_velocity_commands,
-            arm_joint_effort_commands,
-            arm_joint_kp_gains,
-            arm_joint_kd_gains);
+  if (use_mit_mode_)
+  {
+    arm_->mit(arm_joint_position_commands,
+              arm_joint_velocity_commands,
+              arm_joint_effort_commands,
+              arm_joint_kp_gains,
+              arm_joint_kd_gains);
+  }
+  else
+  {
+    // PVT uses only position command from the controller.
+    // max velocity / effort are safety limits from params or SDK defaults.
+    arm_->pvt(arm_joint_position_commands,
+              pvt_max_velocity_,
+              pvt_max_effort_);
+  }
 }
 
 void AirbotPlayArmHardwareInterface::reset()
@@ -170,8 +230,14 @@ void AirbotPlayArmHardwareInterface::callback_low_cmd(const manipulator_msgs::ms
 
   if (!start_control_)
   {
-    arm_->set_param("arm.control_mode", static_cast<uint32_t>(MotorControlMode::MIT));
-    RCLCPP_INFO(this->get_logger(), "Arm control mode set to MIT.");
+    arm_->set_param(
+        "arm.control_mode",
+        static_cast<uint32_t>(use_mit_mode_ ? MotorControlMode::MIT : MotorControlMode::PVT));
+
+    RCLCPP_INFO(
+        this->get_logger(),
+        "Airbot arm control mode set to %s.",
+        use_mit_mode_ ? "MIT" : "PVT");
   }
   start_control_ = true;
 }
