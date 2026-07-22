@@ -77,7 +77,7 @@ class FSMNode : public rclcpp::Node
         }
         else
         {
-          RCLCPP_WARN(this->get_logger(), "No controllers mapped to key %d", i);
+          RCLCPP_WARN(this->get_logger(), "No controllers mapped to key %zu", i);
         }
       }
       button_states_[i] = current_state;
@@ -120,7 +120,7 @@ class FSMNode : public rclcpp::Node
   rclcpp::Client<controller_manager_msgs::srv::ListControllers>::SharedPtr list_client_;
   rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_subscriber_ = nullptr;
   std::string joy_topic_ = "/joy";
-  std::array<bool, 10> button_states_ = {false, false, false, false, false, false, false, false, false, false};
+  std::array<bool, 11> button_states_{};
   std::map<int, std::vector<std::string>> key_controller_map_;
   std::shared_ptr<FSM> fsm_ptr_ = nullptr;
 };
