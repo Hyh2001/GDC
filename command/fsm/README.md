@@ -68,14 +68,14 @@ Example:
 joy_fsm_node:
   ros__parameters:
     key_controller_map.0:
-      - tron1_edamp_controller
+      - controller_0
     key_controller_map.1:
-      - tron1_squatting_controller
+      - controller_1
     key_controller_map.2:
-      - tron1_standing_controller
+      - controller_2
     key_controller_map.3:
-      - tron1_ee_ik_planner
-      - tron1_ee_ik_policy
+      - controller_3_1
+      - controller_3_2
 ```
 
 ## Behavior during concurrent requests
