@@ -81,5 +81,3 @@ joy_fsm_node:
 ## Behavior during concurrent requests
 
 If a joystick transition arrives while the FSM is refreshing, querying, or switching, it is ignored and a warning is logged. This keeps controller-manager service operations serialized. Release and press the button again after the current operation completes.
-
-```
