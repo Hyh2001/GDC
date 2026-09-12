@@ -2,8 +2,8 @@
 #ifndef TRAJETORY_PLANNER_HPP__
 #define TRAJETORY_PLANNER_HPP__
 
-#include <memory>
 #include <cmath>
+#include <memory>
 #include <stdexcept>
 #include <utility>
 
@@ -16,7 +16,7 @@ namespace base_planners
 */
 class PoseTrajectory
 {
-public:
+  public:
   virtual ~PoseTrajectory() = default;
 
   virtual void reset(double time = 0.0) = 0;
@@ -24,18 +24,16 @@ public:
   virtual base_planners::Waypoint sample(double time) const = 0;
 };
 
-// line
+// Minimum-jerk straight-line motion from center to target.
 class LinePoseTrajectory : public PoseTrajectory
 {
-public:
+  public:
   struct Params
   {
     Eigen::Vector3d center = Eigen::Vector3d::Zero();
-    Eigen::Vector3d direction = Eigen::Vector3d::UnitX();
+    Eigen::Vector3d target = Eigen::Vector3d::Zero();
     Eigen::Quaterniond orientation = Eigen::Quaterniond::Identity();
-    double amplitude = 0.0;
-    double omega = 0.0;
-    double phase = 0.0;
+    double duration = 1.0;
   };
 
   explicit LinePoseTrajectory(const Params& params);
@@ -48,15 +46,15 @@ public:
 
   base_planners::Waypoint sample(double time) const override;
 
-private:
+  private:
   Params params_{};
   double start_time_ = 0.0;
 };
 
-//circle
+// circle
 class CirclePoseTrajectory : public PoseTrajectory
 {
-public:
+  public:
   struct Params
   {
     Eigen::Vector3d center = Eigen::Vector3d::Zero();
@@ -78,15 +76,15 @@ public:
 
   base_planners::Waypoint sample(double time) const override;
 
-private:
+  private:
   Params params_{};
   double start_time_ = 0.0;
 };
 
-//sine
+// sine
 class SinePoseTrajectory : public PoseTrajectory
 {
-public:
+  public:
   struct Params
   {
     Eigen::Vector3d center = Eigen::Vector3d::Zero();
@@ -107,23 +105,21 @@ public:
 
   base_planners::Waypoint sample(double time) const override;
 
-private:
+  private:
   Params params_{};
   double start_time_ = 0.0;
 };
-
 
 /*
   trajectory planner
 */
 class PoseTrajectoryPlanner : public WaypointPlanner
 {
-public:
+  public:
   PoseTrajectoryPlanner();
 
-  PoseTrajectoryPlanner(
-      const std::vector<std::string>& waypoint_names,
-      std::vector<std::unique_ptr<PoseTrajectory>> trajectories);
+  PoseTrajectoryPlanner(const std::vector<std::string>& waypoint_names,
+                        std::vector<std::unique_ptr<PoseTrajectory>> trajectories);
 
   void reset(double time = 0.0);
 
@@ -139,12 +135,11 @@ public:
 
   void set_trajectory(size_t index, std::unique_ptr<PoseTrajectory> trajectory);
 
-private:
+  private:
   std::vector<std::unique_ptr<PoseTrajectory>> trajectories_;
   double elapsed_time_ = 0.0;
 };
 
-} // namespace base_planners
+}  // namespace base_planners
 
-
-#endif // TRAJETORY_PLANNER_HPP__
+#endif  // TRAJETORY_PLANNER_HPP__
