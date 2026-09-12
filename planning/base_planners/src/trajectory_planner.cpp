@@ -1,5 +1,7 @@
 #include "base_planners/trajectory_planner.hpp"
 
+#include <algorithm>
+
 namespace base_planners
 {
 
@@ -10,15 +12,16 @@ LinePoseTrajectory::LinePoseTrajectory(const Params& params)
 
 void LinePoseTrajectory::set_params(const Params& params)
 {
+  if (params.duration <= 0.0)
+  {
+    throw std::invalid_argument("LinePoseTrajectory duration must be positive.");
+  }
+  if (params.orientation.norm() <= 1e-9)
+  {
+    throw std::invalid_argument("LinePoseTrajectory orientation quaternion norm is too small.");
+  }
+
   params_ = params;
-  if (params_.direction.norm() > 1e-9)
-  {
-    params_.direction.normalize();
-  }
-  else
-  {
-    params_.direction = Eigen::Vector3d::UnitX();
-  }
   params_.orientation.normalize();
 }
 
@@ -34,17 +37,26 @@ void LinePoseTrajectory::reset(double time)
 
 Waypoint LinePoseTrajectory::sample(double time) const
 {
-  const double elapsed_time = time - start_time_;
-  const double theta = params_.phase + params_.omega * elapsed_time;
-  const double displacement = params_.amplitude * std::sin(theta);
-  const double velocity = params_.amplitude * params_.omega * std::cos(theta);
-  const double acceleration = -params_.amplitude * params_.omega * params_.omega * std::sin(theta);
+  const double elapsed_time = std::clamp(time - start_time_, 0.0, params_.duration);
+  const double normalized_time = elapsed_time / params_.duration;
+
+  // Quintic minimum-jerk time scaling with zero velocity and acceleration
+  // at the start and target.
+  const double u2 = normalized_time * normalized_time;
+  const double u3 = u2 * normalized_time;
+  const double u4 = u3 * normalized_time;
+  const double u5 = u4 * normalized_time;
+  const double position_scale = 10.0 * u3 - 15.0 * u4 + 6.0 * u5;
+  const double velocity_scale = (30.0 * u2 - 60.0 * u3 + 30.0 * u4) / params_.duration;
+  const double acceleration_scale =
+      (60.0 * normalized_time - 180.0 * u2 + 120.0 * u3) / (params_.duration * params_.duration);
+  const Eigen::Vector3d displacement = params_.target - params_.center;
 
   Waypoint waypoint;
-  waypoint.position = params_.center + displacement * params_.direction;
+  waypoint.position = params_.center + position_scale * displacement;
   waypoint.orientation = params_.orientation;
-  waypoint.linear_velocity = velocity * params_.direction;
-  waypoint.linear_acceleration = acceleration * params_.direction;
+  waypoint.linear_velocity = velocity_scale * displacement;
+  waypoint.linear_acceleration = acceleration_scale * displacement;
   waypoint.angular_velocity.setZero();
   waypoint.angular_acceleration.setZero();
   return waypoint;
@@ -159,11 +171,9 @@ Waypoint SinePoseTrajectory::sample(double time) const
 
 PoseTrajectoryPlanner::PoseTrajectoryPlanner() = default;
 
-PoseTrajectoryPlanner::PoseTrajectoryPlanner(
-    const std::vector<std::string>& waypoint_names,
-    std::vector<std::unique_ptr<PoseTrajectory>> trajectories)
-    : WaypointPlanner(waypoint_names),
-      trajectories_(std::move(trajectories))
+PoseTrajectoryPlanner::PoseTrajectoryPlanner(const std::vector<std::string>& waypoint_names,
+                                             std::vector<std::unique_ptr<PoseTrajectory>> trajectories)
+    : WaypointPlanner(waypoint_names), trajectories_(std::move(trajectories))
 {
   if (waypoints_.size() != trajectories_.size())
   {
