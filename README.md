@@ -46,5 +46,5 @@ rosdep install --from-paths src --ignore-src -r -y
 Then build the necessary packages:
 ```bash
 colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=RelwithDebInfo \
-interfaces common_msgs base_controllers scene_description base_estimators base_planners base_hardware_interfaces mujoco_sim loggers fsm keyboard_joy rl_utils
+interfaces common_msgs base_controllers scene_description base_estimators base_planners base_hardware_interfaces mujoco_sim loggers fsm keyboard_joy recorder rl_utils
 ```

@@ -149,7 +149,8 @@ void FSM::switch_controllers(const ControllerSwitchRequest& request)
 {
   {
     std::lock_guard<std::mutex> lock(state_mutex_);
-    if (operation_state_ != ControllerOperationState::IDLE)
+    if (operation_state_ != ControllerOperationState::IDLE &&
+        operation_state_ != ControllerOperationState::REFRESHING)
     {
       RCLCPP_WARN(node_ptr_->get_logger(),
                   "A controller-manager operation is already in progress; ignoring switch request.");

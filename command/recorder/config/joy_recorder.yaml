@@ -1,0 +1,13 @@
+recorder:
+  ros__parameters:
+    bag_name: recording
+    # Leave empty to record every discovered non-hidden topic.
+    topics: []
+    output_directory: ~/rosbags
+
+joy_record_trigger:
+  ros__parameters:
+    joy_topic: /joy
+    record_button: 0
+    recorder_service: /recorder/set_recording
+    recording_status_topic: /recorder/recording
