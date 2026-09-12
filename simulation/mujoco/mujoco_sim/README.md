@@ -38,3 +38,6 @@ Then launch the simulator via the provided launch file and configurations (see `
 ```bash
 ros2 launch mujoco_sim sim_launch.py robot_type:=pendulum
 ```
+
+## Todos
+- [ ] implement an interactive video recorder from current interactive GUI.
