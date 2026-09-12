@@ -122,6 +122,7 @@ namespace base_controllers
                                    const VectorXd & delta_ori,
                                    const VectorXd & q)
   {
+    // delta_pos and delta_ori are represented in WORLD frame
     // compute forward kinematics to get current pose
     pinocchio::forwardKinematics(pin_model_, pin_data_, q);
     pinocchio::updateFramePlacements(pin_model_, pin_data_);
@@ -132,9 +133,10 @@ namespace base_controllers
     target_waypoint.position = current_ee_pose.translation() + delta_pos;
 
     // apply orientation delta using angle-axis
-    Eigen::AngleAxisd delta_rotation(delta_ori.norm(), delta_ori.normalized());
-    Eigen::Matrix3d target_rotation = delta_rotation.toRotationMatrix() * current_ee_pose.rotation();
-    target_waypoint.orientation = Eigen::Quaterniond(target_rotation);
+    const Eigen::Matrix3d delta_rotation = pinocchio::exp3(delta_ori);
+    const Eigen::Matrix3d target_rotation =
+        delta_rotation * current_ee_pose.rotation();
+    target_waypoint.orientation = Eigen::Quaterniond(target_rotation).normalized();
 
     return compute(target_waypoint, q);
   }
@@ -142,6 +144,7 @@ namespace base_controllers
   VectorXd DifferentialIK::compute(const VectorXd & delta_pos,
                                    const VectorXd & q)
   {
+    // delta_pos and delta_ori are represented in WORLD frame
     // compute forward kinematics to get current pose
     pinocchio::forwardKinematics(pin_model_, pin_data_, q);
     pinocchio::updateFramePlacements(pin_model_, pin_data_);
