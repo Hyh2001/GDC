@@ -1,7 +1,23 @@
 #include "base_estimators/IEKF.hpp"
 #include <cstddef>
 #include <fstream>
+#include <algorithm>
+#include <cmath>
+#include <limits>
 #include <stdexcept>
+#include <unordered_map>
+#include <unordered_set>
+#include <pinocchio/algorithm/joint-configuration.hpp>
+
+namespace
+{
+void validate_standard_deviations(const std::vector<double>& values, const std::string& name)
+{
+    for (double value : values)
+        if (!std::isfinite(value) || value < 0.0 || !std::isfinite(value * value))
+            throw std::invalid_argument(name + " must contain finite nonnegative standard deviations.");
+}
+}
 
 robot_IEKF::robot_IEKF(pinocchio::Model &pin_model,
                        pinocchio::Data &pin_data,
@@ -16,46 +32,170 @@ robot_IEKF::robot_IEKF(pinocchio::Model &pin_model,
     R_world_aligned_from_imu_.setIdentity();
     yaw_alignment_initialized_ = true;
 
+    if (!params_ptr_ || !store_ptr_)
+        throw std::invalid_argument("IEKF requires non-null parameters and sensor store.");
+    if (params_ptr_->rate_ <= 0 || params_ptr_->N_ < 1 ||
+        params_ptr_->N_ == std::numeric_limits<int>::max())
+        throw std::invalid_argument("IEKF rate and history length must be positive.");
+    if (!std::isfinite(params_ptr_->contact_theshold_) || params_ptr_->contact_theshold_ < 0.0)
+        throw std::invalid_argument("Contact effort threshold must be finite and nonnegative.");
+    if (params_ptr_->p_body_imu_.size() != 3 || params_ptr_->q_body_imu_.size() != 4)
+        throw std::invalid_argument("IMU extrinsics require three position and four quaternion entries.");
+    for (double value : params_ptr_->p_body_imu_)
+        if (!std::isfinite(value)) throw std::invalid_argument("Nonfinite IMU position offset.");
+    const auto& imu_q = params_ptr_->q_body_imu_;
+    Eigen::Quaterniond imu_orientation(imu_q[0], imu_q[1], imu_q[2], imu_q[3]);
+    if (!imu_orientation.coeffs().allFinite() || !std::isfinite(imu_orientation.norm()) ||
+        imu_orientation.norm() <= 1e-12)
+        throw std::invalid_argument("IMU extrinsic quaternion must be finite and nonzero.");
+    validate_standard_deviations({params_ptr_->orientation_init_std_, params_ptr_->foot_init_std_,
+        params_ptr_->accel_bias_init_std_, params_ptr_->angular_bias_init_std_}, "Prior noise");
+    Matrix3d prior_covariance;
+    StdVec2CovMat(params_ptr_->p_init_std_, prior_covariance);
+    StdVec2CovMat(params_ptr_->v_init_std_, prior_covariance);
+    ConfigureMappings();
     dt_ = 1.0 / params_ptr_->rate_;
     N_ = params_ptr_->N_;
-    num_legs_ = params_ptr_->num_legs_;
-    dim_legs_ = params_ptr_->dim_legs_;
 
     dim_state = 3 + 3 + 4 + 3 + 3; // p, v, q, bias_angular, bias_accel
-    dim_meas = 6 * num_legs_;
+    dim_meas = 6 * num_contacts_;
     gravity_ << 0, 0, -9.81;
 
-    mob = new MomentumObserver(pin_model_, dt_);
-    contact_ = VectorXd::Zero(num_legs_);
-    contact_torque_ = VectorXd::Zero(num_legs_);
+    contact_ = VectorXd::Zero(num_contacts_);
+    contact_torque_ = VectorXd::Zero(num_contacts_);
+    p_imu_2_foot_ = MatrixXd::Zero(3 * num_contacts_, 1);
+    J_imu_2_foot_ = MatrixXd::Zero(3 * num_contacts_, num_joints_);
+    joint_position_ = VectorXd::Zero(num_joints_);
+    joint_velocity_ = VectorXd::Zero(num_joints_);
     // ========================================================================
     // Q: Gain/Information Matrix, inv of covariance; C: Covariance Matrix
     // ========================================================================
     x_est_ = VectorXd::Zero(dim_state);
     StdVec2CovMat(params_ptr_->accel_input_std_, C_accel_);
     StdVec2CovMat(params_ptr_->gyro_input_std_, C_gyro_);
-    auto make_leg_encoder_cov = [this](const std::vector<double> &std, const std::string &name)
-    {
-        if (std.size() != static_cast<size_t>(dim_legs_))
-        {
-            throw std::invalid_argument(
-                name + " size must match dim_legs_. Got " + std::to_string(std.size()) +
-                ", expected " + std::to_string(dim_legs_) + ".");
-        }
-
-        MatrixXd cov = MatrixXd::Zero(dim_legs_, dim_legs_);
-        for (int i = 0; i < dim_legs_; ++i)
-        {
-            cov(i, i) = std::pow(std[i], 2);
-        }
-        return cov;
-    };
-    C_encoder_position = make_leg_encoder_cov(params_ptr_->joint_position_std_, "joint_position_std");
-    C_encoder_velocity = make_leg_encoder_cov(params_ptr_->joint_velocity_std_, "joint_velocity_std");
+    C_encoder_position = MakeEncoderCovariance(params_ptr_->joint_position_std_, "joint_position_std");
+    C_encoder_velocity = MakeEncoderCovariance(params_ptr_->joint_velocity_std_, "joint_velocity_std");
     StdVec2CovMat(params_ptr_->foot_slide_std_, C_foot_slide);
     StdVec2CovMat(params_ptr_->foot_swing_std_, C_foot_swing);
     StdVec2CovMat(params_ptr_->accel_bias_process_std_, C_bias_accel);
     StdVec2CovMat(params_ptr_->angular_bias_process_std_, C_bias_angular);
+    if (params_ptr_->using_mob_)
+        mob = std::make_unique<MomentumObserver>(pin_model_, dt_);
+}
+
+void robot_IEKF::ConfigureMappings()
+{
+    if (pin_model_.njoints < 2 || pin_model_.joints[1].shortname() != "JointModelFreeFlyer" ||
+        pin_model_.joints[1].idx_q() != 0 || pin_model_.joints[1].idx_v() != 0)
+        throw std::invalid_argument("IEKF requires a free-flyer root joint.");
+    if (!pin_model_.check(pin_data_))
+        throw std::invalid_argument("Pinocchio data does not match the model.");
+    const int root_nq = pin_model_.joints[1].nq();
+    const int root_nv = pin_model_.joints[1].nv();
+    for (pinocchio::JointIndex id = 2; id < static_cast<pinocchio::JointIndex>(pin_model_.njoints); ++id)
+    {
+        if (pin_model_.joints[id].nq() != 1 || pin_model_.joints[id].nv() != 1)
+            throw std::invalid_argument("IEKF supports only scalar non-base joints: " + pin_model_.names[id]);
+        auto ancestor = id;
+        while (ancestor > 1) ancestor = pin_model_.parents[ancestor];
+        if (ancestor != 1)
+            throw std::invalid_argument("All measured joints must descend from the free flyer.");
+    }
+    if (params_ptr_->joint_names_.empty() ||
+        params_ptr_->joint_names_.size() != static_cast<size_t>(pin_model_.nv - root_nv) ||
+        pin_model_.nq - root_nq != pin_model_.nv - root_nv)
+        throw std::invalid_argument("joint_names must cover every non-base movable joint.");
+    num_joints_ = static_cast<int>(params_ptr_->joint_names_.size());
+    std::unordered_map<pinocchio::JointIndex, int> joint_columns;
+    for (int column = 0; column < num_joints_; ++column)
+    {
+        const auto& name = params_ptr_->joint_names_[column];
+        if (!pin_model_.existJointName(name)) throw std::invalid_argument("Joint not found: " + name);
+        const auto id = pin_model_.getJointId(name);
+        if (id <= 1 || !joint_columns.emplace(id, column).second)
+            throw std::invalid_argument("Duplicate or non-actuated joint: " + name);
+        const auto& joint = pin_model_.joints[id];
+        joint_mappings_.push_back({id, joint.idx_q(), joint.idx_v(),
+            joint.idx_q() - root_nq, joint.idx_v() - root_nv});
+    }
+    if (params_ptr_->contact_names_.empty() ||
+        params_ptr_->contact_names_.size() > static_cast<size_t>(std::numeric_limits<int>::max() / 6))
+        throw std::invalid_argument("IEKF requires a nonempty valid contact list.");
+    num_contacts_ = static_cast<int>(params_ptr_->contact_names_.size());
+    if (params_ptr_->num_legs_ < 0 || params_ptr_->dim_legs_ < 0 ||
+        (params_ptr_->num_legs_ != 0 && params_ptr_->num_legs_ != num_contacts_))
+        throw std::invalid_argument("num_legs must match contact_names when supplied.");
+    std::unordered_set<pinocchio::FrameIndex> frames;
+    for (const auto& name : params_ptr_->contact_names_)
+    {
+        if (!pin_model_.existFrame(name)) throw std::invalid_argument("Contact frame not found: " + name);
+        const auto frame = pin_model_.getFrameId(name);
+        if (!frames.insert(frame).second) throw std::invalid_argument("Duplicate contact frame: " + name);
+        contact_frame_ids_.push_back(frame);
+        std::vector<int> columns;
+        auto id = pin_model_.frames[frame].parentJoint;
+        while (id > 1)
+        {
+            columns.push_back(joint_columns.at(id));
+            id = pin_model_.parents[id];
+        }
+        if (id != 1) throw std::invalid_argument("Contact frame must descend from the free flyer: " + name);
+        std::reverse(columns.begin(), columns.end());
+        contact_joint_columns_.push_back(std::move(columns));
+    }
+}
+
+MatrixXd robot_IEKF::MakeEncoderCovariance(const std::vector<double>& std, const std::string& name) const
+{
+    validate_standard_deviations(std, name);
+    VectorXd variances(num_joints_);
+    if (std.size() == static_cast<size_t>(num_joints_))
+    {
+        for (int i = 0; i < num_joints_; ++i) variances(i) = std[i] * std[i];
+    }
+    else if (std.size() == 1)
+        variances.setConstant(std[0] * std[0]);
+    else if (params_ptr_->dim_legs_ > 0 && std.size() == static_cast<size_t>(params_ptr_->dim_legs_))
+    {
+        std::vector<bool> covered(num_joints_, false);
+        for (const auto& columns : contact_joint_columns_)
+        {
+            if (columns.size() != std.size())
+                throw std::invalid_argument(name + ": legacy noise requires equally sized contact chains.");
+            for (size_t i = 0; i < columns.size(); ++i)
+            {
+                if (covered[columns[i]])
+                    throw std::invalid_argument(name + ": legacy noise is ambiguous for shared joints.");
+                covered[columns[i]] = true;
+                variances(columns[i]) = std[i] * std[i];
+            }
+        }
+        if (std::find(covered.begin(), covered.end(), false) != covered.end())
+            throw std::invalid_argument(name + ": legacy noise does not cover all measured joints.");
+    }
+    else
+        throw std::invalid_argument(name + " must be scalar, per joint, or unambiguous legacy per-leg noise.");
+    return variances.asDiagonal();
+}
+
+void robot_IEKF::ValidateMeasurement() const
+{
+    if (store_ptr_->joint_states_position_.size() != num_joints_ ||
+        store_ptr_->joint_states_velocity_.size() != num_joints_ ||
+        !store_ptr_->joint_states_position_.allFinite() || !store_ptr_->joint_states_velocity_.allFinite())
+        throw std::invalid_argument("IEKF joint measurements must be finite and cover the model.");
+    if (!store_ptr_->accel_b_.allFinite() || !store_ptr_->omega_b_.allFinite() ||
+        !store_ptr_->quaternion_.coeffs().allFinite() ||
+        !std::isfinite(store_ptr_->quaternion_.norm()) || store_ptr_->quaternion_.norm() <= 1e-12)
+        throw std::invalid_argument("IEKF IMU measurements must be finite with a nonzero quaternion.");
+    if (params_ptr_->using_mob_)
+    {
+        if (!mob || store_ptr_->joint_states_effort_.size() != num_joints_ ||
+            !store_ptr_->joint_states_effort_.allFinite())
+            throw std::invalid_argument("Momentum observation requires finite measured efforts for every joint.");
+    }
+    else if (store_ptr_->contact_.size() != num_contacts_ || !store_ptr_->contact_.allFinite())
+        throw std::invalid_argument("Contact flags must be finite and in contact_names order.");
 }
 
 void robot_IEKF::initialize()
@@ -72,6 +212,7 @@ void robot_IEKF::update(int T)
 // Tested
 void robot_IEKF::GetMeasurement(int T)
 {
+    ValidateMeasurement();
     // Align the yaw of init with the start config as zero yaw
     quat_gt_ = store_ptr_->quaternion_.normalized();
     Matrix3d R_gt_raw = quat_gt_.toRotationMatrix();
@@ -98,113 +239,64 @@ void robot_IEKF::GetMeasurement(int T)
     q_gt << quat_gt_.w(), quat_gt_.x(), quat_gt_.y(), quat_gt_.z();
     quaternionToEuler(q_gt, rpy_gt_);
 
-    accel_b_ = store_ptr_->accel_b_; // returns the gravity free acceleration in body frame;
+    accel_b_ = store_ptr_->accel_b_;
     omega_b_ = store_ptr_->omega_b_;
-    joint_position_ = store_ptr_->joint_states_position_;
-    joint_velocity_ = store_ptr_->joint_states_velocity_;
+    p_imu_2_foot_.setZero();
+    J_imu_2_foot_.setZero();
 
-    p_imu_2_foot_ = MatrixXd::Zero(3 * num_legs_, 1);
-    J_imu_2_foot_ = MatrixXd::Zero(3 * num_legs_, dim_legs_);
-
-    MatrixXd off_set = VectorXd::Zero(3);
-    off_set << params_ptr_->p_body_imu_[0],
-        params_ptr_->p_body_imu_[1],
-        params_ptr_->p_body_imu_[2]; // unitree base to unitree imu
-
-    Eigen::VectorXd q_base0 = Eigen::VectorXd::Zero(pin_model_.nq);
-    q_base0(3) = 0.0; // x
-    q_base0(4) = 0.0; // y
-    q_base0(5) = 0.0; // z
-    q_base0(6) = 1.0; // w
-    q_base0.segment(7, pin_model_.nq - 7) = joint_position_;
-
-    // Forward kinematics
-    Eigen::VectorXd q_base_orien_filled = q_base0;
-    q_base_orien_filled(3) = q_gt(1); // x
-    q_base_orien_filled(4) = q_gt(2); // y
-    q_base_orien_filled(5) = q_gt(3); // z
-    q_base_orien_filled(6) = q_gt(0); // w
+    const Vector3d offset(params_ptr_->p_body_imu_[0], params_ptr_->p_body_imu_[1],
+                          params_ptr_->p_body_imu_[2]);
+    VectorXd q_base0 = pinocchio::neutral(pin_model_);
+    VectorXd v_base0 = VectorXd::Zero(pin_model_.nv);
+    VectorXd tau_base0 = VectorXd::Zero(pin_model_.nv);
+    for (int column = 0; column < num_joints_; ++column)
+    {
+        const auto& mapping = joint_mappings_[column];
+        joint_position_(column) = store_ptr_->joint_states_position_(mapping.input_q);
+        joint_velocity_(column) = store_ptr_->joint_states_velocity_(mapping.input_v);
+        q_base0(mapping.idx_q) = joint_position_(column);
+        v_base0(mapping.idx_v) = joint_velocity_(column);
+        if (params_ptr_->using_mob_) tau_base0(mapping.idx_v) = store_ptr_->joint_states_effort_(mapping.input_v);
+    }
+    const int root_q = pin_model_.joints[1].idx_q();
+    const int root_v = pin_model_.joints[1].idx_v();
+    v_base0.segment<3>(root_v + 3) = omega_b_;
     pinocchio::forwardKinematics(pin_model_, pin_data_, q_base0);
     pinocchio::updateFramePlacements(pin_model_, pin_data_);
     pinocchio::computeJointJacobians(pin_model_, pin_data_, q_base0);
 
-    Eigen::VectorXd v_base0 = Eigen::VectorXd::Zero(pin_model_.nv);
-    v_base0.segment(6, pin_model_.nv - 6) = joint_velocity_;
-    v_base0.segment(3, 3) = omega_b_;
-    Eigen::VectorXd tau_base0 = Eigen::VectorXd::Zero(pin_model_.nv);
-    tau_base0.segment(6, pin_model_.nv - 6) = store_ptr_->joint_states_effort_;
-
-    if (!isinit)
+    MatrixXd J = MatrixXd::Zero(6, pin_model_.nv);
+    for (int contact = 0; contact < num_contacts_; ++contact)
     {
-        mob->init(q_base_orien_filled, v_base0);
-        isinit = true;
-    }
-    mob->update(q_base_orien_filled, v_base0, tau_base0);
-
-    Eigen::VectorXd residual = mob->getResidual();
-    // std::cout << mob->getResidual().transpose() << std::endl;
-    // Loop over legs
-    for (int i = 0; i < num_legs_; ++i)
-    {
-        pinocchio::FrameIndex foot_id =
-            pin_model_.getFrameId(params_ptr_->contact_names_[i]);
-
-        // --------------------------------------------------
-        // Foot position in imu frame
-        // --------------------------------------------------
-        Eigen::Vector3d p_foot = pin_data_.oMf[foot_id].translation();
-        p_foot -= off_set; // offset from body to imu
-        p_imu_2_foot_.block<3, 1>(i * 3, 0) = p_foot;
-
-        // --------------------------------------------------
-        // Foot Jacobian (imu frame)
-        // --------------------------------------------------
-        Eigen::MatrixXd J(6, pin_model_.nv);
+        const auto frame = contact_frame_ids_[contact];
+        p_imu_2_foot_.block<3, 1>(3 * contact, 0) = pin_data_.oMf[frame].translation() - offset;
         J.setZero();
-        pinocchio::getFrameJacobian(pin_model_, pin_data_, foot_id, pinocchio::LOCAL_WORLD_ALIGNED, J);
-        Eigen::MatrixXd J_linear = J.topRows<3>();
-        J_imu_2_foot_.block(i * 3, 0, 3, dim_legs_) = J_linear.block(0, 6 + i * dim_legs_, 3, dim_legs_);
+        pinocchio::getFrameJacobian(pin_model_, pin_data_, frame, pinocchio::LOCAL_WORLD_ALIGNED, J);
+        for (int column = 0; column < num_joints_; ++column)
+            J_imu_2_foot_.block<3, 1>(3 * contact, column) = J.block<3, 1>(0, joint_mappings_[column].idx_v);
+    }
+    if (!p_imu_2_foot_.allFinite() || !J_imu_2_foot_.allFinite())
+        throw std::runtime_error("Nonfinite contact kinematics.");
 
-        // --------------------------------------------------
-        // Contact Flagging trick
-        // --------------------------------------------------
-        Eigen::VectorXd r_leg =
-            residual.segment(6 + i * dim_legs_, dim_legs_);
-
-        // J is 3 x nv (nv for DOF of one leg)
-        Eigen::MatrixXd JT = J_linear.block(0, 6 + i * dim_legs_, 3, dim_legs_).transpose(); // nv x 3
-
-        // Compute A = J J^T + λ² I   (3 x 3)
-        double lambda = 1e-2; // try 1e-2, increase if still unstable
-
-        Eigen::MatrixXd A =
-            J_linear.block(0, 6 + i * dim_legs_, 3, dim_legs_) * JT +
-            lambda * lambda *
-                Eigen::MatrixXd::Identity(J_linear.block(0, 6 + i * dim_legs_, 3, dim_legs_).rows(), J_linear.block(0, 6 + i * dim_legs_, 3, dim_legs_).rows());
-
-        // Solve (J J^T + λ²I) y = r
-        Eigen::VectorXd f =
-            A.ldlt().solve(J_linear.block(0, 6 + i * dim_legs_, 3, dim_legs_) * r_leg);
-
-        contact_torque_(i) = (f(2) > params_ptr_->contact_theshold_) ? 1.0 : 0.0;
-        // std::cout << "[robot_IEKF] leg " << i << " contact torque: " << f(2) << ", contact flag: " << contact_torque_(i) << std::endl;
-        // std::cout << "[robot_IEKF] residual: " << residual.segment(6, params_ptr_->joint_names_.size()).transpose() << std::endl;
-        // std::cout << "[robot_IEKF] r_leg: " << r_leg.transpose() << std::endl;
-        // std::cout << "[robot_IEKF] J_linear transpose size: " << JT.rows() << " x " << JT.cols() << std::endl;
-      }
-    // std::cout << "[robot_IEKF] residual: " << residual.segment(6, 12).transpose() << std::endl;
-    contact_ = store_ptr_->contact_;
+    contact_torque_.setZero();
     if (params_ptr_->using_mob_)
     {
+        VectorXd q_base_orien_filled = q_base0;
+        q_base_orien_filled.segment<4>(root_q + 3) = quat_gt_.coeffs(); // xyzw
+        if (!isinit) mob->init(q_base_orien_filled, v_base0);
+        mob->update(q_base_orien_filled, v_base0, tau_base0);
+        const VectorXd forces = EstimateContactForces(mob->getResidual());
+        for (int contact = 0; contact < num_contacts_; ++contact)
+            contact_torque_(contact) = forces(3 * contact + 2) > params_ptr_->contact_theshold_ ? 1.0 : 0.0;
         contact_ = contact_torque_;
     }
+    else
+        contact_ = store_ptr_->contact_;
+    isinit = true;
     if (params_ptr_->visualize_)
     {
-        std::cout << "--------------------" << std::endl;
         std::cout << "[robot_IEKF] contact: " << contact_.transpose() << std::endl;
-        std::cout << "[robot_IEKF] contact_torque: " << contact_torque_.transpose() << std::endl;
-        std::cout << "[robot_IEKF] residual: " << residual.segment(6, params_ptr_->joint_names_.size()).transpose() << std::endl;
-        std::cout << "[robot_IEKF] residual size: " << residual.size() << std::endl;
+        std::cout << "[robot_IEKF] contact torque: " << contact_torque_.transpose() << std::endl;
     }
 
     discrete_time_stack.push_back(T);
@@ -231,6 +323,9 @@ void robot_IEKF::GetMeasurement(int T)
 
 void robot_IEKF::StdVec2CovMat(const std::vector<double> &std, Matrix3d &Cov)
 {
+    if (std.size() != 3) throw std::invalid_argument("Three noise standard deviations are required.");
+    validate_standard_deviations(std, "Noise");
+    Cov.setZero();
     Cov.diagonal() << std::pow(std[0], 2),
         std::pow(std[1], 2),
         std::pow(std[2], 2);
@@ -316,33 +411,62 @@ void robot_IEKF::vector3dSkew(Matrix3d &skew_sym, const Vector3d &vector)
         -vector(1), vector(0), 0;
 }
 
+VectorXd robot_IEKF::EstimateContactForces(const VectorXd& residual) const
+{
+    if (residual.size() != pin_model_.nv || !residual.allFinite())
+        throw std::invalid_argument("Momentum residual must be finite and in model velocity order.");
+    VectorXd measured_residual(num_joints_);
+    for (int column = 0; column < num_joints_; ++column)
+        measured_residual(column) = residual(joint_mappings_[column].idx_v);
+    // A = [J_1^T ... J_m^T]. Shared joint rows couple candidate contact forces.
+    const MatrixXd A = J_imu_2_foot_.transpose();
+    MatrixXd normal = A.transpose() * A;
+    normal.diagonal().array() += 1e-4; // Existing lambda=0.01, squared.
+    const VectorXd forces = normal.ldlt().solve(A.transpose() * measured_residual);
+    if (!forces.allFinite()) throw std::runtime_error("Nonfinite contact force estimate.");
+    return forces;
+}
+
+Matrix3d robot_IEKF::GetContactPositionCovariance(int contact) const
+{
+    const auto J = J_imu_2_foot_stack.back().block(3 * contact, 0, 3, num_joints_);
+    return J * C_encoder_position * J.transpose();
+}
+
+Vector3d robot_IEKF::GetContactVelocity(int contact) const
+{
+    const auto J = J_imu_2_foot_stack.back().block(3 * contact, 0, 3, num_joints_);
+    const Vector3d p = p_imu_2_foot_stack.back().block<3, 1>(3 * contact, 0);
+    return -J * joint_velocity_stack.back() - angular_b_input_stack.back().cross(p);
+}
+
+Matrix3d robot_IEKF::GetContactVelocityCovariance(int contact) const
+{
+    const auto J = J_imu_2_foot_stack.back().block(3 * contact, 0, 3, num_joints_);
+    Matrix3d omega_skew, position_skew;
+    vector3dSkew(omega_skew, angular_b_input_stack.back());
+    vector3dSkew(position_skew, p_imu_2_foot_stack.back().block<3, 1>(3 * contact, 0));
+    const MatrixXd omega_J = omega_skew * J;
+    // Retains the existing approximation, excluding dJ/dq * joint_velocity.
+    return J * C_encoder_velocity * J.transpose() +
+        omega_J * C_encoder_position * omega_J.transpose() +
+        position_skew * C_gyro_ * position_skew.transpose();
+}
+
 void robot_IEKF::CorrectKinematicsLO()
 {
     std::vector<std::pair<int, bool>> contacts;
-    for (int i = 0; i < num_legs_; i++)
+    for (int i = 0; i < num_contacts_; ++i)
         contacts.emplace_back(i, bool(contact_input_stack.back()(i)));
     filter.setContacts(contacts);
 
     vectorKinematics measured_kinematics;
-    for (int i = 0; i < num_legs_; i++)
+    for (int i = 0; i < num_contacts_; ++i)
     {
         Eigen::Matrix4d pose_i = Eigen::Matrix4d::Identity();
-        Eigen::Matrix<double, 6, 6> covariance_i = MatrixXd::Zero(6, 6);
+        Eigen::Matrix<double, 6, 6> covariance_i = Eigen::Matrix<double, 6, 6>::Zero();
         pose_i.block<3, 1>(0, 3) = p_imu_2_foot_stack.back().block<3, 1>(i * 3, 0);
-
-        MatrixXd C_meas_input = MatrixXd::Zero(2 * dim_legs_ + 3, 2 * dim_legs_ + 3);
-        C_meas_input.block(0, 0, dim_legs_, dim_legs_) = C_encoder_velocity;
-        C_meas_input.block(dim_legs_, dim_legs_, dim_legs_, dim_legs_) = C_encoder_position;
-        C_meas_input.block<3, 3>(2 * dim_legs_, 2 * dim_legs_) = C_gyro_;
-
-        MatrixXd G_meas_pos_i = MatrixXd::Zero(3, 2 * dim_legs_ + 3);
-        G_meas_pos_i.block(0, 3, 3, dim_legs_) = J_imu_2_foot_stack.back().block(i * 3, 0, 3, dim_legs_);
-
-        covariance_i.block<3, 3>(3, 3) = G_meas_pos_i * C_meas_input * G_meas_pos_i.transpose();
-        // NOTE: for testing, set a fixed cov
-        // covariance_i.block<3, 3>(3, 3) = 0.01 * Matrix3d::Identity();
-        // covariance_i.block<3, 3>(3, 3) = C_meas_input.block(0, 0, dim_legs_, dim_legs_);
-
+        covariance_i.block<3, 3>(3, 3) = GetContactPositionCovariance(i);
         measured_kinematics.emplace_back(i, pose_i, covariance_i);
     }
     filter.CorrectKinematics(measured_kinematics);
@@ -351,42 +475,13 @@ void robot_IEKF::CorrectKinematicsLO()
 void robot_IEKF::CorrectVelocityLO()
 {
     vectorTwistBody measured_twist_body;
-    for (int i = 0; i < num_legs_; i++)
+    for (int i = 0; i < num_contacts_; ++i)
     {
-        if (contact_input_stack.back()(i) != 1.0)
-            continue;
-
-        Eigen::Matrix<double, 6, 1> twist_body_i;
-        Eigen::Matrix<double, 6, 6> covariance_i = MatrixXd::Zero(6, 6);
-        twist_body_i.block<3, 1>(0, 0) << 0, 0, 0;
-        twist_body_i.block<3, 1>(3, 0) =
-            -J_imu_2_foot_stack.back().block(i * 3, 0, 3, dim_legs_) *
-                joint_velocity_stack.back().segment(i * dim_legs_, dim_legs_) -
-            angular_b_input_stack.back().cross(
-                p_imu_2_foot_stack.back().block<3, 1>(i * 3, 0));
-
-        MatrixXd C_meas_input = MatrixXd::Zero(2 * dim_legs_ + 3, 2 * dim_legs_ + 3);
-        C_meas_input.block(0, 0, dim_legs_, dim_legs_) = C_encoder_velocity;
-        C_meas_input.block(dim_legs_, dim_legs_, dim_legs_, dim_legs_) = C_encoder_position;
-        C_meas_input.block<3, 3>(2 * dim_legs_, 2 * dim_legs_) = C_gyro_;
-
-        MatrixXd G_meas_vel_i = MatrixXd::Zero(3, 2 * dim_legs_ + 3);
-        G_meas_vel_i.block(0, 0, 3, dim_legs_) = -J_imu_2_foot_stack.back().block(i * 3, 0, 3, dim_legs_);
-
-        Matrix3d omega_skew;
-        vector3dSkew(omega_skew, angular_b_input_stack.back());
-        G_meas_vel_i.block(0, 3, 3, dim_legs_) =
-            -omega_skew * J_imu_2_foot_stack.back().block(i * 3, 0, 3, dim_legs_);
-
-        Matrix3d kin_skew;
-        vector3dSkew(kin_skew,
-                     p_imu_2_foot_stack.back().block<3, 1>(i * 3, 0));
-        G_meas_vel_i.block<3, 3>(0, 6) = kin_skew;
-
-        covariance_i.block<3, 3>(3, 3) =
-            G_meas_vel_i * C_meas_input * G_meas_vel_i.transpose();
-        // covariance_i.block<3, 3>(3, 3) = C_meas_input.block(0, 0, dim_legs_, dim_legs_);
-
+        if (contact_input_stack.back()(i) != 1.0) continue;
+        Eigen::Matrix<double, 6, 1> twist_body_i = Eigen::Matrix<double, 6, 1>::Zero();
+        Eigen::Matrix<double, 6, 6> covariance_i = Eigen::Matrix<double, 6, 6>::Zero();
+        twist_body_i.tail<3>() = GetContactVelocity(i);
+        covariance_i.block<3, 3>(3, 3) = GetContactVelocityCovariance(i);
         measured_twist_body.emplace_back(i, twist_body_i, covariance_i);
     }
     filter.CorrectVelocityBody(measured_twist_body);
@@ -473,6 +568,9 @@ void robot_IEKF::InitializeIEKF()
 
 void robot_IEKF::UpdateIEKF()
 {
+    ValidateMeasurement();
+    if (accel_b_input_stack.empty())
+        throw std::logic_error("Initialize the IEKF before updating it.");
 
     // Prediction update
     //---------------------------------------------------------------
@@ -514,7 +612,7 @@ void robot_IEKF::UpdateIEKF()
     // if robot is flying, still minus z_foot_ at the beginning of flying phase to make sure consistence
     size_t n_contact = 0;
     double z_foot_tmp = 0;
-    for (size_t i = 0; i < num_legs_; i++)
+    for (size_t i = 0; i < num_contacts_; i++)
     {
         if (contact_[i])
         {

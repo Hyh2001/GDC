@@ -59,8 +59,8 @@ struct robot_params
     // ------------------- Estimator Settings -------------------
     int rate_;
     int N_;
-    int num_legs_;
-    int dim_legs_;
+    int num_legs_ = 0; // Optional compatibility count; contacts determine the actual count.
+    int dim_legs_ = 0; // Only used to interpret legacy per-leg encoder noise.
     int using_lo_p_;
     int using_lo_v_;
     int using_mob_;
@@ -82,7 +82,8 @@ struct robot_store
     Vector3d accel_b_;
     Vector3d omega_b_;
 
-    // Encoder & Contact
+    // Encoder vectors are in compact Pinocchio model order (excluding the free flyer).
+    // Contact flags are in contact_names_ order; adapters must preserve that association.
     VectorXd joint_states_position_;
     VectorXd joint_states_velocity_;
     VectorXd joint_states_effort_;
@@ -140,7 +141,7 @@ private:
     std::shared_ptr<robot_params> params_ptr_;
 
     InEKF filter;
-    MomentumObserver *mob;
+    std::unique_ptr<MomentumObserver> mob;
 
 private:
     // ========================================================================
@@ -159,8 +160,20 @@ private:
     // ========================================================================
     // Kinematics
     // ========================================================================
-    int num_legs_ = 4;
-    int dim_legs_ = 3;
+    struct JointMapping
+    {
+        pinocchio::JointIndex joint_id;
+        int idx_q;
+        int idx_v;
+        int input_q;
+        int input_v;
+    };
+    int num_contacts_ = 0;
+    int num_joints_ = 0;
+    std::vector<JointMapping> joint_mappings_;
+    std::vector<pinocchio::FrameIndex> contact_frame_ids_;
+    // Configured joint columns on each contact's root-to-frame ancestor chain.
+    std::vector<std::vector<int>> contact_joint_columns_;
 
     MatrixXd p_imu_2_foot_;
     MatrixXd J_imu_2_foot_;
@@ -208,6 +221,16 @@ private:
     // Internal Methods
     // ========================================================================
     void GetMeasurement(int discrete_time);
+    void ConfigureMappings();
+    void ValidateMeasurement() const;
+    MatrixXd MakeEncoderCovariance(const std::vector<double>& std, const std::string& name) const;
+    Matrix3d GetContactPositionCovariance(int contact) const;
+    Matrix3d GetContactVelocityCovariance(int contact) const;
+    Vector3d GetContactVelocity(int contact) const;
+    VectorXd EstimateContactForces(const VectorXd& residual) const;
+
+    // Inspect the actual measurements in regression tests without adding a public runtime API.
+    friend struct IEKFTestAccess;
 
     void InitializeIEKF();
     void UpdateIEKF();
@@ -222,7 +245,7 @@ private:
 
     void quaternionToEuler(const VectorXd &quaternion, Vector3d &rpy);
     void quaternionToEuler(const Quaterniond &quaternion, Vector3d &rpy);
-    void vector3dSkew(Matrix3d &skew_sym, const Vector3d &vector);
+    static void vector3dSkew(Matrix3d &skew_sym, const Vector3d &vector);
 };
 
 #endif // IEKF_HPP

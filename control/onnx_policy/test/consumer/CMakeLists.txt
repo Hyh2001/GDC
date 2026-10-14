@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.16)
+project(onnx_policy_consumer LANGUAGES CXX)
+find_package(onnx_policy REQUIRED)
+add_executable(consumer main.cpp)
+target_link_libraries(consumer PRIVATE onnx_policy::policy_runtime onnx_policy::mdp onnx_policy::controller_base)
+add_executable(mdp_only mdp_only.cpp)
+target_link_libraries(mdp_only PRIVATE onnx_policy::mdp)

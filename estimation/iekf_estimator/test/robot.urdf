@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<robot name="iekf_test">
+  <link name="base">
+    <inertial><mass value="1"/><origin xyz="0 0 -0.1"/>
+      <inertia ixx="0.01" iyy="0.01" izz="0.01" ixy="0" ixz="0" iyz="0"/></inertial>
+  </link>
+  <link name="left_link">
+    <inertial><mass value="1"/><origin xyz="0 0 -0.1"/>
+      <inertia ixx="0.01" iyy="0.01" izz="0.01" ixy="0" ixz="0" iyz="0"/></inertial>
+  </link>
+  <link name="right_link">
+    <inertial><mass value="1"/><origin xyz="0 0 -0.1"/>
+      <inertia ixx="0.01" iyy="0.01" izz="0.01" ixy="0" ixz="0" iyz="0"/></inertial>
+  </link>
+  <link name="arm_link">
+    <inertial><mass value="1"/><origin xyz="0 0 -0.1"/>
+      <inertia ixx="0.01" iyy="0.01" izz="0.01" ixy="0" ixz="0" iyz="0"/></inertial>
+  </link>
+  <link name="left_foot">
+    <inertial><mass value="1"/><origin xyz="0 0 -0.1"/>
+      <inertia ixx="0.01" iyy="0.01" izz="0.01" ixy="0" ixz="0" iyz="0"/></inertial>
+  </link>
+  <link name="right_foot">
+    <inertial><mass value="1"/><origin xyz="0 0 -0.1"/>
+      <inertia ixx="0.01" iyy="0.01" izz="0.01" ixy="0" ixz="0" iyz="0"/></inertial>
+  </link>
+  <joint name="arm_joint" type="revolute">
+    <parent link="base"/><child link="arm_link"/><origin xyz="0.1 0.4 0.1"/>
+    <axis xyz="1 0 0"/><limit lower="-3" upper="3" effort="100" velocity="10"/>
+  </joint>
+  <joint name="left_joint" type="revolute">
+    <parent link="base"/><child link="left_link"/><origin xyz="0 0.2 -0.2"/>
+    <axis xyz="0 1 0"/><limit lower="-3" upper="3" effort="100" velocity="10"/>
+  </joint>
+  <joint name="right_joint" type="revolute">
+    <parent link="base"/><child link="right_link"/><origin xyz="0 -0.2 -0.2"/>
+    <axis xyz="0 1 0"/><limit lower="-3" upper="3" effort="100" velocity="10"/>
+  </joint>
+  <joint name="left_fixed" type="fixed">
+    <parent link="left_link"/><child link="left_foot"/><origin xyz="0 0 -0.3"/>
+  </joint>
+  <joint name="right_fixed" type="fixed">
+    <parent link="right_link"/><child link="right_foot"/><origin xyz="0 0 -0.3"/>
+  </joint>
+</robot>

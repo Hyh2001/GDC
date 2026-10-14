@@ -20,6 +20,7 @@ file(GLOB_RECURSE BASE_ESTIMATOR_SOURCES
 add_library(${PROJECT_NAME} SHARED
     ${BASE_ESTIMATOR_SOURCES}
 )
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 ament_target_dependencies(${PROJECT_NAME}
     rclcpp
 )
@@ -45,11 +46,15 @@ install(TARGETS ${PROJECT_NAME}
 install(DIRECTORY include/
   DESTINATION include
 )
+install(FILES README.md DESTINATION share/${PROJECT_NAME})
 ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
-ament_export_dependencies(rclcpp Eigen3)
+ament_export_dependencies(rclcpp Eigen3 pinocchio Boost)
 
 if(BUILD_TESTING)
+  find_package(ament_cmake_gtest REQUIRED)
+  ament_add_gtest(test_iekf test/test_iekf.cpp)
+  target_link_libraries(test_iekf ${PROJECT_NAME} Eigen3::Eigen pinocchio::pinocchio)
   find_package(ament_lint_auto REQUIRED)
   # the following line skips the linter which checks for copyrights
   # comment the line when a copyright and license is added to all source files
